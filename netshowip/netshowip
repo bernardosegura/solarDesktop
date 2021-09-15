@@ -1,0 +1,28 @@
+#!/bin/bash
+echo "Net Show IP  v0.1 - Tools Solar"
+echo "netshowip or netshowip false --> hidden the ip"
+echo "netshowip true --> show the ip"
+echo ""
+if [[ $1 == '' ]]; then
+	rcmSolar='{"message":{"call":"netshowip","value":false}}'	
+    echo $rcmSolar > ~/.containerrcm/.rcmNetShowIp.rcmSolar
+    echo "Change...OK/false"
+    echo ""
+else	 
+    if [[ $1 == 'false' ]]; then
+	   rcmSolar='{"message":{"call":"netshowip","value":false}}'	
+       echo $rcmSolar > ~/.containerrcm/.rcmNetShowIp.rcmSolar
+       echo "Change...OK/false"
+       echo ""
+    else	 
+        if [[ $1 == 'true' ]]; then
+        	   rcmSolar='{"message":{"call":"netshowip","value":true}}'	
+           echo $rcmSolar > ~/.containerrcm/.rcmNetShowIp.rcmSolar
+           echo "Change...OK/true"           
+           echo ""
+        else	 
+           echo "No Change"
+           echo ""
+        fi
+    fi
+fi			

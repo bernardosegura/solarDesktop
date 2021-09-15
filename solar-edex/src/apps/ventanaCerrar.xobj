@@ -1,0 +1,11 @@
+{
+  "title":"Ventana Saludo Cerrar",
+  "x": 270,
+  "y": 100,
+  "w": 450,
+  "h": 100,
+  "content":"<button title='Click para Saludar' onClick='saludo()' style='position: relative; left: 10px; top: 10px;'>Saludo</button><label style='position: relative; left: 30px; top: 10px;'> Nombre:</label><input type='text'id='id_saludo' style='position: relative; left: 40px; top: 10px; width: 200px'/><button onClick='xWindow({id:\"ventanaSaludo\"})' style='position: relative; left: 35px; top: 10px;' title='Click para Cerrar'>Cerrar</button>",
+  "code":"saludo = function(){new Modal({ type: 'info', title: 'Saludo', message: 'Hola ' + document.getElementById('id_saludo').value });}",
+  "id":"ventanaSaludo",
+  "titleClose":"Cerrar"
+}

@@ -1,0 +1,21 @@
+{
+  "name": "rcm",
+  "version": "1.0.0",
+  "description": "comunication whit desktop solar.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "build": "node node_modules/nexe/index.js"
+  },
+  "keywords": [
+    "change",
+    "background",
+    "desktop",
+    "solar"
+  ],
+  "author": "solar",
+  "license": "ISC",
+  "dependencies": {
+    "nexe": "^3.3.7"
+  }
+}

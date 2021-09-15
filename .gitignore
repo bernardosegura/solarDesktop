@@ -1,0 +1,19 @@
+#shared para el entorno del nodeJS
+share/
+
+#libs y ejecutable de cambiador de fondo
+cbgimage/node_modules/
+cbgimage/cbgimage
+
+#libs y ejecutable de run xobj
+xobj/node_modules/
+xobj/xobj
+
+#builds y elements, elementsALL para la instalacion datos en leeme de recursos/solar
+installProyect/build
+installProyect/elementsUpdate
+installProyect/elementsInstall
+
+#administrador de ventanas
+solar_wm/*.o
+solar_wm/solar_wm

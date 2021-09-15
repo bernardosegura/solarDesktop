@@ -1,0 +1,136 @@
+#!/bin/bash
+echo "Mouse Button Extended Events v0.1 - Tools Solar"
+echo ""
+
+if [ ! -n "$(which xinput)" ]; then
+    echo "No found xinput" 
+    echo "" 
+    exit 1
+fi  
+
+if [ ! -n "$(which xdotool)" ]; then
+        echo "No found xdotool" 
+        echo "" 
+        exit 1
+fi 
+
+xmodmap -e "pointer = 1 2 3 4 5 6 7 0 0" 2>/dev/null #deshabilitamos los bonotes 8 y 9 al ejecutar driver y mandamos el warning a el poso sin fondo jajaja 2 es el STDERR
+#--> no es necesario mapear todos los botones 20 0 n botones pero te manda un warnin indicando que solo los colocados seran mapeados
+
+#disable boton 8 y 9 con xinput --set-button-map [20 - este es el id del dispositivo] 1 2 3 4 5 6 7 0 0 
+#--> no es necesario mapear todos los botones no manda warning ni nada pero solo funciona para este dispositivo
+
+#con trap capturamos el cierre con EXIT y realizamos una accion antes de salir
+trap "xmodmap -e 'pointer = 1 2 3 4 5 6 7 8 9' 2>/dev/null" EXIT #habilitamos los botones 8 y 9 al cerrar aplicacion y mandamos el warning a el poso sin fondo jajaja 2 es el STDERR
+
+
+#MOUSE_ID=$(xinput --list | grep -i -m 1 'mouse' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+MOUSE_ID=$(xinput --list | grep -i 'gaming mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+
+#if [[ $MOUSE_ID = '' ]]; then
+	#MOUSE_ID=$(xinput --list | grep -i 'pointer' | grep -i -m 1 -v 'master\|mouse\|xtest' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+#    MOUSE_ID=$(xinput --list | grep -i 'mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+#fi
+
+if [[ ! $MOUSE_ID = '' ]]; then
+	STATE1=$(xinput --query-state $MOUSE_ID | grep 'button\[' | sort)
+fi 
+
+mouseButton=''
+mouseButton1='up'
+mouseButton2='up'
+mouseButton3='up'
+mouseButton8='up'
+mouseButton9='up'
+Ctrl_Alt='up'
+while true; do
+    #sleep 0.2
+    if [[ ! $MOUSE_ID = '' ]]; then
+       STATE2=$(xinput --query-state $MOUSE_ID | grep 'button\[' | sort)
+    fi  
+    #STATE2=$(xinput --query-state $MOUSE_ID | grep 'button\[' | sort)
+    mouseButton=$(comm -13 <(echo "$STATE1") <(echo "$STATE2"))
+    STATE1=$STATE2
+    #MOUSE_ID=$(xinput --list | grep -i 'mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+    MOUSE_ID=$(xinput --list | grep -i 'gaming mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+
+    #if [[ $MOUSE_ID = '' ]]; then
+    	#MOUSE_ID=$(xinput --list | grep -i 'pointer' | grep -i -m 1 -v 'master\|mouse\|xtest' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+    #    MOUSE_ID=$(xinput --list | grep -i 'mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+    #fi	
+
+
+
+    if [[ $mouseButton = *'button[1]=down'* ]]; then
+    	mouseButton1='down'
+    else
+    	if [[ $mouseButton = *'button[1]=up'* ]]; then
+    		mouseButton1='up'
+    	fi
+    fi	
+
+    if [[ $mouseButton = *'button[2]=down'* ]]; then
+    	mouseButton2='down'
+    else
+    	if [[ $mouseButton = *'button[2]=up'* ]]; then
+    		mouseButton2='up'
+    	fi
+    fi
+
+    if [[ $mouseButton = *'button[3]=down'* ]]; then
+    	mouseButton3='down'
+    else
+    	if [[ $mouseButton = *'button[3]=up'* ]]; then
+    		mouseButton3='up'
+    	fi
+    fi
+
+    if [[ $mouseButton = *'button[8]=down'* ]]; then
+    	mouseButton8='down'
+    	if [[ $mouseButton1 = 'down' ]]; then
+    		if [[ $Ctrl_Alt = 'up' ]]; then
+    			xdotool keydown Ctrl+Alt
+    			Ctrl_Alt='down'
+    		else
+    			xdotool keyup Ctrl+Alt
+    			Ctrl_Alt='up'
+    		fi
+    	else
+    		if [[ $mouseButton2 = 'down' ]]; then
+                xdotool key F11
+            else
+                xdotool key Alt+Tab
+            fi
+    	fi	
+    else
+    	if [[ $mouseButton = *'button[8]=up'* ]]; then
+    		mouseButton8='up'
+    		if [[ $Ctrl_Alt = 'down' ]]; then
+    			xdotool keyup Ctrl+Alt
+    			Ctrl_Alt='up'
+    		fi
+    	fi
+    fi
+
+    if [[ $mouseButton = *'button[9]=down'* ]]; then
+    	mouseButton9='down'
+    	if [[ $mouseButton1 = 'down' ]]; then
+    	#	if [[ $Ctrl_Alt = 'up' ]]; then
+    	#		xdotool keydown Ctrl+Alt
+    	#		Ctrl_Alt='down'
+    	#	else
+    	#		xdotool keyup Ctrl+Alt
+    	#		Ctrl_Alt='up'
+    	#	fi	
+           xdotool key Super+Tab
+    	else
+    	   xdotool key Ctrl+Alt+Tab
+    	fi
+    else
+    	if [[ $mouseButton = *'button[9]=up'* ]]; then
+    		mouseButton9='up'
+    	fi
+    fi
+
+    mouseButton=''
+done

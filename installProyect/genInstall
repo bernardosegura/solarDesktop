@@ -1,0 +1,82 @@
+#! /home/solar/py3/bin/python 
+
+#import os
+from os import path
+from os import system
+from os import listdir
+from os import mkdir
+import errno
+import time
+from os import remove
+
+#Creando instalador....
+print("Generador de Instalador v0.1 - Tools Solar")
+print("")
+print("Iniciando...")
+dataFiles = []
+dirElementos = "elements/"
+dirBuild ="build"
+filesIn = ""
+filesDataInstall = ["data.pkg","templateInstall"]
+instalador = "installSolar"
+cmds = ("cat ,chmod +x ").split(",")
+separador = "<:>"
+firma = [str(time.time())]
+firmaName = "firma" 
+
+try:
+    mkdir(dirBuild)
+except OSError as e:
+    if e.errno != errno.EEXIST:
+        raise  
+
+dirBuild +="/"
+print("Leyendo elementos...")
+for file in listdir(dirElementos):
+	size = path.getsize(dirElementos + file) 
+	dataFiles.append(str(size) + separador + file )#+ "\n")
+	filesIn += " " + dirElementos + file
+
+firmaFile = open(firmaName, "w")
+
+firmaFile.write(firma[0])
+
+firmaFile.close()	
+
+print("Generando paquete...")
+
+system(cmds[0] + firmaName + " " + filesIn +" > " + dirBuild + filesDataInstall[0])
+
+firma.append(str(path.getsize(firmaName))) 
+
+remove(firmaName)
+
+print(dirBuild + filesDataInstall[0] +"... OK")
+
+#installData = open(dirBuild + filesDataInstall[1], "w")
+
+#installData.writelines(dataFiles)
+
+#installData.close()
+
+inData = open(filesDataInstall[1], "r")
+
+installData = inData.read()
+
+inData.close()
+
+installData = installData.replace("<installData>",str(dataFiles))
+installData = installData.replace("<firmaData>",str(firma))
+
+inData = open(dirBuild + instalador, "w")
+
+inData.writelines(installData)
+
+inData.close()
+
+print(dirBuild + instalador +"... OK")
+
+system(cmds[1] + dirBuild + instalador)
+
+print("Proceso Finalizado.")
+print("")

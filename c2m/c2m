@@ -1,0 +1,48 @@
+#!/bin/bash
+echo "Command to Module v0.1 - Tools Solar"
+echo ""
+if [[ $1 == '' ]]; then
+	echo c2m command name-file
+	echo "if command = \"sudo command\" execute with root."
+	echo "if name-file is null unistall module."
+	echo ""
+else	 
+    if [ -z "$2" ] 
+	then
+		#echo c2m $1 name-file
+		#echo ""
+		fn=$1
+		fn=${fn// /-}
+		if [ -e ~/modulos/$fn.xobj ]; then
+			rm ~/modulos/$fn.xobj
+			echo "Unistall module '$fn'" 
+			echo ""
+		else
+			echo module $fn not exists
+			echo ""
+		fi
+	else	
+		fn=${2,,}
+		fn=${fn// /-}
+		if [ -e ~/modulos/$fn.xobj ]; then
+			echo module $fn already exists
+			echo ""
+		else	
+
+			if [ -n "$(which ${1/::/})" ]; then
+				obj1="'id_$fn','$1')"
+				obj2=',"id":"id_'$fn'","hidden":"true"}'
+				xobj='{"title":"","x":0,"y":0,"w":0,"h":0,"code":"xWndExec('$obj1'"'$obj2
+				echo $xobj > ~/modulos/$fn.xobj
+				echo "Module created"
+			else
+				#rcmSolar='{"message":{"call":"c2mError","cmd":"'$1'","xobj":"'$fn'"}}'
+				echo "Error to create module '$fn'" 
+				echo "Command '$1' not found"
+				echo "Module no created"
+				echo ""	
+				#echo $rcmSolar > ~/.containerrcm/.rcmC2m.rcmSolar
+			fi 
+		fi	
+	fi
+fi

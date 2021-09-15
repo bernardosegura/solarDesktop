@@ -1,0 +1,68 @@
+{
+  "title":"Create file desktop to file module XOBJ",
+  "w": 490,
+  "h": 150,
+  "id": "wnd_dtmXobj",
+  "content":"<table style='width: 100%; height: 100%;'>
+  <tr>
+   <td colspan='2'>
+     Select the file desktop to create.
+   </td>
+  </tr>
+  <tr>
+    <td colspan='2'>
+      <label style='position: relative; left: 5px; top: 3px; float: left;'>
+        File Desktop:
+      </label>
+      <div class='autocomplete' style='width: 75%; float:left; position: relative; left: 23px;'>
+        <div>
+          <input type='text'id='id_selectDesktop' placeholder='Select File Desktop'onkeyup='escToClose(\"wnd_dtmXobj\", event)'/>
+          <!--div id='btn_selectDesktop' augmented-ui='tl-clip tr-clip exe' style='cursor: pointer; position: relative; top: -16px; left: 96%; width: 10px; height: 10px; --aug-border: 1px; --aug-border-bg: rgb(var(--color_r), var(--color_g), var(--color_b));'></div-->
+        </div>
+      </div>  
+    </td>
+  </tr>
+  <tr style='display: none'>
+     <td>
+       <button onClick=\"xWndExecFDesktop('wnd_dtmXobj','/usr/share/applications/' + document.getElementById('id_selectDesktop').value + '.desktop');\" style='position: relative; left: 0px; top: 0px;' onkeyup='escToClose(\"wnd_dtmXobj\", event)'>
+         Execute
+       </button>
+     </td>
+     <td>
+       <button onClick='xWndExec(\"wnd_dtmXobj\",window.settings.fileManager + \" /usr/share/applications\");' style='position: relative; left: 25%; top: 0px;' onkeyup='escToClose(\"wnd_dtmXobj\", event)'>
+         Directory
+       </button>
+      </td>
+   </tr>
+  <!--tr>
+    <td colspan='2'>
+      <label style='position: relative; left: -10px; top: 0px;'>
+        File Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </label>
+      <input onkeyup=\"if(event.keyCode == 13){if(document.getElementById('id_fileXobj').value == '') return false; createXln((document.getElementById('id_selectDesktop').value != '-1' )?'/usr/share/applications/' + document.getElementById('id_selectDesktop').value + '.desktop':'-1',document.getElementById('id_fileXobj').value); xWindow({ id:'wnd_dtmXobj'});}\" type='text'id='id_fileXobj' style='position: relative; left: 0px; top: 0px; width: 75%; position: relative; left: 0px; top: 0px;'/>
+    </td>
+  </tr-->
+  <tr>
+     <td>
+       <button onClick=\"createXln(document.getElementById('id_selectDesktop').value); xWindow({ id:'wnd_dtmXobj'});\" style='position: relative; left: 0px; top: 0px;' onkeyup='escToClose(\"wnd_dtmXobj\", event)'>
+         Create
+       </button>
+     </td>
+     <td>
+       <button onClick='xWindow({ id:\"wnd_dtmXobj\"})' style='position: relative; left: 25%; top: 0px;' onkeyup='escToClose(\"wnd_dtmXobj\", event)'>
+         Close
+       </button>
+      </td>
+   </tr>
+ </table>",
+  "code":"
+loadFD = function(){ window.wnd_dtmXobj.appsDesktop = []; window.wnd_dtmXobj.TitDesktop = [];
+require('fs').readdirSync(window['cApps'].osPathApps).forEach(desk => {
+        if (!desk.endsWith('.desktop')) return;
+        window.wnd_dtmXobj.appsDesktop.push(desk.replace('.desktop', ''));
+    });
+  completListCbx({id:'id_selectDesktop',wnd_id:'wnd_dtmXobj',var_list:'appsDesktop',cbxAct:'true'}); 
+  document.getElementById('id_selectDesktop').focus();};
+loadFD();",
+"noLimit":1
+}

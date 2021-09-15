@@ -1,0 +1,88 @@
+#!/bin/bash
+#raiz="/home/solar/installProyect/raiz/"
+raiz="/"
+
+#copiando imagenes
+if [ -f "$1"grubSolar.png ]
+then
+    cp "$1"grubSolar.png "$1"solar/grubSolar.png
+fi 
+
+if [ -f "$1"solar.svg ]
+then
+    cp "$1"solar.svg "$1"solar/solar.svg
+fi 
+
+if [ -f "$1"solarFnd.svg ]
+then
+    cp "$1"solarFnd.svg "$1"solar/solarFnd.svg
+fi 
+
+#entorno mate
+if [ -n "$(which mate-settings-daemon)" ]; then
+   cp "$1"solar/solar-edex "$1"solar/solar-edex-mate
+   rm "$1"solar/solar-edex
+fi 
+
+
+#copiando solar
+if [ -d "$raiz"usr/solar ]
+then
+    if [ -n "$(which mate-settings-daemon)" ]; then
+        rm "$raiz"usr/solar/solar-edex-mate
+    fi    
+    cp -r "$1"solar/* "$raiz"usr/solar
+else
+    #rm -rf "$raiz"usr/solar
+    cp -r "$1"solar "$raiz"usr/solar
+fi
+
+#copiando configuracion para lightdm
+if [ -f "$1"lightdm.conf.d ]
+then
+    if [ -f "$raiz"usr/share/lightdm/lightdm.conf.d/01_debian.conf_bak ]
+    then
+        cp "$1"lightdm.conf.d "$raiz"usr/share/lightdm/lightdm.conf.d/01_debian.conf
+    else
+        cp "$raiz"usr/share/lightdm/lightdm.conf.d/01_debian.conf "$raiz"usr/share/lightdm/lightdm.conf.d/01_debian.conf_bak
+        cp "$1"lightdm.conf.d "$raiz"usr/share/lightdm/lightdm.conf.d/01_debian.conf    
+    fi
+fi
+
+if [ -f "$1"lightdm-gtk-greeter.conf.d ]
+then
+    if [ -f "$raiz"usr/share/lightdm/lightdm-gtk-greeter.conf.d/01_debian.conf_bak ]
+    then
+        cp "$1"lightdm-gtk-greeter.conf.d "$raiz"usr/share/lightdm/lightdm-gtk-greeter.conf.d/01_debian.conf
+    else
+        cp "$raiz"usr/share/lightdm/lightdm-gtk-greeter.conf.d/01_debian.conf "$raiz"usr/share/lightdm/lightdm-gtk-greeter.conf.d/01_debian.conf_bak
+        cp "$1"lightdm-gtk-greeter.conf.d "$raiz"usr/share/lightdm/lightdm-gtk-greeter.conf.d/01_debian.conf    
+    fi
+fi    
+
+#copiando session
+if [ -f "$1"solar.desktop ]
+then
+    if [ -d "$raiz"usr/share/xsessions_bak ]
+    then
+        rm -rf "$raiz"usr/share/xsessions
+        mkdir "$raiz"usr/share/xsessions
+        cp "$1"solar.desktop "$raiz"usr/share/xsessions
+    else
+        cp -r "$raiz"usr/share/xsessions "$raiz"usr/share/xsessions_bak
+        rm -rf "$raiz"usr/share/xsessions
+        mkdir "$raiz"usr/share/xsessions
+        cp "$1"solar.desktop "$raiz"usr/share/xsessions
+    fi
+fi
+
+#copiando libs para solar wm
+if [ -f "$1"libgflags.so.2 ]
+then
+    cp "$1"libgflags.so.2 "$raiz"lib
+fi
+
+if [ -f "$1"libglog.so.0 ]
+then
+    cp "$1"libglog.so.0 "$raiz"lib
+fi

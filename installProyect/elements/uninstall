@@ -1,0 +1,72 @@
+#!/bin/bash
+#raiz="/home/solar/installProyect/raiz/"
+raiz="/"
+
+if [ -f "$raiz"usr/share/lightdm/lightdm.conf.d/01_debian.conf_bak ]
+then
+	if [ -f "$raiz"usr/share/lightdm/lightdm-gtk-greeter.conf.d/01_debian.conf_bak ]
+	then
+	   if [ -d "$raiz"usr/share/xsessions_bak ]
+		then
+		   #borramos solar
+		   rm -rf "$raiz"usr/solar
+
+		   #borramos configuracion para lightdm
+		   rm "$raiz"usr/share/lightdm/lightdm.conf.d/01_debian.conf 
+		   mv "$raiz"usr/share/lightdm/lightdm.conf.d/01_debian.conf_bak "$raiz"usr/share/lightdm/lightdm.conf.d/01_debian.conf 
+		   	#rm "$raiz"usr/share/lightdm/lightdm.conf.d/01_debian.conf_bak
+		   rm "$raiz"usr/share/lightdm/lightdm-gtk-greeter.conf.d/01_debian.conf
+		   mv "$raiz"usr/share/lightdm/lightdm-gtk-greeter.conf.d/01_debian.conf_bak "$raiz"usr/share/lightdm/lightdm-gtk-greeter.conf.d/01_debian.conf
+		   	#rm "$raiz"usr/share/lightdm/lightdm-gtk-greeter.conf.d/01_debian.conf_bak
+
+		   #borramos session
+		   rm -rf "$raiz"usr/share/xsessions
+		   cp -r "$raiz"usr/share/xsessions_bak "$raiz"usr/share/xsessions
+		   rm -rf "$raiz"usr/share/xsessions_bak 
+
+		   #borramos las herrmientas de solar
+		   if [ -f "$raiz"bin/c2m ]
+		   then
+		   	 rm "$raiz"bin/c2m
+		   fi	
+
+		   if [ -f "$raiz"bin/netshowip ]
+		   then
+		   	 rm "$raiz"bin/netshowip
+		   fi	
+
+		   if [ -f "$raiz"bin/xgrabox ]
+		   then
+		   	 rm "$raiz"bin/xgrabox
+		   fi
+
+		   if [ -f "$raiz"bin/poweroff ]
+		   then
+		   	 rm "$raiz"bin/poweroff
+		   fi
+
+		   if [ -f "$raiz"bin/xobj ]
+		   then
+		   	 rm "$raiz"bin/xobj
+		   fi
+
+		   if [ -f "$raiz"bin/mbexev ]
+		   then
+		   	 rm "$raiz"bin/mbexev
+		   fi
+
+		   if [ -f "$raiz"bin/cbgimage ]
+		   then
+		   	 rm "$raiz"bin/cbgimage
+		   fi
+		
+		else
+	      echo "--> No es posible desinstalar, tal vez limpio los archivos bak"  
+		fi
+	else
+	  echo "--> No es posible desinstalar, tal vez limpio los archivos bak"		
+	fi
+else
+	echo "--> No es posible desinstalar, tal vez limpio los archivos bak"
+fi
+

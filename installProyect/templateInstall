@@ -1,0 +1,124 @@
+#! /home/solar/py3/bin/python 
+
+from os import system
+from os import mkdir
+from os import geteuid
+
+import sys
+import errno
+
+#instalador....
+print("Instalador v0.1 - Tools Solar")
+print("")
+
+dataFiles = []
+dirDist = "/tmp/tmpInstall/"
+dirBin = "/bin/"
+#dirBuild ="build/"
+dirBuild =""
+filesDataInstall = ["data.pkg"] #,"install.dat"]
+filesInstall = {"install" : "chmod +x <file>","solar.tar.gz" : "tar -xzf <file> -C <dir>","c2m":"cp <file> " + dirBin + "<comando> && chmod +x " + dirBin + "<comando>","cbgimage":"cp <file> " + dirBin + "<comando> && chmod +x " + dirBin + "<comando>","mbexev":"cp <file> " + dirBin + "<comando> && chmod +x " + dirBin + "<comando>","netshowip":"cp <file> " + dirBin + "<comando> && chmod +x " + dirBin + "<comando>","poweroff":"cp <file> " + dirBin + "<comando> && chmod +x " + dirBin + "<comando>","xgrabox":"cp <file> " + dirBin + "<comando> && chmod +x " + dirBin + "<comando>","xobj":"cp <file> " + dirBin + "<comando> && chmod +x " + dirBin + "<comando>"}
+separador = "<:>"
+comandos = {"uninstall" : "chmod +x <file>","clsbak" : "chmod +x <file>"}
+dataFiles = <installData>
+firma = <firmaData>
+
+fCmd = 0
+for cmd in dataFiles:
+	if ("uninstall" in cmd or "clsbak" in cmd) and fCmd == 0: 
+		print(sys.argv[0].replace("./","") + " [opcion]")
+		print("")
+		print("Opciones")
+		fCmd = 1
+
+	if "uninstall" in cmd: 
+		print("--> " + sys.argv[0].replace("./","") + " uninstall --> desinstala Solar")
+	if "clsbak" in cmd: 
+		print("--> " +sys.argv[0].replace("./","") + " clsbak --> limpia archivos bak")
+
+if fCmd == 1:
+	print("")
+
+print("Iniciando...")
+
+if geteuid() != 0:
+	if len(sys.argv) == 1:
+		print('--> Debes tener privilegios root para instalar.')
+	else:
+		if sys.argv[1]in comandos:
+			print('--> Debes tener privilegios root para ejecutar ' + sys.argv[1] + '.')
+		else:
+			print("--> Comando " + sys.argv[1] + " no encontrado...")
+	print("")
+	sys.exit(1)
+
+try:
+    mkdir(dirDist)
+except OSError as e:
+    if e.errno != errno.EEXIST:
+        raise
+
+print("Leyendo elementos...")
+#fileBuf = open(dirBuild + filesDataInstall[1], "r")
+#fileBuf.readlines()
+#fileBuf.close()
+
+if len(sys.argv) == 1:
+
+	print("Iniciando instalación...")
+	fileBuf = open(dirBuild + filesDataInstall[0], "rb")
+
+# validamos la firma del paquete
+	fFirma = fileBuf.read(int(firma[1]))
+
+	if bytearray(firma[0].encode()) == fFirma:
+
+		for tFile in dataFiles:
+			file = tFile.split(separador)
+			#file[1] = file[1].replace("\n","")
+			fBuff = open(dirDist + file[1], "wb")
+			fBuff.write(fileBuf.read(int(file[0])))
+			fBuff.close()
+			if file[1] in filesInstall:
+				system(filesInstall[file[1]].replace("<file>",dirDist + file[1]).replace("<dir>",dirDist).replace("<comando>",file[1]))
+		fileBuf.close()
+
+		print("Procesando datos...")
+		system(dirDist + "install " + dirDist)
+
+		print("Instalación Finalizada...")
+	else:
+		print("--> Archivo " + dirBuild + filesDataInstall[0] + " no corresponde o está dañado.")
+		fileBuf.close()	
+else:
+	print("Procesando comando... " + sys.argv[1])
+	#if sys.argv[1]in comandos:
+	fileBuf = open(dirBuild + filesDataInstall[0], "rb")
+# validamos la firma del paquete
+	fFirma = fileBuf.read(int(firma[1]))
+
+	if bytearray(firma[0].encode()) == fFirma:
+
+		for tFile in dataFiles:
+			file = tFile.split(separador)
+			#file[1] = file[1].replace("\n","")
+			contentFile = fileBuf.read(int(file[0]))
+			if file[1] == sys.argv[1]:
+				if file[1] in comandos:
+					fBuff = open(dirDist + file[1], "wb")
+					fBuff.write(contentFile)
+					fBuff.close()
+					system(comandos[file[1]].replace("<file>",dirDist + file[1]))
+					system(dirDist + file[1])
+					print("--> Comando Finalizado...")
+		fileBuf.close()
+	else:
+		print("--> Archivo " + dirBuild + filesDataInstall[0] + " no corresponde o está dañado.")
+		fileBuf.close()	
+	#else:
+	#	print("--> Comando " + sys.argv[1] + " no encontrado...")
+
+print("Eliminando archivos temporales...")
+system("rm -rf " + dirDist)
+print("")
+	

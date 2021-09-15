@@ -1,0 +1,16 @@
+{
+  "title":"App Config in Menu",
+  "w": 760,
+  "h": 160,
+  "content":"<table style='width: 100%; height: 100%;'><tr><td colspan='2'>Write the Aplication Name</td></tr><tr><td colspan='2'><label style='position: relative; left: 10px; top: 5px; float: left;'>Aplication:</label><div class='autocomplete' style='width: 75%; float:left; position: relative; left: 15px;'><input onchange='document.getElementById(\"id_appTitulo\").value = \"\"; document.getElementById(\"id_appIcon\").value = \"\";' type='text' id='id_fileApp' style='position: relative; left: 0px; top: 0px; width: 100%;' onkeyup='escToClose(\"wnd_appcnfgmnu\", event)'/></div><button onClick='loadCnfgmnu(document.getElementById(\"id_fileApp\").value,\"id_appTitulo\",\"id_appIcon\")' style='position: relative; left: 5px; top: -4px;' onkeyup='escToClose(\"wnd_appcnfgmnu\", event)'>Load</button></td></tr><tr><td><label style='position: relative; left: 10px; top: 5px; float: left;'>Title:</label><input  type='text' id='id_appTitulo' style='position: relative; left: 13px; top: 0px; width: 85%;' onkeyup='escToClose(\"wnd_appcnfgmnu\", event)'/></td><td><label style='position: relative; left: 10px; top: 5px; float: left;'>Icon:</label><div class='autocomplete' style='width: 85%; position: relative; left: 15px;'><input  type='text' id='id_appIcon' style='position: relative; left: 0px; top: 0px; width: 100%;' placeholder='Select icon or svg path code' onkeyup='escToClose(\"wnd_appcnfgmnu\", event)'/></div></td></tr><tr><td><button onClick='if(changeTitIcnMnu(document.getElementById(\"id_fileApp\").value,\"id_appTitulo\",\"id_appIcon\"))xWindow({ id:\"wnd_appcnfgmnu\"})' style='position: relative; left: 0px; top: 0px;' onkeyup='escToClose(\"wnd_appcnfgmnu\", event)'>Change</button></td><td><button onClick='xWindow({ id:\"wnd_appcnfgmnu\"})' style='position: relative; left: 25%; top: 0px;' onkeyup='escToClose(\"wnd_appcnfgmnu\", event)'>Cancel</button></td></tr></table>",
+  "code":"initIcons = function(){
+  window.wnd_appcnfgmnu.icons = [];
+  icons = require('./assets/icons/file-icons.json');
+  for( key in icons ){
+     window.wnd_appcnfgmnu.icons.push(key);
+  }
+  completListCbx({id:'id_appIcon',wnd_id:'wnd_appcnfgmnu',var_list:'icons',cbxAct:'true'});
+}; initIcons(); window.wnd_appcnfgmnu.xobjApps = window.cApps.xobjTitle; completListCbx({id:'id_fileApp',wnd_id:'wnd_appcnfgmnu',var_list:'xobjApps'});",
+  "id": "wnd_appcnfgmnu",
+  "noLimit": 1
+}

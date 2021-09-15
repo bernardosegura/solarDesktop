@@ -1,0 +1,82 @@
+	#!/bin/bash
+echo "X Graphic Box v0.1 - Tools Solar"
+echo ""
+
+if [[ $1 == '' ]]; then
+	echo "xgrabox graphic-command [:display] [:wm] (-wm without window manager or window manager application)"
+	echo "|------ example xgrabox google-chrome or xgrabox google-chrome :2"
+	echo "|------ example xgrabox google-chrome -wm or xgrabox google-chrome :2 -wm"
+	echo xgrabox xcopy :display 
+	echo "|------ example xgrabox (xcopy-to or xcopy-of) or xgrabox (xcopy-to or xcopy-of) :2"
+	echo ""
+else
+	if [ -z "$2" ] 
+    then
+	    display=":2"
+	    wm="mate-wm &"
+    else
+        if [[ $2 == '-wm' ]]; then
+            display=":2"
+            wm=""
+        else
+            display="$2"
+            if [ -z "$3" ] 
+		    then
+			    wm="mate-wm &"
+		    else
+		        if [[ $3 == '-wm' ]]; then
+		            wm=""
+		        else
+		            wm="$3 &"
+		        fi
+		    fi
+        fi
+    fi	
+
+    if [[ $1 == 'xcopy-to' ]]; then
+    	set -e
+    	xclip -selection clip -o -display :0 | xclip -selection clip -i -display $display
+    	echo "copy clipboard to display $display"
+		echo ""
+	else
+		if [[ $1 == 'xcopy-of' ]]; then
+	    	set -e
+	    	xclip -selection clip -o -display $display | xclip -selection clip -i -display :0
+	    	echo "copy clipboard of display $display"
+			echo ""
+		else
+			if [ -n "$(which $1)" ]; then
+				execFile="$1"
+		        initFile=$execFile".xgb"
+
+		        Xaxis=$(xrandr --current | grep '*' -m 1 | uniq | awk '{print $1}' | cut -d 'x' -f1) 
+		        Yaxis=$(xrandr --current | grep '*' -m 1 | uniq | awk '{print $1}' | cut -d 'x' -f2)
+		        MaxRes=$(($Xaxis))"x"$(($Yaxis))
+		              
+		        echo "export GLOG_logtostderr=1" > $initFile
+		        echo "exec $wm $execFile" >> $initFile
+		    
+		        if [ -f "./$initFile" ]; then
+		            initFile=./$initFile
+		        fi
+
+		        set -e
+
+		        XEPHYR=$(whereis -b Xephyr | cut -f2 -d' ')
+		        xinit $initFile -- \
+		            "$XEPHYR" \
+		                $display \
+		                -ac \
+		                -screen $MaxRes \
+		                -host-cursor
+		        
+		        if [ -f "$initFile" ]; then
+		            rm $initFile
+		        fi
+		    else
+				echo "Graphic Command '$1' no found"
+				echo ""	
+			fi  
+		fi 
+	fi
+fi
