@@ -24,3 +24,33 @@ Las __Nativas del Entorno__ son módulos los cuales se encuentran en la parte in
 ## Capturas de Pantalla
 Pantalla con el tema por default (_espacial_) del entorno
 <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/desktop.png" />
+
+Pantalla con fondo personalizado ___Alien___
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondo.png" />
+
+Pantallas con fondos personalizados ___Anime Debian___
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime.png" />
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime2.png" />
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime3.png" />
+
+Pantalla con fondo personalizado ___Simulando Otro SO___
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin.png" />
+
+Pantalla con fondo personalizado ___Simulando otro SO y Terminal sin Fondo___
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewinsinfnd.png" />
+
+Pantalla con fondo personalizado ___Anime Windows___
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin2.png" />
+
+Pantalla de Administrador de Archivos __X Windows y Terminal__
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanager.png" />
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanagerconsol.png" />
+
+Pantalla de Editor de Imagenes __Gimp__
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/gimp.png" />
+
+Pantalla de Interacción con Juegos __Emulación__
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/games.png" />
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/mario.png" />
+<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/mslug2.png" />
+
