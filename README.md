@@ -6,7 +6,7 @@ Es un entorno de escritorio para Linux, con temática geek, el cual es un __Fork
 
 # 
 ## Sistema Operativo
-El sistema operativo que se utilizó para la instalación es __Debian__ en una laptop, esto por su versatilidad y documentación que existe, sin embargo es posible instalarlo en otros sistemas operativos. De momento el componente del instalador fue probado e instalado en __debian 10__ con gestor de sesiones __LightDM__.
+<p align="justify">El sistema operativo que se utilizó para la instalación es <b>Debian</b> en una laptop, esto por su versatilidad y documentación que existe, sin embargo es posible instalarlo en otros sistemas operativos. De momento el componente del instalador fue probado e instalado en <b>Debian 10</b> con gestor de sesiones <b>LightDM</b>.</p>
 
 # 
 ## Información General
