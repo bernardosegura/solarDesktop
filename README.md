@@ -53,4 +53,4 @@ Pantalla de Interacción con Juegos __Emulación__
 <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/games.png" />
 <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/mario.png" />
 <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/mslug2.png" />
-
+#
