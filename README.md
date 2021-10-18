@@ -15,42 +15,77 @@ El entorno cuenta con 2 tipo de aplicaciones.
 1. __Binarias (X Window)__
 2. __Nativas del Entorno (modulos xobj)__
 
-<p align="justify"> Las <b>Binarias</b> son las nativas gráficas del sistema operativo las cuales son ejecutadas fuera de el entorno y se indica en la parte izquierda la etiqueta <b>WND</b> las aplicaciones gráficas en ejecución, se accede a ellas con <i>Alt+Tab</i> para avanzar entre ellas a la Derecha y <i>Ctrl+Alt+Tab</i> para avanzar entre ellas a la Izquierda. La combinación <i>wind+Tab</i> regresa a la pantalla principal (el entorno).
+<p align="justify"> Las <b>Binarias</b> son las nativas gráficas del sistema operativo las cuales son ejecutadas fuera de el entorno y se indica en la parte izquierda la etiqueta <b>XWINDOW</b> las aplicaciones gráficas en ejecución, al dar click se activa el panel lateral derecho y muestra las aplicaciones en ejecución, así como también usando la combinación de teclas <i>Win+W</i>. Se accede a ellas dando click en el panel lateral derecho en la aplicación o con <i>Alt+Tab</i> para avanzar entre ellas a la Derecha y <i>Ctrl+Alt+Tab</i> para avanzar entre ellas a la Izquierda. La combinación <i>Win+Tab</i> regresa a la pantalla principal (el entorno).
 Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es en terminal, pueden ser ejecutadas directamente en el entorno ya que se cuenta con 5 terminales tty para su utilización simultánea.</p>
 
-<p align="justify"> Las <b>Nativas del Entorno</b> son módulos los cuales se encuentran en la parte inferior y estos pueden ser pequeñas aplicaciones en javascript o accesos directos a diferentes aplicaciones tanto internas como externas del entorno. Estas son alojadas en el directorio <i>raiz/modulos</i> del usuario que está ejecutando el entorno.</p>
+<p align="justify"> Las <b>Nativas del Entorno</b> son módulos los cuales se encuentran en la parte inferior y estos pueden ser pequeñas aplicaciones en javascript o accesos directos a diferentes aplicaciones tanto internas como externas del entorno. Estas son alojadas en el directorio <i>modulos</i> en la carpeta <i>home</i> del usuario que está ejecutando el entorno.</p>
 
 # 
 ## Capturas de Pantalla
-Pantalla con el tema por default (_espacial_) del entorno
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/desktop.png" />
-
-Pantalla con fondo personalizado ___Alien___
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondo.png" />
-
-Pantallas con fondos personalizados ___Anime Debian___
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime.png" />
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime2.png" />
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime3.png" />
-
-Pantalla con fondo personalizado ___Simulando Otro SO___
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin.png" />
-
-Pantalla con fondo personalizado ___Simulando otro SO y Terminal sin Fondo___
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewinsinfnd.png" />
-
-Pantalla con fondo personalizado ___Anime Windows___
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin2.png" />
-
-Pantalla de Administrador de Archivos __X Windows y Terminal__
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanager.png" />
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanagerconsol.png" />
-
-Pantalla de Editor de Imagenes __Gimp__
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/gimp.png" />
-
-Pantalla de Interacción con Juegos __Emulación__
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/games.png" />
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/mario.png" />
-<img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/mslug2.png" />
-#
+<table>
+  <tr>
+    <td>
+      Pantalla con el tema por default (<b>espacial</b>) del entorno
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/desktop.png" />
+    </td>
+    <td>
+      Pantalla con fondo personalizado <b>Alien</b>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondo.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Pantallas con fondos personalizados <b>Anime Debian</b>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime.png" />
+    </td>
+    <td>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime2.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime3.png" />
+    </td>
+    <td>
+      Pantalla con fondo personalizado <b>Simulando Otro SO</b>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Pantalla con fondo personalizado <b>Terminal sin Fondo</b>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewinsinfnd.png" />
+    </td>
+    <td>
+      Pantalla con fondo personalizado <b>Anime Windows</b>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin2.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Pantalla de Administrador de Archivos <b>X Windows y Terminal</b>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanager.png" />
+    </td>
+    <td>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanagerconsol.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Pantalla de Editor de Imagenes <b>Gimp</b>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/gimp.png" />
+    </td>
+    <td>
+      Pantalla de Interacción con Juegos <b>Emulación</b>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/games.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+     <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/mario.png" />
+    </td>
+    <td>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/mslug2.png" />
+    </td>
+  </tr>
+</table>
