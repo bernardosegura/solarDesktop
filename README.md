@@ -25,7 +25,7 @@ Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es
 <table>
   <tr>
     <td>
-      Pantalla con el tema por default (<b>espacial</b>) del entorno
+      Pantalla con el tema por default (<b>espacial</b>)
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/desktop.png" />
     </td>
     <td>
@@ -47,13 +47,13 @@ Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime3.png" />
     </td>
     <td>
-      Pantalla con fondo personalizado <b>Simulando Otro SO</b>
+      Pantalla con fondo personalizado <b>Simulando SO</b>
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin.png" />
     </td>
   </tr>
   <tr>
     <td>
-      Pantalla con fondo personalizado <b>Terminal sin Fondo</b>
+      Pantalla personalizada <b>Terminal sin Fondo</b>
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewinsinfnd.png" />
     </td>
     <td>
@@ -63,10 +63,11 @@ Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es
   </tr>
   <tr>
     <td>
-      Pantalla de Administrador de Archivos <b>X Windows y Terminal</b>
+      Pantalla de Administrador de Archivos <b>X Windows</b>
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanager.png" />
     </td>
     <td>
+      Pantalla de Administrador de Archivos <b>Terminal</b>
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanagerconsol.png" />
     </td>
   </tr>
