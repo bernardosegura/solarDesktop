@@ -280,7 +280,7 @@ class Terminal {
                 if (d === 256) x = 2;
 
                 cols = cols+x;
-                rows = rows+y;
+                rows = (rows+y)-1;//se resta uno ya que la ultima linea de la terminal quedaba muy abajo y ya no se veia.
 
                 if (this.term.cols !== cols || this.term.rows !== rows) {
                     this.resize(cols, rows);

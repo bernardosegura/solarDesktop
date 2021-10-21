@@ -22,6 +22,7 @@ class restCommMesg{
 	                    {
 	                      if (fs.existsSync(dir.join(this.path,file))){
 		                        //procesar y borrar
+		                       //console.log(fs.readFileSync(dir.join(this.path,file)).toString());
 		                       let data = JSON.parse(fs.readFileSync(dir.join(this.path,file)).toString());
 		                       //if(!data.message) data.message = {};
 		                       fs.unlinkSync(dir.join(this.path,file));

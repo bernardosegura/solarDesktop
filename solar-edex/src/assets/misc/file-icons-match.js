@@ -1949,5 +1949,7 @@ function matchIcon(filename) {
     if (/\.zabstr?$/i.test(filename)) { return "zork"; }
     if (/\.zil$/i.test(filename)) { return "zork"; }
     if (/\.mud$/i.test(filename)) { return "zork"; }
+    //if (/red$/i.test(filename)) { return "wireless"; } // ya existe un red jajaja    
+    if (/volume$/i.test(filename)) { return "sound"; } // agregamosun homologo para el sonido   
 }
 module.exports = matchIcon;

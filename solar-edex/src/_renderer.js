@@ -1,8 +1,12 @@
-window.solar = {versions : "1.0.1-2208.21"+""+""};
+window.solar = {versions : "2.0.2-2010.21"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
 window.setColorT = "#2E344080";
+window.idBattery = 'id_battery';
+window.maxBattery = 0;
+window.upowerFlag = false;
+window.batteryNone = '';
 
 window.eval = global.eval = function () {
     throw new Error("eval() is disabled for security reasons.");
@@ -61,11 +65,11 @@ window.xobjDB = require(path.join(settingsDir, "xobjDB.json"));
 } else {
     window.settings.nointroOverride = false;
 }*/
-if (electron.remote.process.argv.includes("--nocursor")) {
+/*if (electron.remote.process.argv.includes("--nocursor")) {
     window.settings.nocursorOverride = true;
 } else {
     window.settings.nocursorOverride = false;
-}
+}*/
 
 // Retrieve theme override (hotswitch)
 ipc.once("getThemeOverride", (e, theme) => {
@@ -131,12 +135,12 @@ window._loadTheme = theme => {
 
     body {
         font-family: var(--font_main), sans-serif;
-        cursor: ${(window.settings.nocursorOverride || window.settings.nocursor) ? "none" : "default"} !important;
+        cursor: ${/*(window.settings.nocursorOverride || window.settings.nocursor) ? "none" :*/ "default"} !important;
         ${""/*theme.backgroundImage*/}
     }
 
     * {
-   	   ${(window.settings.nocursorOverride || window.settings.nocursor) ? "cursor: none !important;" : ""}
+   	   ${/*(window.settings.nocursorOverride || window.settings.nocursor) ? "cursor: none !important;" :*/ ""}
 	}
     ${((!window.settings.enableKeyboar)?window._purifyCSS("section#filesystem{left:0;width:100vw}section#filesystem>h3.title,section#filesystem>div{width:99vw}section#keyboard{display:none;}"):"")}
     ${window._purifyCSS(theme.injectCSS || "")}
@@ -349,15 +353,18 @@ let i = 0;
 
 // Create the UI's html structure and initialize the terminal client and the keyboard
 async function initUI() {
-    document.body.innerHTML += `<section class="mod_column" id="mod_column_left">
-        <h3 class="title"><p>PANEL</p><p>SYSTEM</p></h3>
+    document.body.innerHTML += `<section id="main_panel">
+    </section>
+    <section class="mod_column" id="mod_column_left">
+        <h3 class="title"><p id='idUser'></p><p id='idName'></p></h3>
     </section>
     <section id="main_shell" augmented-ui="tl-clip br-clip exe" style="height:0%;width:0%;opacity:0;margin-bottom:30vh;">
         <h3 class="title" style="opacity:0;"><p>TERMINAL</p><p>MAIN SHELL</p></h3>
         <h1 id="main_shell_greeting"></h1>
     </section>
     <section class="mod_column" id="mod_column_right">
-        <h3 class="title"><p>PANEL</p><p>NETWORK</p></h3>
+        <h3 class="title"><p>OPENED NATIVE WINDOW</p><p>LINUX</p></h3>
+        <div id="id_panel_xwindow" class="panel_xwindow"></div>
     </section>`;
 
     await _delay(10);
@@ -393,6 +400,8 @@ async function initUI() {
 
     require("username")().then(user => {
         greeter.innerHTML += `Welcome, <em>${user}</em>`; //solar
+        document.getElementById("idUser").innerHTML = "USERNAME";
+        document.getElementById("idName").innerHTML = user.toUpperCase();
     }).catch(() => {
         greeter.innerHTML += "Welcome";//solar
     });
@@ -419,6 +428,9 @@ async function initUI() {
 
     greeter.remove();
 
+    //verificamos si colocar panel visible o no.
+    showTogglePanel(true);
+
     // Initialize modules
     window.mods = {};
 
@@ -431,9 +443,14 @@ async function initUI() {
     window.mods.toplist = new Toplist("mod_column_left");
 
     // Right column
-    window.mods.netstat = new Netstat("mod_column_right");
-    window.mods.globe = new LocationGlobe("mod_column_right");
-    window.mods.conninfo = new Conninfo("mod_column_right");
+    //window.mods.netstat = new Netstat("mod_column_right");
+    window.objRedId = '';
+    window.objRedTitle = '';
+    window.ssidWifi = '';
+    window.mods.netstat = new Netstat("inpanel-wireless|inpanel-red");
+    // se quitan modulos de mundo y monitoreo red, aprovechar panel en futura version.
+    //window.mods.globe = new LocationGlobe("mod_column_right");
+    //window.mods.conninfo = new Conninfo("mod_column_right");
 
     // Fade-in animations
     document.querySelectorAll(".mod_column").forEach(e => {
@@ -441,18 +458,18 @@ async function initUI() {
     });
     let i = 0;
     let left = document.querySelectorAll("#mod_column_left > div");
-    let right = document.querySelectorAll("#mod_column_right > div");
+    //let right = document.querySelectorAll("#mod_column_right > div");
     let x = setInterval(() => {
-        if (!left[i] && !right[i]) {
+        if (!left[i] /*&& !right[i]*/) {
             clearInterval(x);
         } else {
             window.audioManager.panels.play();
             if (left[i]) {
                 left[i].setAttribute("style", "animation-play-state: running;");
             }
-            if (right[i]) {
+            /*if (right[i]) {
                 right[i].setAttribute("style", "animation-play-state: running;");
-            }
+            }*/
             i++;
         }
     }, 500);
@@ -609,7 +626,7 @@ window.focusShellTab = (number, cmd="") => {
 // Settings editor
 window.openSettings = async () => {
     // Build lists of available keyboards, themes, monitors
-    let keyboards, themes, monitors, ifaces;
+    let keyboards, themes, monitors; //, ifaces;
     fs.readdirSync(keyboardsDir).forEach(kb => {
         if (!kb.endsWith(".json")) return;
         kb = kb.replace(".json", "");
@@ -625,10 +642,10 @@ window.openSettings = async () => {
     for (let i = 0; i < electron.remote.screen.getAllDisplays().length; i++) {
         if (i !== window.settings.monitor) monitors += `<option>${i}</option>`;
     }
-    let nets = await window.si.networkInterfaces();
+    /*let nets = await window.si.networkInterfaces();
     nets.forEach(net => {
         if (net.iface !== window.mods.netstat.iface) ifaces += `<option>${net.iface}</option>`;
-    });
+    });*/
 
     if(!window.settings.ampm)
         window.settings.ampm = false;
@@ -701,11 +718,11 @@ window.openSettings = async () => {
                         <td>Local port to use for UI-shell connection</td>
                         <td><input type="number" id="settingsEditor-port" value="${window.settings.port}"></td>
                     </tr>
-                    <tr>
+                    <!--tr>
                         <td>pingAddr</td>
                         <td>IPv4 address to test Internet connectivity</td>
-                        <td><input type="text" id="settingsEditor-pingAddr" value="${window.settings.pingAddr || "1.1.1.1"}"></td>
-                    </tr>
+                        <td><input type="text" id="settingsEditor-pingAddr" value="${/*window.settings.pingAddr ||*/ "1.1.1.1"}"></td>
+                    </tr-->
                     <tr>
                         <td>monitor</td>
                         <td>Which monitor to spawn the UI in (defaults to primary display)</td>
@@ -722,30 +739,30 @@ window.openSettings = async () => {
                             <option>${!window.settings.nointro}</option>
                         </select></td>
                     </tr-->
-                    <tr>
+                    <!--tr>
                         <td>nocursor</td>
-                        <td>Hide the mouse cursor${(window.settings.nocursorOverride) ? " (Currently overridden by CLI flag)" : ""}</td>
+                        <td>Hide the mouse cursor${/*(window.settings.nocursorOverride) ? " (Currently overridden by CLI flag)" :*/ ""}</td>
                         <td><select id="settingsEditor-nocursor">
-                            <option>${window.settings.nocursor}</option>
-                            <option>${!window.settings.nocursor}</option>
+                            <option>${/*window.settings.nocursor*/ ""}</option>
+                            <option>${/*!window.settings.nocursor*/ ""}</option>
                         </select></td>
-                    </tr>
-                    <tr>
+                    </tr-->
+                    <!--tr>
                         <td>iface</td>
                         <td>Override the interface used for network monitoring</td>
                         <td><select id="settingsEditor-iface">
-                            <option>${window.mods.netstat.iface}</option>
-                            ${ifaces}
+                            <option>${/*window.mods.netstat.iface*/ ""}</option>
+                            ${/*ifaces*/ ""}
                         </select></td>
-                    </tr>
-                    <tr>
+                    </tr-->
+                    <!--tr>
                         <td>allowWindowed</td>
                         <td>Allow using F11 key to set the UI in windowed mode</td>
                         <td><select id="settingsEditor-allowWindowed">
-                            <option>${window.settings.allowWindowed}</option>
-                            <option>${!window.settings.allowWindowed}</option>
+                            <option>${/*window.settings.allowWindowed*/ ""}</option>
+                            <option>${/*!window.settings.allowWindowed*/""}</option>
                         </select></td>
-                    </tr>
+                    </tr-->
                     <tr>
                         <td>excludeThreadsFromToplist</td>
                         <td>Display threads in the top processes list</td>
@@ -770,35 +787,35 @@ window.openSettings = async () => {
                             <option>${!window.settings.fsListView}</option>
                         </select></td>
                     </tr>
-                    <tr>
+                    <!--tr>
                         <td>experimentalGlobeFeatures</td>
                         <td>Toggle experimental features for the network globe</td>
                         <td><select id="settingsEditor-experimentalGlobeFeatures">
-                            <option>${window.settings.experimentalGlobeFeatures}</option>
-                            <option>${!window.settings.experimentalGlobeFeatures}</option>
+                            <option>${/*window.settings.experimentalGlobeFeatures*/ ""}</option>
+                            <option>${/*!window.settings.experimentalGlobeFeatures*/ ""}</option>
                         </select></td>
                     </tr>
                     <tr>
                         <td>experimentalFeatures</td>
                         <td>Toggle Chrome's experimental web features (DANGEROUS)</td>
                         <td><select id="settingsEditor-experimentalFeatures">
-                            <option>${window.settings.experimentalFeatures}</option>
-                            <option>${!window.settings.experimentalFeatures}</option>
+                            <option>${/*window.settings.experimentalFeatures*/ ""}</option>
+                            <option>${/*!window.settings.experimentalFeatures*/ ""}</option>
                         </select></td>
-                    </tr>
+                    </tr-->
                     <tr>
                         <td>fileManager</td>
                         <td>Name file manager to open the directory</td>
                         <td><input type="text" id="settingsEditor-fileManager" value="${(!window.settings.fileManager)?"":window.settings.fileManager}"></td>
                     </tr>
-                    <tr>
+                    <!--tr>
                         <td>enabledPing</td>
                         <td>Send ping to host</td>
                         <td><select id="settingsEditor-enablePing">
-                            <option>${window.settings.enablePing}</option>
-                            <option>${!window.settings.enablePing}</option>
+                            <option>${/*window.settings.enablePing*/ ""}</option>
+                            <option>${/*!window.settings.enablePing*/""}</option>
                         </select></td>
-                    </tr>
+                    </tr-->
                     <tr>
                         <td>enableKeyboar</td>
                         <td>Enable keyboard on screen</td>
@@ -852,23 +869,24 @@ window.writeSettingsFile = () => {
         termFontSize: Number(document.getElementById("settingsEditor-termFontSize").value),
         audio: (document.getElementById("settingsEditor-audio").value === "true"),
         disableFeedbackAudio: (document.getElementById("settingsEditor-disableFeedbackAudio").value === "true"),
-        pingAddr: document.getElementById("settingsEditor-pingAddr").value,
+        //pingAddr: document.getElementById("settingsEditor-pingAddr").value,
         port: Number(document.getElementById("settingsEditor-port").value),
         monitor: Number(document.getElementById("settingsEditor-monitor").value),
         //nointro: (document.getElementById("settingsEditor-nointro").value === "true"),
-        nocursor: (document.getElementById("settingsEditor-nocursor").value === "true"),
-        iface: document.getElementById("settingsEditor-iface").value,
-        allowWindowed: (document.getElementById("settingsEditor-allowWindowed").value === "true"),
+        //nocursor: (document.getElementById("settingsEditor-nocursor").value === "true"),
+        //iface: document.getElementById("settingsEditor-iface").value,
+        //allowWindowed: (document.getElementById("settingsEditor-allowWindowed").value === "true"),
         excludeThreadsFromToplist: (document.getElementById("settingsEditor-excludeThreadsFromToplist").value === "true"),
         hideDotfiles: (document.getElementById("settingsEditor-hideDotfiles").value === "true"),
         fsListView: (document.getElementById("settingsEditor-fsListView").value === "true"),
-        experimentalGlobeFeatures: (document.getElementById("settingsEditor-experimentalGlobeFeatures").value === "true"),
-        experimentalFeatures: (document.getElementById("settingsEditor-experimentalFeatures").value === "true"),
+        //experimentalGlobeFeatures: (document.getElementById("settingsEditor-experimentalGlobeFeatures").value === "true"),
+        //experimentalFeatures: (document.getElementById("settingsEditor-experimentalFeatures").value === "true"),
         fileManager:document.getElementById("settingsEditor-fileManager").value,
-        enablePing:(document.getElementById("settingsEditor-enablePing").value === "true"),
+        //enablePing:(document.getElementById("settingsEditor-enablePing").value === "true"),
         enableKeyboar:(document.getElementById("settingsEditor-enableKeyboar").value === "true"),
         //sudoGUI:document.getElementById("settingsEditor-sudoGUI").value,
-        showIP: netShowIP(),
+        //showIP: true,//netShowIP(), *revisar con el ocultamiento
+        showPanel: window.settings.showPanel,
         ampm: window.settings.ampm
     };
 
@@ -936,6 +954,10 @@ window.openShortcutsHelp = () => {
                     <tr>
                         <td>F5</td>
                         <td>Update Panel File's.</td>
+                    </tr-->
+                    <!--tr>
+                        <td>Ctrl + ALT + P</td>
+                        <td>Toggle Show Right Panel</td>
                     </tr-->
                     <tr>
                         <td><button onClick='electron.shell.openExternal("file://${require('path').join(require('electron').remote.app.getPath("userData"), "kinit.json")}")' style='position: relative; left: 0px; top: 0px;'>Open kinit</button></td>
@@ -1043,8 +1065,13 @@ function registerKeyboardShortcuts() {
     });
 
     // Hide on-screen keyboard visual feedback (#394)
-    globalShortcut.register("Control+Shift+P", () => {
+    globalShortcut.register("Alt+Shift+P", () => {
         window.keyboard.togglePasswordMode();
+    });
+
+    // Hide on-screen lateral panel visual
+    globalShortcut.register("Alt+W"/*Control+Alt+P"*/, () => {
+        showTogglePanel();
     });
 
 
@@ -1098,7 +1125,7 @@ registerKeyboardShortcuts();
 //////////////////////////Solar registerKeys////////////////////////////
 function fnRegisterKeys()
 {
-    let registerExist = [,"Control+Shift+S","Control+Shift+K","Command+C","Command+V","Ctrl+Shift+C","Ctrl+Shift+V","Control+Tab","Control+Shift+Tab","Control+1","Control+2","Control+3","Control+4","Control+5","Control+Shift+H","Control+Shift+L","Control+Shift+P","Control+Escape"];
+    let registerExist = [,"Alt+W","Control+Shift+S","Control+Shift+K","Command+C","Command+V","Ctrl+Shift+C","Ctrl+Shift+V","Control+Tab","Control+Shift+Tab","Control+1","Control+2","Control+3","Control+4","Control+5","Control+Shift+H","Control+Shift+L","Control+Shift+P","Control+Escape"];
     
     for(let i=0; i < registerKeys.register.length; i++)
     { 
@@ -1130,9 +1157,9 @@ document.addEventListener("keydown", e => {
     if (e.key === "Alt") {
         e.preventDefault();
     }
-    if (e.key === "F11" && !settings.allowWindowed) {
+    /*if (e.key === "F11" && !settings.allowWindowed) {
         e.preventDefault();
-    }
+    }*/
     if (e.code === "KeyD" && e.ctrlKey) {
         e.preventDefault();
     }
@@ -1831,7 +1858,7 @@ function autocompleteAppsInit(inp,wnd_id,var_list,cbxAct) {
               closeAllLists();
           });
           a.appendChild(b);
-          console.log(a.height);
+          //console.log(a.height);
         }
       }
   });
@@ -2181,8 +2208,43 @@ function xWndExecGksu(id,app){
 
 //echo '{"message":{"call":"MsgBox","title":"Titulo","text":"Holiss"}}' > ~/.containerrcm/.rcmC2m.rcmSolar
 
-function netShowIP(show){
-  if(!show){
+function showTogglePanel(show){
+    window.audioManager.stdin.play();
+    if(!show){ //si es falso o nula interactuar
+        if(window.settings.showPanel){
+            document.getElementById("mod_column_right").setAttribute("style", "display: none;");
+            document.getElementById("main_panel").setAttribute("style", "width: 99%;");
+            document.getElementById("main_shell").setAttribute("style", "left: 8%; width: 82%;");
+
+        }else{
+            document.getElementById("main_panel").setAttribute("style", "");
+            document.getElementById("main_shell").setAttribute("style", "");
+            document.getElementById("mod_column_right").setAttribute("style", "");
+        }
+        window.settings.showPanel = !window.settings.showPanel;
+        Object.keys(window.settings).forEach(key => {
+            if (window.settings[key] === "undefined") {
+                delete window.settings[key];
+            }
+        });
+
+        fs.writeFileSync(settingsFile, JSON.stringify(window.settings, "", 4));
+    }else{
+        //if(!window.settings.showPanel){ //de inicio siempre estara cerrado el panel
+            window.settings.showPanel = false;
+            document.getElementById("mod_column_right").setAttribute("style", "display: none;");
+            document.getElementById("main_panel").setAttribute("style", "width: 99%;");
+            document.getElementById("main_shell").setAttribute("style", "left: 8%; width: 82%;");
+
+        /*}else{
+            document.getElementById("main_panel").setAttribute("style", "");
+            document.getElementById("main_shell").setAttribute("style", "");
+            document.getElementById("mod_column_right").setAttribute("style", "");
+        }*/
+    }
+
+    
+  /*if(!show){
         if(show !== false)
             return (document.querySelector("#mod_netstat_innercontainer > div:nth-child(2)").id == "true")?true:false;
         else
@@ -2198,7 +2260,7 @@ function netShowIP(show){
         }
     });
 
-    fs.writeFileSync(settingsFile, JSON.stringify(window.settings, "", 4));
+    fs.writeFileSync(settingsFile, JSON.stringify(window.settings, "", 4));*/
 }
 
 function systemPoweroff(){
@@ -2231,10 +2293,10 @@ function systemPoweroff(){
   noLimit: 0
 };
     let code = '';
-    console.log(wnd);
+    //console.log(wnd);
     if(!wnd.id){
         code = xWindow(wnd);
-        console.log(code);
+        //console.log(code);
     }
     else
         if(!document.getElementById(wnd.id))
@@ -2325,6 +2387,28 @@ new restCommMesg("rcmSolar",(data)=>{
             if(data.message.number){
                 if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
                     document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.number;
+                if(data.message.window){
+                    showTogglePanel(true);
+                    let xapp = '';
+                    if(data.message.window.length > 0){
+                        for (let i = 0; i < data.message.window.length; i++) {
+                           xapp +='<h1 onclick="goNativeWindow('+data.message.window[i].id+')" title="Go Window">'+((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")+'</h1>';
+                        }
+                    }
+                    if(document.querySelector("#id_panel_xwindow")){
+                        document.querySelector("#id_panel_xwindow").innerHTML = xapp;
+                        let h1 = document.querySelectorAll("#id_panel_xwindow > h1");
+                        for(let i=0; i < h1.length; i++){
+                            try {
+                              h1[i].innerHTML = decodeURIComponent(escape(h1[i].innerHTML));
+                            } catch (error) {
+                                continue;
+                            }
+                        } 
+                    }
+                    
+                    //console.log(data.message.window);
+                }
             }
         }
 
@@ -2332,13 +2416,13 @@ new restCommMesg("rcmSolar",(data)=>{
             systemPoweroff();
         }
 
-        if(data.message.call.toLowerCase() == 'netshowip'){
+        /*if(data.message.call.toLowerCase() == 'netshowip'){
             //if(data.message.value){
                 netShowIP(data.message.value);
            // }
-        }
+        }*/
     }
-     
+
 });
 
 function xExecInTrm(cmd){
@@ -2383,4 +2467,47 @@ function errorLog(name,message){
         title: `Error ${app}`,
         message: `Log in ${name}`
     });
+}
+
+function powerPreferences(){
+    const { exec } = require("child_process");
+    let app = '';
+    app = 'mate-power-preferences';
+    exec(app, (error, stdout, stderr) => {
+        if (error) {
+            if(error.message.length > 100 || error.message.includes('stderr'))
+                errorLog(app,error.message);
+            else
+                new Modal({
+                    type: "warning",
+                    title: `Error ${app}`,
+                    message: error.message
+                });
+        }
+    });
+}
+
+function goNativeWindow(wnd){
+    /*const fs = require('fs');
+    const dir = require('path');
+    let urlDefault = dir.join(process.env.HOME,".containerrcm");
+    fs.writeFileSync(dir.join(urlDefault,".rcmSolar.wm"), wnd);*/
+    const { exec } = require("child_process");
+    let cmd = "xdotool windowfocus " + wnd;   
+    showTogglePanel();
+ 
+    exec(cmd, (error, stdout, stderr) => {
+        if (error) {
+            if(error.message.length > 100 || error.message.includes('stderr'))
+                errorLog(app,error.message);
+            else
+                new Modal({
+                    type: "warning",
+                    title: `Error ${app}`,
+                    message: error.message
+                });
+        }
+
+    });
+
 }

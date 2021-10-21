@@ -3,7 +3,7 @@ class restCommMesg{
 	constructor(appName,receiveMessage,path){
 		const fs = require('fs');
 		const dir = require('path');
-		let urlDefault = "C:\\Users\\usuario\\Desktop\\node11\\msgDirect\\.containerrcm";
+		let urlDefault = "C:\\.containerrcm";//"C:\\Users\\usuario\\Desktop\\node11\\msgDirect\\.containerrcm";
 		let now= new Date();
 	
 		if(!receiveMessage) receiveMessage = (message) =>{};

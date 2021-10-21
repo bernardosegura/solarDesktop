@@ -12,7 +12,6 @@ class FilesystemDisplay {
         this._formatBytes = (a,b) => {if(0==a)return"0 Bytes";var c=1024,d=b||2,e=["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"],f=Math.floor(Math.log(a)/Math.log(c));return parseFloat((a/Math.pow(c,f)).toFixed(d))+" "+e[f]};
         this.fileIconsMatcher = require("./assets/misc/file-icons-match.js");
         this.icons = require("./assets/icons/file-icons.json");
-        this.icons.volume = this.icons.sound; // agregamosun omologo para el sonido 
         this.edexIcons = {
             theme: {
                 width: 24,
@@ -101,7 +100,7 @@ this.cmdPath = async e =>{
         const container = document.getElementById(opts.parentId);
          //se modifica para cambiar el filesystem por FILESYSTEM-APPLICATIONS
         container.innerHTML = `
-            <h3 class="title"><p>FILESYSTEM-APPLICATIONS</p><p id="fs_disp_title_dir"></p></h3>
+            <h3 class="title"><p>FILESYSTEM-APPLICATIONS</p><p style="display: none;" id="fs_disp_title_dir"></p></h3>
             <!--h2 id="fs_disp_loading">LOADING...</h2-->
             <div id="fs_disp_container" onmousedown="window.fsDisp.cmdPath(event)">
             </div>
@@ -381,6 +380,11 @@ this.cmdPath = async e =>{
                 type: "PowerOff"
             });
 
+            this.cwd.splice(1, 0, {
+                name: "Battery",
+                type: "Battery"
+            }); 
+
             this.dirpath = tcwd;
             this.render(this.cwd);
             this._reading = false;
@@ -424,6 +428,10 @@ this.cmdPath = async e =>{
             }
 
             let filesDOM = ``;
+            let fileMainPanel = ``;
+            let appsinPanel = 0;
+            let inpanel = false;
+            let idInpanel = '';
 
             if(this.dirpath == path.join(require("electron").remote.app.getPath("home"),"modulos"))
             {
@@ -485,6 +493,10 @@ this.cmdPath = async e =>{
                     cmd = `systemPoweroff()`;
                 }
 
+                if (e.type === "Battery") { // para agregar comando en bateria
+                    cmd = `powerPreferences()`;
+                }
+
                 let icon = "";
                 let type = "";
                 switch(e.type) {
@@ -492,7 +504,14 @@ this.cmdPath = async e =>{
                         icon = this.icons.poweroff;
                         type = "--";
                         e.category = "PowerOff";
+                        inpanel = true;
                         break;
+                    case "Battery":
+                        icon = this.icons.battery;
+                        type = "--";
+                        e.category = "Battery";
+                        inpanel = true;
+                        break;    
                     case "showDisks":
                         icon = this.icons.showDisks;
                         type = "--";
@@ -571,10 +590,16 @@ this.cmdPath = async e =>{
                 let tamanio = (e.type === "file")? " - " + e.size: "";
                 if(e.type === "file")
                 {
-                    if(e.name.toLowerCase().endsWith(".xobj"))
+                   if(e.name.toLowerCase().endsWith(".xobj"))
                     {
+
                         cmd="appXwnd('"+e.name+"');";
                         e.name = e.name.substring(0, e.name.length - 5);
+
+                        if(e.name.toLowerCase().startsWith("inpanel")){
+                            inpanel = true;
+                            idInpanel = e.name.toLowerCase();
+                        }
 
                         if(this.dirpath == path.join(require("electron").remote.app.getPath("home"),"modulos"))
                         { 
@@ -583,10 +608,18 @@ this.cmdPath = async e =>{
 
                         if(!window.xobjDB[e.name.toLowerCase()])
                          {
+                            if(idInpanel.startsWith("inpanel")){
+                                e.name = idInpanel.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
+                                e.name = e.name.replace(e.name.split(" ")[0] + ' ',"");
+                            }
+
                             if(!this.icons[e.name.toLowerCase()])
-                                icon = this.icons.appXwnd;
+                                icon = this.icons[this.fileIconsMatcher(e.name.toLowerCase())];
+                                if(typeof icon === "undefined")
+                                    icon = this.icons.appXwnd; 
                             else
                                icon = this.icons[e.name.toLowerCase()];
+                            e.name = e.name.trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
                          }else{
 
                             if(!this.icons[window.xobjDB[e.name.toLowerCase()].icon]){ //se agregan icons svg personalizados de 100x100
@@ -599,8 +632,11 @@ this.cmdPath = async e =>{
                                         svg: '<path d="' + window.xobjDB[e.name.toLowerCase()].icon.replace('svg=','') + '"/>'
                                     }
 
-                                }else
-                                   icon = this.icons.appXwnd;                                
+                                }else{
+                                   icon = this.icons[this.fileIconsMatcher(window.xobjDB[e.name.toLowerCase()].icon)];
+                                   if(typeof icon === "undefined")
+                                        icon = this.icons.appXwnd;  
+                                }                                   
                             }
                             else
                                icon = this.icons[window.xobjDB[e.name.toLowerCase()].icon];
@@ -633,7 +669,21 @@ this.cmdPath = async e =>{
                 //filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" onclick="${cmd}" title="${e.name}${tamanio}${e.lastAccessed}">
             if(e.name.startsWith(".")) e.name = e.name.replace('.','');
             if(e.category != "showDisks" && e.category != "up"){ //se comenta para deshabilitar el filemanager
-                filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" onclick="${cmd}" title="${e.name}${tamanio}">
+                if(inpanel){
+                    if(e.type == 'Battery')
+                       window.maxBattery = icon.max;
+                                                  
+                    fileMainPanel += `<div class="icono_panel" ${(idInpanel != '')?'id="' + idInpanel + '"':''} ${(e.type == 'Battery')?'id="' + window.idBattery + '"':''} ${(e.type == 'Battery')?'style="opacity: 0.5; ' +window.batteryNone+ '"':''} ${(idInpanel == 'inpanel-wireless' || idInpanel == 'inpanel-red')?'style="opacity: 0.5;"':''} onclick="${cmd}" title="${e.name}">
+                                         <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}" style="width: 100%; height: 100%;">
+                                            ${icon.svg}
+                                            ${(e.type == 'Battery')?icon.plug.replace("<--id_plug-->",window.idBattery + '_plug') + icon.energy.replace("<--id_energy-->",window.idBattery + '_energy'):""}
+                                        </svg>                                    
+                                      </div>`;
+                    appsinPanel++;  
+                    inpanel = false;  
+                    idInpanel = "";              
+                }else{
+                    filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" onclick="${cmd}" title="${e.name}${tamanio}">
                                 <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
                                     ${icon.svg}
                                 </svg>
@@ -642,7 +692,8 @@ this.cmdPath = async e =>{
                                 <h4>${e.size}</h4>
                                 <h4>${e.lastAccessed}</h4>
                             </div>`;
-                        }
+                }
+            }
 //+++++++++++++++++++++++++++++++++++++++++++++++++++
 
                 /*filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" onclick="${cmd}">
@@ -660,6 +711,7 @@ this.cmdPath = async e =>{
             document.getElementById("fs_disp_load").style.display = 'none';
             
             this.filesContainer.innerHTML = filesDOM;
+            document.getElementById("main_panel").innerHTML = fileMainPanel;
 
             if (this.filesContainer.getAttribute("class").endsWith("disks")) {
                 document.getElementById("fs_space_bar").setAttribute("onclick", "window.fsDisp.render(window.fsDisp.cwd)");
@@ -677,7 +729,6 @@ this.cmdPath = async e =>{
                     window.audioManager.folder.play();
                     await _delay(30);
                 }
-
                 id++;
 
                 /////agregamos el control de rutas para el watch, al finalizar la carga de los iconos del directorio
@@ -687,7 +738,7 @@ this.cmdPath = async e =>{
             }
 
 //para tratar de solucionar que no se muestren todos los elementos del directorio
-            if((blockList.length - 2) !== this.filesContainer.childNodes.length) // -2 por el showDisk y Up
+            if((blockList.length - (2 + appsinPanel)) !== this.filesContainer.childNodes.length) // -2 por el showDisk y Up y mas las aplicaciones en el nuevo panel superior
             {
                  this.readFS(this.dirpath);
             }
@@ -760,10 +811,22 @@ this.cmdPath = async e =>{
                             //if(titulo == file)
                             //     window.xobjDB[file.toLowerCase()] = {title:file.trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))), icon:file.toLowerCase()};
                             // else
-                            let icono = file.toLowerCase().replace(window.entorno + '-','').split('-')[0];
-                            icono = icono.toLowerCase().split('_')[0];
-                            icono = icono.toLowerCase().split(' ')[0];
-                            window.xobjDB[file.toLowerCase()] = {title: titulo, icon:icono.toLowerCase()};
+                            if(titulo.toLowerCase().startsWith("inpanel")){
+                                let nameBuff = '';
+                                nameBuff = titulo.split(' ')[0] + ' ';
+                                nameBuff = titulo.replace(nameBuff,'');
+                                titulo = nameBuff;
+
+                                let icono = titulo.toLowerCase().replace(window.entorno + '-','').split('-')[0];
+                                icono = icono.toLowerCase().split('_')[0];
+                                icono = icono.toLowerCase().split(' ')[0];
+                                window.xobjDB[file.toLowerCase()] = {title: titulo, icon:icono.toLowerCase()};                               
+                           }else{
+                                let icono = file.toLowerCase().replace(window.entorno + '-','').split('-')[0];
+                                icono = icono.toLowerCase().split('_')[0];
+                                icono = icono.toLowerCase().split(' ')[0];
+                                window.xobjDB[file.toLowerCase()] = {title: titulo, icon:icono.toLowerCase()};
+                           }
                         }else{
                             //window.xobjDB.files = window.xobjDB.files.filter( el => el[file] === window.xobjDB.files[file]);  
                             delete  window.xobjDB[file.toLowerCase()]; 

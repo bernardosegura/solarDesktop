@@ -24,6 +24,8 @@ class LocationGlobe {
 
 
         setTimeout(() => {
+           // if(document.getElementById("mod_column_right").getAttribute("style") == 'none') return false;
+
             let container = document.getElementById("mod_globe_innercontainer");
             let placeholder = document.getElementById("mod_globe_canvas_placeholder");
 
@@ -121,6 +123,7 @@ class LocationGlobe {
 
         // Init updaters when intro animation is done
         setTimeout(() => {
+            //if(document.getElementById("mod_column_right").getAttribute("style") == 'none') return false;
             this.updateLoc();
             this.locUpdater = setInterval(() => {
                 this.updateLoc();

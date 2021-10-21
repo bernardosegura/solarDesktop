@@ -1,0 +1,4 @@
+Para compilar son necesarias las siguientes dependencias.
+sudo apt-get install libx11-dev --> para el x11*.h
+sudo apt install libgoogle-glog-dev --> para la lib de google
+sudo apt install pkg-config --> para pkg-config

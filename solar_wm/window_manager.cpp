@@ -27,6 +27,8 @@ extern "C" {
 #include <glog/logging.h>
 #include "util.hpp"
 
+//#include <thread>
+
 //#include <sys/type.h>
 #include <pwd.h>
 
@@ -124,6 +126,11 @@ void WindowManager::Run() {
  //pasamos el foco al panel desde el incio del administrador de ventana
   XRaiseWindow(display_, panel[0]);
   XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+
+  ///hiloa
+  /*XInitThreads();
+  std::thread t(hiloWnd);
+  t.join();*/
 
   // 2. Main event loop.
   for (;;) {
@@ -1355,6 +1362,7 @@ auto nextW = clients_.find(w);
   if(/*e.keycode == XKeysymToKeycode(display_, XK_Super_L) || e.keycode == XKeysymToKeycode(display_, XK_Super_R)*/ //cambiamos a win+tab
   (e.state & Mod4Mask) && (e.keycode == XKeysymToKeycode(display_, XK_Tab))
   ){
+    sendCountWindow(); // actualizamos primero los titulos para que se cierre el panel...
     //LOG(INFO) << "Teclaaaaaa: [" << e.keycode  << "]";
     //const Window frame = clients_[panel];
     /*******************Este es el origen del back***************************/ 
@@ -1372,6 +1380,7 @@ auto nextW = clients_.find(w);
     XRaiseWindow(display_, panel[0]);
     XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);  
 ///////////////////////////////////////////// 
+    
   }
 
   if(e.keycode == XKeysymToKeycode(display_, XK_F11)){
@@ -1519,19 +1528,95 @@ int WindowManager::OnWMDetected(Display* display, XErrorEvent* e) {
 void WindowManager::sendCountWindow() {
 
   static char *home = NULL;
-  static char *rcm;
+  //static char *rcm;
+  static char rcm[256];
   const char *path = "/.containerrcm/.wm.rcmSolar";
   const char *jIni = "{\"message\":{\"call\":\"nNativeApps\",\"number\":\"";
-  const char *jFin = "\"}}";
-  char jMed[1];
-  char *json;
+  const char *jFin = "\",\"window\":[";
+  const char *jWndFin = "]}}";
+
+  char coma[2];
+  char jMed[12];
+  char wnd_id[1000];
+  char json_wnd[10000];
+  //char *json;
+  char json[10100];
+  char letra[6];
   FILE *pFile;
 
+  XTextProperty text_prop; //para el titulo de las vemtanas
+
+  //sprintf(wnd_id,"");
+  //sprintf(coma,"");
+  memset(coma, 0, 2);
+  memset(jMed, 0, 12);
+  memset(wnd_id, 0, 1000);
+  memset(json_wnd, 0, 10000);
+  memset(json_wnd, 0, 10100);
+  auto window = clients_.begin();
+    while (window != clients_.end()) {
+        XGetWMName(display_, window->first, &text_prop);
+        sprintf(wnd_id,"%s{\"id\":\"%d\",\"name\":\"",coma,(int)window->first);
+        strcpy(json_wnd+strlen(json_wnd),wnd_id);
+        for (long unsigned int i = 0; i < strlen((char *)text_prop.value); i++){
+          memset(letra, 0, 6);
+          //LOG(INFO) << strlen((char *)text_prop.value) << " - letra " << (int) text_prop.value[i] << text_prop.value[i];
+          if ((int)text_prop.value[i] >= 160 && (int)text_prop.value[i] < 256) { //https://www.utf8-chartable.de/unicode-utf8-table.pl?number=1024&utf8=dec&unicodeinhtml=dec&htmlent=1
+                sprintf(letra,"&#%d;",(int)text_prop.value[i]);
+            }else{
+              if ((int)text_prop.value[i] > 31 && (int)text_prop.value[i] < 127) 
+                  sprintf(letra,"%c",text_prop.value[i]);
+            }
+            strcpy(json_wnd+strlen(json_wnd),letra);
+        }
+         strcpy(json_wnd+strlen(json_wnd),"\"}");
+        //sprintf(wnd_id,"%s{\"id\":\"%d\",\"name\":\"%s\"}",coma,(int)window->first,text_prop.value);
+        //strcpy(json_wnd+strlen(json_wnd),wnd_id);
+        sprintf(coma,",");
+        ++window;
+    }
+
   sprintf(jMed,"%d",(int)clients_.size());
-  json = (char *) malloc(strlen(jIni) + strlen(jMed) + strlen(jFin) + 1);
+  //json = (char *) malloc(strlen(jIni) + strlen(jMed) + strlen(jFin) + 1 + strlen(wnd_id));
   strcpy(json,jIni);
   strcat(json,jMed);
   strcat(json,jFin);
+  strcat(json,json_wnd);
+  strcat(json,jWndFin);
+
+//LOG(INFO) << "JSON Window " << json;
+  if(!home){
+    home = getenv("HOME");
+  }
+
+  if(!home){
+    struct passwd *pw = getpwuid(getuid());
+    if(pw)
+      home = pw->pw_dir;
+  }
+memset(rcm, 0, 256);
+//rcm = (char *) malloc(strlen(home) + strlen(path) + 1);
+strcpy(rcm,home);
+strcat(rcm,path);
+
+pFile = fopen(rcm,"w");
+if(pFile != NULL){
+  fputs(json,pFile);
+  fclose(pFile);
+}
+//free(rcm);
+//LOG(INFO) << "Home: [" <<  rcm  << "]";
+}
+
+/*Window WindowManager::getWindow() {
+  const char *path = "/.containerrcm/.rcmSolar.wm";
+  static char *home = NULL;
+  static char *rcm;
+  char wnd[10];
+  int iwnd;
+  FILE *pFile;
+
+  memset(wnd, 0, 10);
 
   if(!home){
     home = getenv("HOME");
@@ -1543,15 +1628,26 @@ void WindowManager::sendCountWindow() {
       home = pw->pw_dir;
   }
 
-rcm = (char *) malloc(strlen(home) + strlen(path) + 1);
-strcpy(rcm,home);
-strcat(rcm,path);
+  rcm = (char *) malloc(strlen(home) + strlen(path) + 1);
+  strcpy(rcm,home);
+  strcat(rcm,path);
 
-pFile = fopen(rcm,"w");
-if(pFile != NULL){
-  fputs(json,pFile);
-  fclose(pFile);
+  pFile = fopen(rcm,"rb");
+  if(pFile != NULL){
+    fgets(wnd,10,pFile);
+    fclose(pFile);
+    remove(rcm);
+  }
+  //LOG(INFO) << " File " << rcm; 
+  free(rcm);
+  iwnd = atoi(wnd);
+  return (Window) iwnd;
 }
 
-//LOG(INFO) << "Home: [" <<  json  << "]";
-}
+void WindowManager::hiloWnd() {
+  //for(int i = 1; i < 100; i++){
+    
+    LOG(INFO) << " Open WND " << getWindow();
+//sleep(1000);
+  //}
+}*/

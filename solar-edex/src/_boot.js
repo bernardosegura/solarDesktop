@@ -27,6 +27,7 @@ signale.info(`With Node ${process.versions.node} and Electron ${process.versions
 signale.info(`Renderer is Chrome ${process.versions.chrome}`);
 
 let dev = false;
+
 process.argv.forEach(function (val, index, array) {
   if(val == 'dev')
       dev = true;
@@ -98,21 +99,22 @@ if (!fs.existsSync(settingsFile)) {
         termFontSize: 15,
         audio: true,
         disableFeedbackAudio: false,
-        pingAddr: "1.1.1.1",
+        //pingAddr: "1.1.1.1",
         port: 3000,
         //nointro: true,
-        nocursor: false,
-        allowWindowed: false,
+        //nocursor: false,
+        //allowWindowed: false,
         excludeThreadsFromToplist: true,
         hideDotfiles: true,
         fsListView: false,
-        experimentalGlobeFeatures: false,
-        experimentalFeatures: false,
+        //experimentalGlobeFeatures: false,
+        //experimentalFeatures: false,
         fileManager: "",
-        enablePing: false,
+        //enablePing: false,
         enableKeyboar: false,
         //sudoGUI: "",
-        showIP: true
+        //showIP: true
+        showPanel: false
     }, 4));
 }
 
@@ -231,7 +233,13 @@ if (!fs.existsSync(xobjDB)) {
                     case 'appcnfgmnu': jsonXObjDB[ftobd] = {title: "App in Menu", icon: "config"};
                                 break;            
 
-                    default: jsonXObjDB[ftobd] = {title:ftobd.trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))), icon:ftobd}; break;            
+                    default: let tit_ftobd = ftobd.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));         
+                             if(tit_ftobd.toLowerCase().startsWith("inpanel"))
+                                   tit_ftobd = tit_ftobd.replace(tit_ftobd.split(' ')[0] + ' ',"");
+                                
+                                jsonXObjDB[ftobd] = {title:tit_ftobd, icon:tit_ftobd.toLowerCase()}; 
+                                //jsonXObjDB[ftobd] = {title:ftobd.trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))), icon:ftobd}; 
+                                break;            
                 }
 
                 if(xobjs.length - 1 === i)
@@ -276,7 +284,13 @@ if (!fs.existsSync(xobjDB)) {
                     case 'appcnfgmnu': jsonXObjDB[ftobd] = {title: "App in Menu", icon: "config"};
                                 break;            
 
-                    default: jsonXObjDB[ftobd] = {title:ftobd.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))), icon:ftobd}; break;            
+                    default: let tit_ftobd = ftobd.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));         
+                             if(tit_ftobd.toLowerCase().startsWith("inpanel"))
+                                   tit_ftobd = tit_ftobd.replace(tit_ftobd.split(' ')[0] + ' ',"");
+                                
+                                jsonXObjDB[ftobd] = {title:tit_ftobd, icon:tit_ftobd.toLowerCase()}; 
+                                //jsonXObjDB[ftobd] = {title:ftobd.trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))), icon:ftobd}; 
+                             break;            
                 }
              }
 
@@ -369,7 +383,7 @@ function createWindow(settings) {
             nodeIntegration: true,
             nodeIntegrationInSubFrames: false,
             allowRunningInsecureContent: true,
-            experimentalFeatures: settings.experimentalFeatures || false
+            experimentalFeatures: /*settings.experimentalFeatures ||*/ false
         }
     });
 

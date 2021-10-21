@@ -91,6 +91,10 @@ class WindowManager {
 
   void sendCountWindow();
 
+  //static Window getWindow();
+
+  //static void hiloWnd();
+
   // Xlib error handler. It must be static as its address is passed to Xlib.
   static int OnXError(Display* display, XErrorEvent* e);
   // Xlib error handler used to determine whether another window manager is

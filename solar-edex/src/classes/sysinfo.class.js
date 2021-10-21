@@ -24,27 +24,29 @@ class Sysinfo {
         }*/
 
         this.isCharging = require('is-charging');
-
+        //this.timeremainingConected = 365040; // se detecto que al estar conectada y cargada marca ese tiepo la bateria asi que se maneja como 
+        this.batteryFlag = false;
+        //punto de partida no se si otras lap manejen este parametro de la misma manera.
         // Create DOM
         this.parent = document.getElementById(parentId);
         //quitamos el type por que todo sera Linux
         this.parent.innerHTML += `<div id="mod_sysinfo">
             <div>
-                <h1>1970</h1>
-                <h2>JAN 1</h2>
+                <h1 style="cursor: pointer;" title="View">1970</h1>
+                <h2 onclick="xExecInTrm('cal')" title="View" style="cursor: pointer;">JAN 1</h2>
             </div>
             <div>
                 <h1>UPTIME</h1>
                 <h2>0:0:0</h2>
             </div>
             <div ${(!window.wm)?'style="display:none;"':''}>
-                <h1 title="Opened Native Window">WND</h1>
-                <h2 title="Opened Native Window">0</h2>
+                <h1 title="Opened Native Window" onclick="showTogglePanel();" style="cursor:pointer;">X11</h1>
+                <h2 title="Opened Native Window" onclick="showTogglePanel();" style="cursor:pointer;">0</h2>
             </div>
-            <div id="lbl_porcentCharge" title="">
+            <!--div id="lbl_porcentCharge" title="">
                 <h1>POWER</h1>
                 <h2>00%</h2>
-            </div>
+            </div-->
         </div>`;
         /*this.parent.innerHTML += `<div id="mod_sysinfo">
             <div>
@@ -110,6 +112,8 @@ class Sysinfo {
         let time = new Date();
 
         document.querySelector("#mod_sysinfo > div:first-child > h1").innerHTML = time.getFullYear();
+        document.querySelector("#mod_sysinfo > div:first-child > h1").setAttribute("onclick","xExecInTrm('cal " + time.getFullYear()+"')");
+        
 
         let month = time.getMonth();
         switch(month) {
@@ -178,11 +182,15 @@ class Sysinfo {
     }
     updateBattery() {
         window.si.battery().then(bat => {
-            let indicator = document.querySelector("#mod_sysinfo > div:last-child > h2");
+            //let indicator = document.querySelector("#mod_sysinfo > div:last-child > h2");
+            if(!document.getElementById(window.idBattery)) return false;
+
             if (bat.hasbattery) {
-                let porcentCharge = document.querySelector("#lbl_porcentCharge");
+               // let porcentCharge = document.querySelector("#lbl_porcentCharge");
+                document.getElementById(window.idBattery).setAttribute("style", "");
 
                 if (bat.ischarging) {
+                    document.getElementById(window.idBattery + '_plug').setAttribute("style", "");
                      /*if(window.conectedBateryFlag == 0 &&  window.conectedBateryInit == 1)
                      {
                         window.audioManager.conectBatery.play();
@@ -192,30 +200,76 @@ class Sysinfo {
                      }*/
                     if(bat.percent >= 100)
                     {
-                        porcentCharge.setAttribute("title","Charged - " + bat.percent+"%");
-                        indicator.innerHTML = "CHARGED";
+                       // porcentCharge.setAttribute("title","Charged - " + bat.percent+"%");
+                        //indicator.innerHTML = "CHARGED";
+                        document.getElementById(window.idBattery).setAttribute("title", "Battery: Charged - " + bat.percent+"%");
+                        document.getElementById(window.idBattery + '_energy').setAttribute("width", ((window.maxBattery*bat.percent)/100));
                     }
                     else
                     {
-                        porcentCharge.setAttribute("title","Charging - " + bat.percent+"%");
-                        indicator.innerHTML = "CHARGE";
+                        //porcentCharge.setAttribute("title","Charging - " + bat.percent+"%");
+                        //indicator.innerHTML = "CHARGE";
+                        if(bat.percent > window.batAlert)
+                             document.getElementById(window.idBattery).classList.remove("parpadea");
+
+                        document.getElementById(window.idBattery).setAttribute("title", "Battery: Charging - " + bat.percent+"%");
+                        document.getElementById(window.idBattery + '_energy').setAttribute("width", ((window.maxBattery*bat.percent)/100));
                     }
-                    indicator.setAttribute("class","");
-                } else if (bat.acconnected || bat.timeremaining === -1) {
-                    porcentCharge.setAttribute("title","");
-                    indicator.innerHTML = "WIRED";
+                    //this.timeremainingConected = bat.timeremaining;
+                    this.batteryFlag = true;
+                    //indicator.setAttribute("class","");
+                } else if ((bat.acconnected || bat.timeremaining === -1) && !this.batteryFlag) {
+                    //porcentCharge.setAttribute("title","");
+                    //indicator.innerHTML = "WIRED"; //pendiente proba quitando la bateria
+                    document.getElementById(window.idBattery).setAttribute("style", "opacity: 0.5;");
+                    document.getElementById(window.idBattery).setAttribute("title", "");
+                    document.getElementById(window.idBattery + '_energy').setAttribute("width", 0);
+
 
                 } else {
+                    /*if(bat.timeremaining == this.timeremainingConected) 
+                         document.getElementById(window.idBattery + '_plug').setAttribute("style", "");
+                    else 
+                         document.getElementById(window.idBattery + '_plug').setAttribute("style", "display: none;");   */
+                    this.batteryFlag = true;
                     if(bat.percent >= 100)
                     {
-                        porcentCharge.setAttribute("title","Charged - 100%");
-                        indicator.innerHTML = "CHARGED";
+                        //porcentCharge.setAttribute("title","Charged - 100%");
+                        //indicator.innerHTML = "CHARGED";
+                        //if(bat.timeremaining == this.timeremainingConected) 
+                        if(!window.upowerFlag){//evaluar si no afecta mucho el rendimiento del equipo.
+                            const { exec } = require("child_process");
+                            let cmd = "upower -i $(upower -e | grep AC) | grep 'online.*yes'";
+                            window.upowerFlag = true;
+                            exec(cmd, (error, stdout, stderr) => {
+                                if(stdout != ''){
+                                    document.getElementById(window.idBattery + '_plug').setAttribute("style", "");
+                                }else{
+                                    document.getElementById(window.idBattery + '_plug').setAttribute("style", "display: none;");
+                                }
+                                window.upowerFlag = false;
+
+                            });
+                        }
+                        
+                        /*if(document.getElementById(window.idBattery + '_energy').getAttribute("width") == 0)
+                            document.getElementById(window.idBattery + '_energy').setAttribute("width", window.maxBattery);
+
+                        if(document.getElementById(window.idBattery + '_energy').getAttribute("width") == ((window.maxBattery*bat.percent)/100))
+                            document.getElementById(window.idBattery + '_plug').setAttribute("style", "");
+                        else
+                             document.getElementById(window.idBattery + '_plug').setAttribute("style", "display: none;");*/
+                        
+                        document.getElementById(window.idBattery).setAttribute("title", "Battery: Charged - 100%");
+                        document.getElementById(window.idBattery + '_energy').setAttribute("width", window.maxBattery);
                     }
                     else
                     {
+                        document.getElementById(window.idBattery + '_plug').setAttribute("style", "display: none;");
                         if(bat.percent <= window.batAlert){ //indicador de necesita cargar
 
-                            indicator.setAttribute("class","parpadea");
+                            //indicator.setAttribute("class","parpadea");
+                            document.getElementById(window.idBattery).classList.add("parpadea");
 
                             if(window.lowBateryFlag == 0 && bat.percent == window.batPlayAlert)
                              {
@@ -231,11 +285,15 @@ class Sysinfo {
 
                         }    
                         else{
-                            indicator.setAttribute("class","");
+                            //indicator.setAttribute("class","");
+                            document.getElementById(window.idBattery).classList.remove("parpadea");
                         }
 
-                        porcentCharge.setAttribute("title","");
-                        indicator.innerHTML = bat.percent+"%";
+                        //porcentCharge.setAttribute("title","");
+                        //indicator.innerHTML = bat.percent+"%";
+                        document.getElementById(window.idBattery).setAttribute("title", "Battery: " + bat.percent+"%");
+                        document.getElementById(window.idBattery + '_energy').setAttribute("width", ((window.maxBattery*bat.percent)/100));
+
 
                        /* if(window.conectedBateryFlag == 1)
                          {
@@ -246,7 +304,9 @@ class Sysinfo {
                     }
                 }
             } else {
-                indicator.innerHTML = "ON";
+                //indicator.innerHTML = "ON";
+                document.getElementById(window.idBattery).setAttribute("style", "display: none;");
+                window.batteryNone = 'display: none;';
             }
         });
     }
