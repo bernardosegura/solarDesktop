@@ -47,7 +47,7 @@ else
 		else
 			if [ -n "$(which $1)" ]; then
 				execFile="$1"
-		        initFile=$execFile".xgb"
+		        initFile=/tmp/$execFile".xgb"
 
 		        Xaxis=$(xrandr --current | grep '*' -m 1 | uniq | awk '{print $1}' | cut -d 'x' -f1) 
 		        Yaxis=$(xrandr --current | grep '*' -m 1 | uniq | awk '{print $1}' | cut -d 'x' -f2)
@@ -56,9 +56,9 @@ else
 		        echo "export GLOG_logtostderr=1" > $initFile
 		        echo "exec $wm $execFile" >> $initFile
 		    
-		        if [ -f "./$initFile" ]; then
-		            initFile=./$initFile
-		        fi
+		        #if [ -f "./$initFile" ]; then
+		        #    initFile=./$initFile
+		        #fi
 
 		        set -e
 

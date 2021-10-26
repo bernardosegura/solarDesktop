@@ -1544,8 +1544,6 @@ void WindowManager::sendCountWindow() {
   char letra[6];
   FILE *pFile;
 
-  XTextProperty text_prop; //para el titulo de las vemtanas
-
   //sprintf(wnd_id,"");
   //sprintf(coma,"");
   memset(coma, 0, 2);
@@ -1555,20 +1553,24 @@ void WindowManager::sendCountWindow() {
   memset(json_wnd, 0, 10100);
   auto window = clients_.begin();
     while (window != clients_.end()) {
+        XTextProperty text_prop; //para el titulo de las vemtanas
         XGetWMName(display_, window->first, &text_prop);
         sprintf(wnd_id,"%s{\"id\":\"%d\",\"name\":\"",coma,(int)window->first);
         strcpy(json_wnd+strlen(json_wnd),wnd_id);
-        for (long unsigned int i = 0; i < strlen((char *)text_prop.value); i++){
-          memset(letra, 0, 6);
-          //LOG(INFO) << strlen((char *)text_prop.value) << " - letra " << (int) text_prop.value[i] << text_prop.value[i];
-          if ((int)text_prop.value[i] >= 160 && (int)text_prop.value[i] < 256) { //https://www.utf8-chartable.de/unicode-utf8-table.pl?number=1024&utf8=dec&unicodeinhtml=dec&htmlent=1
-                sprintf(letra,"&#%d;",(int)text_prop.value[i]);
-            }else{
-              if ((int)text_prop.value[i] > 31 && (int)text_prop.value[i] < 127) 
-                  sprintf(letra,"%c",text_prop.value[i]);
-            }
-            strcpy(json_wnd+strlen(json_wnd),letra);
-        }
+
+        if(text_prop.value != NULL)
+          for (long unsigned int i = 0; i < strlen((char *)text_prop.value); i++){
+            memset(letra, 0, 6);
+            //LOG(INFO) << strlen((char *)text_prop.value) << " - letra " << (int) text_prop.value[i] << text_prop.value[i];
+            if ((int)text_prop.value[i] >= 160 && (int)text_prop.value[i] < 256) { //https://www.utf8-chartable.de/unicode-utf8-table.pl?number=1024&utf8=dec&unicodeinhtml=dec&htmlent=1
+                  sprintf(letra,"&#%d;",(int)text_prop.value[i]);
+              }else{
+                if ((int)text_prop.value[i] > 31 && (int)text_prop.value[i] < 127) 
+                    sprintf(letra,"%c",text_prop.value[i]);
+              }
+              strcpy(json_wnd+strlen(json_wnd),letra);
+          }
+
          strcpy(json_wnd+strlen(json_wnd),"\"}");
         //sprintf(wnd_id,"%s{\"id\":\"%d\",\"name\":\"%s\"}",coma,(int)window->first,text_prop.value);
         //strcpy(json_wnd+strlen(json_wnd),wnd_id);
