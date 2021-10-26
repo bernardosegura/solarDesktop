@@ -1,4 +1,4 @@
-window.solar = {versions : "2.0.2-2010.21"};
+window.solar = {versions : "2.0.2-2510.21"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};

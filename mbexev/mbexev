@@ -43,7 +43,8 @@ mouseButton3='up'
 mouseButton8='up'
 mouseButton9='up'
 Ctrl_Alt='up'
-while true; do
+while sleep 0.1; do
+#while true; do
     #sleep 0.2
     if [[ ! $MOUSE_ID = '' ]]; then
        STATE2=$(xinput --query-state $MOUSE_ID | grep 'button\[' | sort)
