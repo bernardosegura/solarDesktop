@@ -1362,7 +1362,6 @@ auto nextW = clients_.find(w);
   if(/*e.keycode == XKeysymToKeycode(display_, XK_Super_L) || e.keycode == XKeysymToKeycode(display_, XK_Super_R)*/ //cambiamos a win+tab
   (e.state & Mod4Mask) && (e.keycode == XKeysymToKeycode(display_, XK_Tab))
   ){
-    sendCountWindow(); // actualizamos primero los titulos para que se cierre el panel...
     //LOG(INFO) << "Teclaaaaaa: [" << e.keycode  << "]";
     //const Window frame = clients_[panel];
     /*******************Este es el origen del back***************************/ 
@@ -1371,6 +1370,8 @@ auto nextW = clients_.find(w);
     /*XRaiseWindow(display_, panel[0]);
     XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);*/
 
+    sendCountWindow(); // actualizamos primero los titulos para que se cierre el panel...
+    
 /////////////////////////////////////////////
       clientFocus[0] = clientFocus[2];
       clientFocus[1] = clientFocus[3];
@@ -1537,7 +1538,7 @@ void WindowManager::sendCountWindow() {
 
   char coma[2];
   char jMed[12];
-  char wnd_id[1000];
+  char wnd_id[500];
   char json_wnd[10000];
   //char *json;
   char json[10100];
@@ -1548,9 +1549,9 @@ void WindowManager::sendCountWindow() {
   //sprintf(coma,"");
   memset(coma, 0, 2);
   memset(jMed, 0, 12);
-  memset(wnd_id, 0, 1000);
+  memset(wnd_id, 0, 500);
   memset(json_wnd, 0, 10000);
-  memset(json_wnd, 0, 10100);
+  memset(json, 0, 10100);
   auto window = clients_.begin();
     while (window != clients_.end()) {
         XTextProperty text_prop; //para el titulo de las vemtanas
@@ -1562,7 +1563,7 @@ void WindowManager::sendCountWindow() {
           for (long unsigned int i = 0; i < strlen((char *)text_prop.value); i++){
             memset(letra, 0, 6);
             //LOG(INFO) << strlen((char *)text_prop.value) << " - letra " << (int) text_prop.value[i] << text_prop.value[i];
-            if ((int)text_prop.value[i] >= 160 && (int)text_prop.value[i] < 256) { //https://www.utf8-chartable.de/unicode-utf8-table.pl?number=1024&utf8=dec&unicodeinhtml=dec&htmlent=1
+            if (((int)text_prop.value[i] >= 160 && (int)text_prop.value[i] < 256) || ((int)text_prop.value[i] == 34)) { //https://www.utf8-chartable.de/unicode-utf8-table.pl?number=1024&utf8=dec&unicodeinhtml=dec&htmlent=1
                   sprintf(letra,"&#%d;",(int)text_prop.value[i]);
               }else{
                 if ((int)text_prop.value[i] > 31 && (int)text_prop.value[i] < 127) 
@@ -1578,7 +1579,8 @@ void WindowManager::sendCountWindow() {
         ++window;
     }
 
-  sprintf(jMed,"%d",(int)clients_.size());
+  //sprintf(jMed,"%d",(int)clients_.size());
+  sprintf(jMed,"%d",(int)clientBack[1]);
   //json = (char *) malloc(strlen(jIni) + strlen(jMed) + strlen(jFin) + 1 + strlen(wnd_id));
   strcpy(json,jIni);
   strcat(json,jMed);

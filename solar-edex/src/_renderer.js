@@ -1,4 +1,4 @@
-window.solar = {versions : "2.0.2-2510.21"};
+window.solar = {versions : "2.0.2-2710.21"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -2384,31 +2384,38 @@ new restCommMesg("rcmSolar",(data)=>{
         }
 
         if(data.message.call.toLowerCase() == 'nnativeapps'){
-            if(data.message.number){
+            if(!data.message.number) data.message.number = 0;
+            if(data.message.window){
+                showTogglePanel(true);
+                let xapp = '';
                 if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
-                    document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.number;
-                if(data.message.window){
-                    showTogglePanel(true);
-                    let xapp = '';
-                    if(data.message.window.length > 0){
-                        for (let i = 0; i < data.message.window.length; i++) {
-                           xapp +='<h1 onclick="goNativeWindow('+data.message.window[i].id+')" title="Go Window">'+((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")+'</h1>';
-                        }
+                    document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.window.length;
+                if(data.message.window.length > 0){
+                    let wndBack;
+                    for (let i = 0; i < data.message.window.length; i++) {
+                        if(data.message.number == data.message.window[i].id && data.message.window.length > 1)
+                            wndBack = 'style="opacity: 0.5"';
+                        else
+                            wndBack = '';
+                       xapp +='<h1 '+wndBack+'>[ <b onclick="closeNativeWindow('+data.message.window[i].id+')" title="Close Window">X</b> ] <b onclick="goNativeWindow('+data.message.window[i].id+')" title="Go Window">'+((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")+'</b></h1>';
                     }
-                    if(document.querySelector("#id_panel_xwindow")){
-                        document.querySelector("#id_panel_xwindow").innerHTML = xapp;
-                        let h1 = document.querySelectorAll("#id_panel_xwindow > h1");
-                        for(let i=0; i < h1.length; i++){
-                            try {
-                              h1[i].innerHTML = decodeURIComponent(escape(h1[i].innerHTML));
-                            } catch (error) {
-                                continue;
-                            }
-                        } 
-                    }
-                    
-                    //console.log(data.message.window);
                 }
+                if(document.querySelector("#id_panel_xwindow")){
+                    document.querySelector("#id_panel_xwindow").innerHTML = xapp;
+                    let h1 = document.querySelectorAll("#id_panel_xwindow > h1");
+                    for(let i=0; i < h1.length; i++){
+                        try {
+                          h1[i].innerHTML = decodeURIComponent(escape(h1[i].innerHTML));
+                        } catch (error) {
+                            continue;
+                        }
+                    } 
+                }
+                
+                //console.log(data.message.window);
+            }else{
+                if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
+                    document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = "0";
             }
         }
 
@@ -2499,11 +2506,33 @@ function goNativeWindow(wnd){
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
             if(error.message.length > 100 || error.message.includes('stderr'))
-                errorLog(app,error.message);
+                errorLog("goNativeWindow",error.message);
             else
                 new Modal({
                     type: "warning",
-                    title: `Error ${app}`,
+                    title: `Error ${"goNativeWindow"}`,
+                    message: error.message
+                });
+        }
+
+    });
+
+}
+
+function closeNativeWindow(wnd){
+    const { exec } = require("child_process");
+    //let cmd = "xdotool windowclose " + wnd;
+    let cmd = "xdotool windowfocus " + wnd + " key --clearmodifiers --delay 100 alt+F4";    
+    showTogglePanel();
+ 
+    exec(cmd, (error, stdout, stderr) => {
+        if (error) {
+            if(error.message.length > 100 || error.message.includes('stderr'))
+                errorLog("closeNativeWindow",error.message);
+            else
+                new Modal({
+                    type: "warning",
+                    title: `Error ${"closeNativeWindow"}`,
                     message: error.message
                 });
         }

@@ -29,7 +29,10 @@ section#mod_column_right > div.panel_xwindow {
 }
 
 section#mod_column_right > div h1 {
-    cursor: pointer;
     border-bottom: 1px solid;
     padding-bottom: 0.5vh;
+}
+
+section#mod_column_right > div b {
+    cursor: pointer;
 }
