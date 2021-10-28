@@ -86,3 +86,7 @@ if [ -f "$1"libglog.so.0 ]
 then
     cp "$1"libglog.so.0 "$raiz"lib
 fi
+
+if [ ! -n "$(which xdotool)" ]; then
+    apt-get --yes install xdotool
+fi
