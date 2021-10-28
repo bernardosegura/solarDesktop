@@ -1,4 +1,4 @@
-window.solar = {versions : "2.0.2-2710.21"};
+window.solar = {versions : "2.0.2-2810.21"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -237,6 +237,7 @@ let i = 0;
     document.getElementById("boot_screen").remove();
     document.body.setAttribute("class", "");
     waitForFonts().then(initUI);
+    
 /*} else {
     displayLine();
 }*/
@@ -941,7 +942,7 @@ window.openShortcutsHelp = () => {
                     </tr>
                     <tr>
                         <td>Ctrl + Shift + H</td>
-                        <td>Toggle hidden files and directories in the file browser.</td>
+                        <td>Toggle show hidden module.</td>
                     </tr>
                     <tr>
                         <td>Ctrl + Shift + P</td>
@@ -955,10 +956,26 @@ window.openShortcutsHelp = () => {
                         <td>F5</td>
                         <td>Update Panel File's.</td>
                     </tr-->
-                    <!--tr>
-                        <td>Ctrl + ALT + P</td>
+                    <tr>
+                        <td>Alt + W</td>
                         <td>Toggle Show Right Panel</td>
-                    </tr-->
+                    </tr>
+                    <tr>
+                        <td>Alt + F4</td>
+                        <td>Close XWindow</td>
+                    </tr>
+                    <tr>
+                        <td>Alt + Tab</td>
+                        <td>Toggle Rigth XWindow</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl + Alt + Tab</td>
+                        <td>Toggle Left XWindow</td>
+                    </tr>
+                    <tr>
+                        <td>Win + Tab</td>
+                        <td>Toggle Main Panel</td>
+                    </tr>
                     <tr>
                         <td><button onClick='electron.shell.openExternal("file://${require('path').join(require('electron').remote.app.getPath("userData"), "kinit.json")}")' style='position: relative; left: 0px; top: 0px;'>Open kinit</button></td>
                         <td>Open the config file to register the keys that trigger the application, ({register:['combination keys','path and file name xobj']}).</td>
@@ -2505,9 +2522,9 @@ function goNativeWindow(wnd){
  
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
-            if(error.message.length > 100 || error.message.includes('stderr'))
+            //if(error.message.length > 100 || error.message.includes('stderr'))
                 errorLog("goNativeWindow",error.message);
-            else
+            //else
                 new Modal({
                     type: "warning",
                     title: `Error ${"goNativeWindow"}`,
@@ -2527,9 +2544,9 @@ function closeNativeWindow(wnd){
  
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
-            if(error.message.length > 100 || error.message.includes('stderr'))
+            //if(error.message.length > 100 || error.message.includes('stderr'))
                 errorLog("closeNativeWindow",error.message);
-            else
+            //else
                 new Modal({
                     type: "warning",
                     title: `Error ${"closeNativeWindow"}`,
