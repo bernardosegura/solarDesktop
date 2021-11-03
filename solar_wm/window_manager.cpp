@@ -208,7 +208,7 @@ void WindowManager::Run() {
   }
 }
 
-void WindowManager::Frame(Window w, bool was_created_before_window_manager) {
+bool WindowManager::Frame(Window w, bool was_created_before_window_manager) {
 
  //LOG(INFO) << "Parametro " << configHome;
 
@@ -221,11 +221,20 @@ void WindowManager::Frame(Window w, bool was_created_before_window_manager) {
   //CHECK(!clients_.count(w));
   // Se cambia por que el check bota la aplicacion  si no se cumple la condicion
   //es mas quenada para no repintar un frame si ya le pusimos uno a la ventana.
-    if(clients_.count(w))return;
+    if(clients_.count(w))return false;
 
   // 1. Retrieve attributes of window to frame.
   XWindowAttributes x_window_attrs, x_root_attr;
-  CHECK(XGetWindowAttributes(display_, w, &x_window_attrs));
+
+  //CHECK(XGetWindowAttributes(display_, w, &x_window_attrs)); // crash con unas ventanas como fantasmas
+  XGetWindowAttributes(display_, w, &x_window_attrs);
+  //LOG(INFO) << "Sabes que ...your_event_mask  " << x_window_attrs.your_event_mask << " root " << x_window_attrs.root << " evtAll " << x_window_attrs.all_event_masks;
+  if(x_window_attrs.root != root_){// estas ventanas son fantasmas hasta donde se detecto.
+      return false;
+    }
+  /*if((int)x_window_attrs.root == 0)// estas ventanas son fantasmas hasta donde se detecto.
+      return;*/
+
   CHECK(XGetWindowAttributes(display_, root_, &x_root_attr));
   /*XGetWindowAttributes(display_, w, &x_window_attrs);
   XGetWindowAttributes(display_, root_, &x_root_attr);*/
@@ -245,7 +254,7 @@ if(was_created_before_window_manager && (wndPanel == 0 || wndPanel == w)){
   if (was_created_before_window_manager) {
     if (x_window_attrs.override_redirect ||
         x_window_attrs.map_state != IsViewable) {
-      return;
+      return false;
     }
   }
 
@@ -737,6 +746,8 @@ Mod5Mask    |   128 | ???
   }*/
 
   sendCountWindow();
+
+  return true;
 }
 
 void WindowManager::Unframe(Window w) {
@@ -993,9 +1004,9 @@ void WindowManager::OnUnmapNotify(const XUnmapEvent& e) {
 
 void WindowManager::OnConfigureNotify(const XConfigureEvent& e) {}
 
-void WindowManager::OnMapRequest(const XMapRequestEvent& e) {
+void WindowManager::OnMapRequest(const XMapRequestEvent& e) {  
   // 1. Frame or re-frame window.
-  Frame(e.window, false);
+  if(!Frame(e.window, false)) return;
   // 2. Actually map window.
 
   XMapWindow(display_, e.window);
@@ -1580,6 +1591,7 @@ void WindowManager::sendCountWindow() {
     }
 
   //sprintf(jMed,"%d",(int)clients_.size());
+  //LOG(INFO) << "X11 " <<clients_.size(); 
   sprintf(jMed,"%d",(int)clientBack[1]);
   //json = (char *) malloc(strlen(jIni) + strlen(jMed) + strlen(jFin) + 1 + strlen(wnd_id));
   strcpy(json,jIni);

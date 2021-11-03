@@ -1,4 +1,4 @@
-window.solar = {versions : "2.0.2-2810.21"};
+window.solar = {versions : "2.0.2-0311.21"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -363,7 +363,7 @@ async function initUI() {
         <h3 class="title" style="opacity:0;"><p>TERMINAL</p><p>MAIN SHELL</p></h3>
         <h1 id="main_shell_greeting"></h1>
     </section>
-    <section class="mod_column" id="mod_column_right">
+    <section class="mod_column" id="mod_column_right" style="display: none;">
         <h3 class="title"><p>OPENED NATIVE WINDOW</p><p>LINUX</p></h3>
         <div id="id_panel_xwindow" class="panel_xwindow"></div>
     </section>`;
@@ -430,7 +430,7 @@ async function initUI() {
     greeter.remove();
 
     //verificamos si colocar panel visible o no.
-    showTogglePanel(true);
+   // showTogglePanel(true);
 
     // Initialize modules
     window.mods = {};
@@ -2225,17 +2225,17 @@ function xWndExecGksu(id,app){
 
 //echo '{"message":{"call":"MsgBox","title":"Titulo","text":"Holiss"}}' > ~/.containerrcm/.rcmC2m.rcmSolar
 
-function showTogglePanel(show){
-    window.audioManager.stdin.play();
+async function showTogglePanel(show){
     if(!show){ //si es falso o nula interactuar
         if(window.settings.showPanel){
             document.getElementById("mod_column_right").setAttribute("style", "display: none;");
-            document.getElementById("main_panel").setAttribute("style", "width: 99%;");
+            document.getElementById("main_panel").setAttribute("style", "");
             document.getElementById("main_shell").setAttribute("style", "left: 8%; width: 82%;");
 
         }else{
-            document.getElementById("main_panel").setAttribute("style", "");
-            document.getElementById("main_shell").setAttribute("style", "");
+            document.getElementById("main_panel").setAttribute("style", "width: 65%;");
+            document.getElementById("main_shell").setAttribute("style", "left: 0%; width: 65%;");
+            await _delay(500);
             document.getElementById("mod_column_right").setAttribute("style", "");
         }
         window.settings.showPanel = !window.settings.showPanel;
@@ -2250,7 +2250,7 @@ function showTogglePanel(show){
         //if(!window.settings.showPanel){ //de inicio siempre estara cerrado el panel
             window.settings.showPanel = false;
             document.getElementById("mod_column_right").setAttribute("style", "display: none;");
-            document.getElementById("main_panel").setAttribute("style", "width: 99%;");
+            document.getElementById("main_panel").setAttribute("style", "");
             document.getElementById("main_shell").setAttribute("style", "left: 8%; width: 82%;");
 
         /*}else{
@@ -2519,17 +2519,18 @@ function goNativeWindow(wnd){
     const { exec } = require("child_process");
     let cmd = "xdotool windowfocus " + wnd;   
     showTogglePanel();
+    window.audioManager.stdin.play();
  
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
             //if(error.message.length > 100 || error.message.includes('stderr'))
                 errorLog("goNativeWindow",error.message);
-            //else
+            /*else
                 new Modal({
                     type: "warning",
                     title: `Error ${"goNativeWindow"}`,
                     message: error.message
-                });
+                });*/
         }
 
     });
@@ -2541,17 +2542,18 @@ function closeNativeWindow(wnd){
     //let cmd = "xdotool windowclose " + wnd;
     let cmd = "xdotool windowfocus " + wnd + " key --clearmodifiers --delay 100 alt+F4";    
     showTogglePanel();
- 
+    window.audioManager.stdin.play();
+
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
             //if(error.message.length > 100 || error.message.includes('stderr'))
                 errorLog("closeNativeWindow",error.message);
-            //else
+            /*else
                 new Modal({
                     type: "warning",
                     title: `Error ${"closeNativeWindow"}`,
                     message: error.message
-                });
+                });*/
         }
 
     });
