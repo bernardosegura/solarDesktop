@@ -281,7 +281,12 @@ class Sysinfo {
                                 window.batPlayAlert -= 5; 
                              } else if(window.lowBateryFlag == 0 && bat.percent < window.batPlayAlert){
                                 window.batPlayAlert -= 5; 
-                             } 
+                             }
+
+                             if(bat.percent <= 5)
+                                 systemAlertBatterylow(); 
+                             else
+                                 window.alertLowBattery = false;
 
                         }    
                         else{

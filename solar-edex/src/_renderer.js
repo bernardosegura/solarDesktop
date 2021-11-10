@@ -1,4 +1,4 @@
-window.solar = {versions : "2.0.2-0311.21"};
+window.solar = {versions : "2.0.2-0911.21"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -7,6 +7,7 @@ window.idBattery = 'id_battery';
 window.maxBattery = 0;
 window.upowerFlag = false;
 window.batteryNone = '';
+window.alertLowBattery = false;
 
 window.eval = global.eval = function () {
     throw new Error("eval() is disabled for security reasons.");
@@ -2558,4 +2559,84 @@ function closeNativeWindow(wnd){
 
     });
 
+}
+
+function showX11App(id_list){
+    
+    if(!id_list)id_list = 0;
+    
+    if(document.querySelectorAll('#id_panel_xwindow > h1')[id_list])
+        document.querySelectorAll('#id_panel_xwindow > h1')[id_list].querySelectorAll('b')[1].click();
+} 
+
+function closeX11App(id_list){
+    
+    if(!id_list)id_list = 0;
+    
+    if(document.querySelectorAll('#id_panel_xwindow > h1')[id_list])
+        document.querySelectorAll('#id_panel_xwindow > h1')[id_list].querySelectorAll('b')[0].click();
+} 
+
+function getTitleX11App(id_list){
+    
+    if(!id_list)id_list = 0;
+    
+    if(document.querySelectorAll('#id_panel_xwindow > h1')[id_list])
+        return document.querySelectorAll('#id_panel_xwindow > h1')[id_list].querySelectorAll('b')[1].innerHTML;
+    return "";
+}
+
+function systemAlertBatterylow(){
+ 
+ if(window.alertLowBattery)
+     return false;
+
+    const { exec } = require("child_process");
+    let cmd = "xdotool key Super+Tab";
+    recClient = document.body.getBoundingClientRect();
+
+  let wnd = {
+  title:"Alert Low Battery",
+  x: ((parseInt(recClient.width)/2) - 250),
+  y: ((parseInt(recClient.height)/2) - 109),
+  w: 500,
+  h: 100,
+  id: "wnd_batterylow",
+  content:`<table style='width: 100%; height: 100%;'>
+  <tr>
+    <td>
+    </td>
+  </tr>
+  <tr>
+    <td>
+        Battery is about to life, down 5%
+    </td>
+  </tr>
+  <tr>  
+    <td>
+        <button id='btn_ok' onClick='xWindow({ id:"wnd_batterylow"});' onkeyup='if(event.keyCode == 27)xWindow({ id:"wnd_batterylow"});' style='position: relative; left: 240px;'>OK</button>
+    </td>
+  </tr></table>`,
+  code:`document.getElementById('btn_ok').focus();`,
+  noLimit: 0
+};
+    let code = '';
+    //console.log(wnd);
+    if(!wnd.id){
+        code = xWindow(wnd);
+        //console.log(code);
+    }
+    else
+        if(!document.getElementById(wnd.id))
+            code = xWindow(wnd);
+    code = document.getElementById(code);
+    if(code)
+        code.click();
+
+    exec(cmd, (error, stdout, stderr) => {});
+
+    window.alertLowBattery = true;
+
+    return true;
+    
 }
