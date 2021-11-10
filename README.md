@@ -10,13 +10,13 @@ Es un entorno de escritorio para Linux, con temática geek, el cual es un __Fork
 
 # 
 ## Información General
-__Compilación__
+__Compilación__ en solar-edex
 ```bash
 $ npm start 
 # si se cuenta con una instancia ya ejecutándose
 $ npm start dev 
 ```
-__Construcción__
+__Construcción__ en solar-edex
 ```bash
 $ npm run build
 ```
