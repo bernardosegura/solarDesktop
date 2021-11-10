@@ -114,7 +114,8 @@ if (!fs.existsSync(settingsFile)) {
         enableKeyboar: false,
         //sudoGUI: "",
         //showIP: true
-        showPanel: false
+        showPanel: false,
+        autoClosePanel: false
     }, 4));
 }
 

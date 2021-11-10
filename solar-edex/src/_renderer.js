@@ -1,4 +1,4 @@
-window.solar = {versions : "2.0.2-0911.21"};
+window.solar = {versions : "2.0.2-1011.21"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -839,6 +839,14 @@ window.openSettings = async () => {
                             <option>${!window.settings.ampm}</option>
                         </select></td>
                     </tr>
+                    <tr>
+                        <td>Auto Close Right Panel</td>
+                        <td>Automatic closing right panel, with XWindow opening and closing event</td>
+                        <td><select id="settingsEditor-autoClosePanel">
+                            <option>${window.settings.autoClosePanel}</option>
+                            <option>${!window.settings.autoClosePanel}</option>
+                        </select></td>
+                    </tr>
                 </table>
                 <h6 id="settingsEditorStatus">Loaded values from memory</h6>
                 <br>`,
@@ -889,7 +897,8 @@ window.writeSettingsFile = () => {
         //sudoGUI:document.getElementById("settingsEditor-sudoGUI").value,
         //showIP: true,//netShowIP(), *revisar con el ocultamiento
         showPanel: window.settings.showPanel,
-        ampm: window.settings.ampm
+        ampm: window.settings.ampm,
+        autoClosePanel: (document.getElementById("settingsEditor-autoClosePanel").value === "true")
     };
 
     Object.keys(window.settings).forEach(key => {
@@ -2404,7 +2413,8 @@ new restCommMesg("rcmSolar",(data)=>{
         if(data.message.call.toLowerCase() == 'nnativeapps'){
             if(!data.message.number) data.message.number = 0;
             if(data.message.window){
-                showTogglePanel(true);
+                if(window.settings.autoClosePanel)
+                    showTogglePanel(true);
                 let xapp = '';
                 if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
                     document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.window.length;
@@ -2519,7 +2529,8 @@ function goNativeWindow(wnd){
     fs.writeFileSync(dir.join(urlDefault,".rcmSolar.wm"), wnd);*/
     const { exec } = require("child_process");
     let cmd = "xdotool windowfocus " + wnd;   
-    showTogglePanel();
+    if(window.settings.autoClosePanel)
+        showTogglePanel(true);
     window.audioManager.stdin.play();
  
     exec(cmd, (error, stdout, stderr) => {
@@ -2541,8 +2552,9 @@ function goNativeWindow(wnd){
 function closeNativeWindow(wnd){
     const { exec } = require("child_process");
     //let cmd = "xdotool windowclose " + wnd;
-    let cmd = "xdotool windowfocus " + wnd + " key --clearmodifiers --delay 100 alt+F4";    
-    showTogglePanel();
+    let cmd = "xdotool windowfocus " + wnd + " key --clearmodifiers --delay 100 alt+F4";   
+    if(window.settings.autoClosePanel) 
+        showTogglePanel(true);
     window.audioManager.stdin.play();
 
     exec(cmd, (error, stdout, stderr) => {
