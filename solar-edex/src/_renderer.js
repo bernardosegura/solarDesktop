@@ -1292,7 +1292,7 @@ function xWindow(obj)
                 <table style="width: 100%;">
                     <tr style="height: ${hBarraT}px;">
                         <td>
-                            <div style="position: relative; top: 1px; width: 97%; float: left;">${titleWnd}</div>
+                            <div style="position: relative; top: -1px; width: 97%; float: left;">${titleWnd}</div>
                             <b style="position: relative; top: 0px; left: -5px; float: right; width: 2%; border-left: 1px solid;  cursor: pointer;" title="${titleClose}" onclick="xWindow({id:'${id}'})">&nbsp;x</b>
                         </td>
                     </tr>
@@ -1377,7 +1377,7 @@ function xWindow(obj)
                     <table style="width: 100%;">
                         <tr style="height: ${hBarraT}px;">
                             <td>
-                                <div style="position: relative; top: 1px; width: 97%; float: left;">${titleWnd}</div>
+                                <div style="position: relative; top: -1px; width: 97%; float: left;">${titleWnd}</div>
                                 <b style="position: relative; top: -1px; left: -5px; float: right; width: 2%; border-left: 1px solid;  cursor: pointer;" title="${titleClose}" onclick="xWindow({id:'${id}'})">&nbsp;x</b>
                             </td>
                         </tr>
@@ -2561,7 +2561,7 @@ function closeNativeWindow(wnd){
 
 }
 
-function showX11App(id_list){
+function showX11App(id_list){ //funcion creada para uso en aplicaciones XOBJ
     
     if(!id_list)id_list = 0;
     
@@ -2569,7 +2569,7 @@ function showX11App(id_list){
         document.querySelectorAll('#id_panel_xwindow > h1')[id_list].querySelectorAll('b')[1].click();
 } 
 
-function closeX11App(id_list){
+function closeX11App(id_list){ //funcion creada para uso en aplicaciones XOBJ
     
     if(!id_list)id_list = 0;
     
@@ -2577,7 +2577,7 @@ function closeX11App(id_list){
         document.querySelectorAll('#id_panel_xwindow > h1')[id_list].querySelectorAll('b')[0].click();
 } 
 
-function getTitleX11App(id_list){
+function getTitleX11App(id_list){ //funcion creada para uso en aplicaciones XOBJ
     
     if(!id_list)id_list = 0;
     

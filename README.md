@@ -10,6 +10,17 @@ Es un entorno de escritorio para Linux, con temática geek, el cual es un __Fork
 
 # 
 ## Información General
+__Compilación__
+```bash
+$ npm start 
+# si se cuenta con una instancia ya ejecutándose
+$ npm start dev 
+```
+__Construcción__
+```bash
+$ npm run build
+```
+
 El entorno cuenta con 2 tipo de aplicaciones.
 
 1. __Binarias (X Window)__
