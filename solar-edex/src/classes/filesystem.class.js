@@ -233,7 +233,7 @@ this.cmdPath = async e =>{
                 document.querySelector("section#filesystem > h3.title > p:first-of-type").innerText = "FILESYSTEM - TRACKING FAILED, RUNNING DETACHED FROM TTY";
             }
 
-            if (process.platform === "win32" && dir.endsWith(":")) dir = dir+"\\";
+            //if (process.platform === "win32" && dir.endsWith(":")) dir = dir+"\\";
             let tcwd = dir;
           
           //se comenta y agregamos codigo para camniar la lectura de directorio
@@ -608,18 +608,28 @@ this.cmdPath = async e =>{
 
                         if(!window.xobjDB[e.name.toLowerCase()])
                          {
-                            if(idInpanel.startsWith("inpanel")){
-                                e.name = idInpanel.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
-                                e.name = e.name.replace(e.name.split(" ")[0] + ' ',"");
-                            }
+                            //if(idInpanel.startsWith("inpanel")){
+                            //    e.name = idInpanel.replace(idInpanel.split('-')[0] + '-',"").replace(window.entorno + '-',''); 
+                            //    e.name = e.name.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
+                            //    e.name = e.name.replace(e.name.split(" ")[0] + ' ',"");
+                            //}
+                            let icono = e.name;
+                            if(inpanel){
+                                icono = icono.replace(icono.split('-')[0] + '-',"");                                
+                           }
+                           icono = icono.toLowerCase().replace(window.entorno + '-','').split('-')[0];
+                           icono = icono.toLowerCase().split('_')[0];
+                           icono = icono.toLowerCase().split(' ')[0];
+                           e.name = getTitleAppsDesktop(e.name + '.desktop');
 
-                            if(!this.icons[e.name.toLowerCase()])
-                                icon = this.icons[this.fileIconsMatcher(e.name.toLowerCase())];
+                            if(!this.icons[icono]){
+                                icon = this.icons[this.fileIconsMatcher(icono)];
                                 if(typeof icon === "undefined")
                                     icon = this.icons.appXwnd; 
+                            }    
                             else
-                               icon = this.icons[e.name.toLowerCase()];
-                            e.name = e.name.trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
+                               icon = this.icons[icono];
+                            //e.name = e.name.trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
                          }else{
 
                             if(!this.icons[window.xobjDB[e.name.toLowerCase()].icon]){ //se agregan icons svg personalizados de 100x100
@@ -811,13 +821,13 @@ this.cmdPath = async e =>{
                             //if(titulo == file)
                             //     window.xobjDB[file.toLowerCase()] = {title:file.trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))), icon:file.toLowerCase()};
                             // else
-                            if(titulo.toLowerCase().startsWith("inpanel")){
-                                let nameBuff = '';
+                            if(file.toLowerCase().startsWith("inpanel")){
+                                /*let nameBuff = '';
                                 nameBuff = titulo.split(' ')[0] + ' ';
                                 nameBuff = titulo.replace(nameBuff,'');
-                                titulo = nameBuff;
-
-                                let icono = titulo.toLowerCase().replace(window.entorno + '-','').split('-')[0];
+                                titulo = nameBuff;*/
+                                let icono = file.replace(file.split('-')[0] + '-',"");
+                                icono = icono.toLowerCase().replace(window.entorno + '-','').split('-')[0];
                                 icono = icono.toLowerCase().split('_')[0];
                                 icono = icono.toLowerCase().split(' ')[0];
                                 window.xobjDB[file.toLowerCase()] = {title: titulo, icon:icono.toLowerCase()};                               

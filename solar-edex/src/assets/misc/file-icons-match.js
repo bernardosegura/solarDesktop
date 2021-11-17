@@ -1950,6 +1950,10 @@ function matchIcon(filename) {
     if (/\.zil$/i.test(filename)) { return "zork"; }
     if (/\.mud$/i.test(filename)) { return "zork"; }
     //if (/red$/i.test(filename)) { return "wireless"; } // ya existe un red jajaja    
-    if (/volume$/i.test(filename)) { return "sound"; } // agregamosun homologo para el sonido   
+    if (/volume$/i.test(filename)) { return "sound"; } // agregamosun homologo para el sonido
+    //if (/mate-volume[^]*$/i.test(filename) || /matevolume[^]*$/i.test(filename)) { return "sound"; } //mate-volume
+    if (/display[^]*$/i.test(filename)) { return "display"; }
+    if (/blueman[^]*$/i.test(filename)) { return "bluetooth-b"; }
+    if (/aplicaciones$/i.test(filename)) { return "applications"; }
 }
 module.exports = matchIcon;

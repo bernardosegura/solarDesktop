@@ -4,8 +4,13 @@ class Clock {
 
         // Create DOM
         this.parent = document.getElementById(parentId);
+        let tAdmin = 'mate-time-admin';
+        let execTime = `onclick="timeAdmin('${tAdmin}')" style="cursor: pointer;" title="Time Admin"`;
+        let which = require("child_process").execSync("which " + tAdmin + ' | wc -l').toString();
+        let time = (parseInt(which) != 0)? true:false;
+        
         this.parent.innerHTML += `<div id="mod_clock">
-            <h1 id="mod_clock_text"><span>?</span><span>?</span><span>:</span><span>?</span><span>?</span><span>:</span><span>?</span><span>?</span></h1>
+            <h1 id="mod_clock_text" ${(time)?execTime:''}><span>?</span><span>?</span><span>:</span><span>?</span><span>?</span><span>:</span><span>?</span><span>?</span></h1>
         </div>`;
 
         this.lastTime = new Date();

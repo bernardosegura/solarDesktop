@@ -652,6 +652,15 @@ Mod5Mask    |   128 | ???
       false,
       GrabModeAsync,
       GrabModeAsync);
+
+  /*XGrabKey(
+      display_,
+      KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+      None,//AnyModifier
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);*/
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1184,6 +1193,12 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
 
     ctrl_L = true;
 
+  }*/
+  
+  //LOG(INFO) << "key  " << e.keycode; // mate-power-manager tiene agarrada la tecla.
+  //se controla el poweroff ya que si se cierra sesion ya no lo toma el gnome.
+  /*if(e.keycode == KEY_PowerOff){
+    system("poweroff >/dev/null");
   }*/
 
   if ((e.state & Mod1Mask) &&

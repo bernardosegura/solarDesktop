@@ -30,6 +30,8 @@ extern "C" {
 #include <unordered_map>
 #include "util.hpp"
 
+#define KEY_PowerOff 124
+
 // Implementation of a window manager for an X screen.
 class WindowManager {
  public:

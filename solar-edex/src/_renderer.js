@@ -1,4 +1,5 @@
-window.solar = {versions : "2.0.2-1011.21"};
+const electron = require("electron");
+window.solar = {versions : electron.remote.app.getVersion() + "-1711.21"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -39,7 +40,7 @@ window.onerror = (msg, path, line, col, error) => {
 
 const path = require("path");
 const fs = require("fs");
-const electron = require("electron");
+//const electron = require("electron");
 const ipc = electron.ipcRenderer;
 
 const settingsDir = electron.remote.app.getPath("userData");
@@ -431,7 +432,7 @@ async function initUI() {
     greeter.remove();
 
     //verificamos si colocar panel visible o no.
-   // showTogglePanel(true);
+    showTogglePanel(true);
 
     // Initialize modules
     window.mods = {};
@@ -1726,7 +1727,7 @@ function createXln(appDesk)
 
 function loadWM(cBorder,cBack, wndPanel)
 {
-    const { exec,spawn } = require("child_process");
+    const { exec,spawn, execSync } = require("child_process");
     var onError = 0;
     let wm = 'pwd';
     //exec(wm, (e, sout, serr) => {
@@ -1754,12 +1755,35 @@ function loadWM(cBorder,cBack, wndPanel)
 
                 exec("xsetroot -cursor_name left_ptr", (error, stdout, stderr) => {});
 
-                for(let i=0; i < startUp.startApp.length; i++)
-                { 
-                   exec(startUp.startApp[i], (error, stdout, stderr) => {});
+                let demonio = spawn(startUp.startApp[0]);// ejecutamos el demonio de mate este debe ser primero que power manager
+                demonio.stderr.on('data',(data)=>{
+                    if(!window.demonioMate){
+                       exec(startUp.startApp[1], (error, stdout, stderr) => {}); // ejecutamos el administrador de corriente sin este el boton poweroff apaga el equipo. 
+                       window.demonioMate = true;
+                    }
+                });
+
+                for(let i=2; i < startUp.startApp.length; i++)
+                { //primero cerramos la aplicacion si esta en ejecucion y posteriormente ejecutamos de nuevo.
+                    //exec("kill -9 $(ps aux | grep " + startUp.startApp[i] + " | awk '{print $2}')", (error, stdout, stderr) => {
+                    //exec("ps aux | grep " + startUp.startApp[i] + " | wc -l", (error, stdout, stderr) => {   
+                    //exec("ps aux | grep " + startUp.startApp[i], (error, stdout, stderr) => {  
+
+                   //exec('ps ax | grep -e "sh -c ' + startUp.startApp[i] + '" | grep -v grep | wc -l', (error, stdout, stderr) => {
+                     exec("kill -9 $(ps ax | grep -e " + startUp.startApp[i] + " | grep -v grep | awk '{print $1}')", (error, stdout, stderr) => {
+                	// alert(stdout);
+		            //if(parseInt(stdout) == 0 ) // se valida que no se este ejecutando ya las aplicacion.
+                         exec(startUp.startApp[i], (error, stdout, stderr) => {});  
+                    });
                 }
 
                 window['wndPanel'].wndPanel = data.toString('utf8').split("<--wndPanel-->")[1];
+
+                //User init theme and more
+                let user = require(path.join(settingsDir, "user.json"));
+
+                if(user.init)
+                    exec("dconf " + user.dconf, (error, stdout, stderr) => {});
             }
         }else{
 
@@ -2052,7 +2076,11 @@ function changeTitIcnMnu(app,title,icon){
                 return false;
 
             }else{
-                let icono = app.replace(window.entorno + '-','').split('-')[0];
+                let icono = app;
+                if(icono.startsWith("inpanel"))
+                    icono = icono.replace(icono.split('-')[0] + '-',"");
+
+                icono = icono.replace(window.entorno + '-','').split('-')[0];
                 icono = icono.toLowerCase().split('_')[0];
                 icono = icono.toLowerCase().split(' ')[0];
 
@@ -2112,6 +2140,10 @@ function loadCnfgmnu(app,title,icon)
 
 function getTitleAppsDesktop(app){
     let retorno = '';
+    if(app.toLowerCase().startsWith("inpanel")){
+        let inpanelName = app.split('-')[0];
+        app = app.replace(inpanelName + '-',"");
+    }
     try {
              
       retorno = require("child_process").execSync(`grep '^Name=' ${path.join(window["cApps"].osPathApps, app)} | tail -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
@@ -2491,17 +2523,19 @@ function xExecInTrm(cmd){
 
     }
 }
-function errorLog(name,message){
+function errorLog(name,message,noshwomsg){
 	let now= new Date();
 	let app = name;
 	now = ((now.getDate() < 10)?'0'+now.getDate():now.getDate()) + '-' + ((now.getMonth() < 10)?'0'+now.getMonth():now.getMonth()) + '-' + now.getFullYear();
 	name = '/tmp/' + name +'-'+ now +'.log';
 	fs.writeFileSync(name, message);
-	new Modal({
-        type: "warning",
-        title: `Error ${app}`,
-        message: `Log in ${name}`
-    });
+    if(!noshwomsg){
+        new Modal({
+            type: "warning",
+            title: `Error ${app}`,
+            message: `Log in ${name}`
+        });
+    }
 }
 
 function powerPreferences(){
@@ -2519,6 +2553,22 @@ function powerPreferences(){
                     message: error.message
                 });
         }
+    });
+}
+
+function timeAdmin(app){
+    const { exec } = require("child_process");
+    exec(app, (error, stdout, stderr) => {
+        //if (error) {
+            //if(error.message.length > 100 || error.message.includes('stderr'))
+                errorLog(app,error.message,true);
+            /*else
+                new Modal({
+                    type: "warning",
+                    title: `Error ${app}`,
+                    message: error.message
+                });*/
+        //}
     });
 }
 
