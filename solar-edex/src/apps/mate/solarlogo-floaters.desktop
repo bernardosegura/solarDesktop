@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Floating Solar
+Comment=Bubbles the Solar logo around the screen
+Exec=/usr/lib/mate-screensaver/mate-screensaver/floaters /usr/solar/solar.svg
+TryExec=/usr/lib/mate-screensaver/mate-screensaver/floaters
+StartupNotify=false
+Terminal=false
+Type=Application
+Categories=Screensaver;
+Keywords=Solar;screensaver;logo;bubbles;
+OnlyShowIn=MATE;
