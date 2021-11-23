@@ -1,5 +1,6 @@
-function matchIcon(filename) {
-    if (/\.(app|xcodeproj|xcworkspace)$/i.test(filename)) { return "appstore"; }
+function matchIcon(filename,retorno) {
+     //se comentan lass extenciones ya que deja de ser un administrador de archivos.
+    /*if (/\.(app|xcodeproj|xcworkspace)$/i.test(filename)) { return "appstore"; }
     if (/\.artx$/i.test(filename)) { return "arttext"; }
     if (/^\.atom$/.test(filename)) { return "atom"; }
     if (/^\.azure-pipelines$/i.test(filename)) { return "azurepipelines"; }
@@ -67,16 +68,16 @@ function matchIcon(filename) {
     if (/\.smali$/i.test(filename)) { return "android"; }
     if (/\.rsh$/i.test(filename)) { return "android"; }
     if (/\.webarchivexml$/i.test(filename)) { return "android"; }
-    if (/\.(acs|angelscript)$/i.test(filename)) { return "angelscript"; }
+    if (/\.(acs|angelscript)$/i.test(filename)) { return "angelscript"; }*/
     if (/AngelCode$/i.test(filename)) { return "angelscript"; }
-    if (/^angular[^.]*\.js$/i.test(filename)) { return "angular"; }
+    /*if (/^angular[^.]*\.js$/i.test(filename)) { return "angular"; }
     if (/\.anme$/i.test(filename)) { return "animestudio"; }
     if (/\.anime$/i.test(filename)) { return "animestudio"; }
     if (/\.animeaction$/i.test(filename)) { return "animestudio"; }
     if (/\.animebrush$/i.test(filename)) { return "animestudio"; }
     if (/\.animeexport$/i.test(filename)) { return "animestudio"; }
     if (/\.animeproj$/i.test(filename)) { return "animestudio"; }
-    if (/\.animestyle$/i.test(filename)) { return "animestudio"; }
+    if (/\.animestyle$/i.test(filename)) { return "animestudio"; }*
     if (/(^|\.)ansible(\.ya?ml)?$/i.test(filename)) { return "ansible"; }
     if (/([\\\/])roles\1[^\\\/]+\1(?:tasks|handlers|tests)\1.*\.ya?ml$/i.test(filename)) { return "ansible"; }
     if (/([\\\/])roles\1[^\\\/]+\1(?:defaults|vars|meta)\1.*\.ya?ml$/i.test(filename)) { return "ansible"; }
@@ -90,9 +91,9 @@ function matchIcon(filename) {
     if (/\.any$/i.test(filename)) { return "anyscript"; }
     if (/^(apache2?|httpd)(\.[-\w]+)*.conf$/i.test(filename)) { return "apache"; }
     if (/\.apacheconf$/i.test(filename)) { return "apache"; }
-    if (/^httpd\.conf/i.test(filename)) { return "apache"; }
+    if (/^httpd\.conf/i.test(filename)) { return "apache"; }*/
     if (/apache2\/magic$/i.test(filename)) { return "apache"; }
-    if (/\.vhost$/i.test(filename)) { return "apache"; }
+    /*if (/\.vhost$/i.test(filename)) { return "apache"; }
     if (/\.thrift$/i.test(filename)) { return "apache"; }
     if (/\.apib$/i.test(filename)) { return "api"; }
     if (/\.apl[acfino]?$/i.test(filename)) { return "apl"; }
@@ -105,10 +106,10 @@ function matchIcon(filename) {
     if (/^\.install$/.test(filename)) { return "archlinux"; }
     if (/^\.SRCINFO$/.test(filename)) { return "archlinux"; }
     if (/^pacman\.conf$/.test(filename)) { return "archlinux"; }
-    if (/^pamac\.conf$/.test(filename)) { return "archlinux"; }
+    if (/^pamac\.conf$/.test(filename)) { return "archlinux"; }*/
     if (/^PKGBUILD$/.test(filename)) { return "archlinux"; }
     if (/yaourtrc$/i.test(filename)) { return "archlinux"; }
-    if (/\.ino$/i.test(filename)) { return "arduino"; }
+    /*if (/\.ino$/i.test(filename)) { return "arduino"; }
     if (/\.(ad|adoc|asc|asciidoc)$/i.test(filename)) { return "asciidoctor"; }
     if (/\.asp$/i.test(filename)) { return "asp"; }
     if (/\.asax$/i.test(filename)) { return "asp"; }
@@ -155,9 +156,9 @@ function matchIcon(filename) {
     if (/^aurelia\.json$/i.test(filename)) { return "aurelia"; }
     if (/\.ahk$/i.test(filename)) { return "ahk"; }
     if (/\.ahkl$/i.test(filename)) { return "ahk"; }
-    if (/\.au3$/i.test(filename)) { return "autoit"; }
+    if (/\.au3$/i.test(filename)) { return "autoit"; }*/
     if (/^(AutoIt3|AutoItScript|au3)$/i.test(filename)) { return "autoit"; }
-    if (/\.av(cs|sc|dl)$/i.test(filename)) { return "avro"; }
+    /*if (/\.av(cs|sc|dl)$/i.test(filename)) { return "avro"; }
     if (/^azure-pipelines\.ya?ml$/i.test(filename)) { return "azurepipelines"; }
     if (/\.(babelrc|babelrc\.js|languagebabel|babel)$/i.test(filename)) { return "babel"; }
     if (/babel(\.[\w\-]+)*\.conf(ig)?\./i.test(filename)) { return "babel"; }
@@ -166,9 +167,9 @@ function matchIcon(filename) {
     if (/\.(bak|old|orig)$/.test(filename)) { return "backup"; }
     if (/\.bal$/i.test(filename)) { return "ballerina"; }
     if (/\.bzrignore$/i.test(filename)) { return "bazaar"; }
-    if (/^(\.bazelrc|bazel\.rc|bazel\.bazelrc)$/i.test(filename)) { return "bazel"; }
+    if (/^(\.bazelrc|bazel\.rc|bazel\.bazelrc)$/i.test(filename)) { return "bazel"; }*/
     if (/^(BUILD|WORKSPACE)(.[Bb][Aa][Zz][Ee][Ll])?$/.test(filename)) { return "bazel"; }
-    if (/\.bzl$/i.test(filename)) { return "bazel"; }
+    /*if (/\.bzl$/i.test(filename)) { return "bazel"; }
     if (/^\.gazelcfg\.json$/i.test(filename)) { return "bazel"; }
     if (/^behat(\.[^.]+)*\.ya?ml$/i.test(filename)) { return "behat"; }
     if (/\.bemjson(\.js)?$/i.test(filename)) { return "bem"; }
@@ -194,12 +195,12 @@ function matchIcon(filename) {
     if (/^(custom\.)?bootstrap\S*\.styl$/i.test(filename)) { return "bootstrap"; }
     if (/\.bootstraprc$/i.test(filename)) { return "bootstrap"; }
     if (/^(\.bowerrc|bower\.json|Bowerfile)$/i.test(filename)) { return "bower"; }
-    if (/\.bf?$/i.test(filename)) { return "brain"; }
+    if (/\.bf?$/i.test(filename)) { return "brain"; }*/
     if (/^(bf|Brainf\**ck)$/i.test(filename)) { return "brain"; }
-    if (/brakeman\.yml$/i.test(filename)) { return "brakeman"; }
-    if (/^brakeman\.ignore$/i.test(filename)) { return "brakeman"; }
+    /*if (/brakeman\.yml$/i.test(filename)) { return "brakeman"; }
+    if (/^brakeman\.ignore$/i.test(filename)) { return "brakeman"; }*/
     if (/^Brewfile$/.test(filename)) { return "brew"; }
-    if (/\.bro$/i.test(filename)) { return "bro"; }
+    /*if (/\.bro$/i.test(filename)) { return "bro"; }
     if (/^Brocfile\./i.test(filename)) { return "broccoli"; }
     if (/\.br$/i.test(filename)) { return "brotli"; }
     if (/^(browserslist|\.browserslistrc)$/i.test(filename)) { return "browserslist"; }
@@ -623,7 +624,7 @@ function matchIcon(filename) {
     if (/\.python-version$/i.test(filename)) { return "gear"; }
     if (/\.lintstagedrc$/i.test(filename)) { return "gear"; }
     if (/\.indent\.pro$/i.test(filename)) { return "gear"; }
-    if (/^\./.test(filename)) { return "gear"; }
+    //if (/^\./.test(filename)) { return "gear"; }
     if (/\.dll$/i.test(filename)) { return "gears"; }
     if (/\.xml$/i.test(filename)) { return "code"; }
     if (/\.rdf$/i.test(filename)) { return "code"; }
@@ -1948,12 +1949,22 @@ function matchIcon(filename) {
     if (/^s4\.errors$/i.test(filename)) { return "zork"; }
     if (/\.zabstr?$/i.test(filename)) { return "zork"; }
     if (/\.zil$/i.test(filename)) { return "zork"; }
-    if (/\.mud$/i.test(filename)) { return "zork"; }
+    if (/\.mud$/i.test(filename)) { return "zork"; }*/
     //if (/red$/i.test(filename)) { return "wireless"; } // ya existe un red jajaja    
     if (/volume$/i.test(filename)) { return "sound"; } // agregamosun homologo para el sonido
     //if (/mate-volume[^]*$/i.test(filename) || /matevolume[^]*$/i.test(filename)) { return "sound"; } //mate-volume
     if (/display[^]*$/i.test(filename)) { return "display"; }
     if (/blueman[^]*$/i.test(filename)) { return "bluetooth-b"; }
     if (/aplicaciones$/i.test(filename)) { return "applications"; }
+    if (/instalardebian/i.test(filename)) { return "install-debian"; }
+    if (/installdebian/i.test(filename)) { return "install-debian"; }
+    if (filename.startsWith(".")) { return filename.replace('.',''); } 
+    if (/vmware-view[^]*$/i.test(filename)) { return "vmware-view"; }
+    if (/vmware-workstation[^]*$/i.test(filename)) { return "vmware"; }
+    // se agrega por que el proceso de iconos corta los - y manda como icono install
+    if (/install-debian[^]*$/i.test(filename)){ return "install-debian"; } //al iniciar mandaba un book, entra en algun otro apartado, se comentaro.
+    if (/install-solar[^]*$/i.test(filename)){ return "install"; }
+
+    if(retorno){ return ""; }
 }
 module.exports = matchIcon;

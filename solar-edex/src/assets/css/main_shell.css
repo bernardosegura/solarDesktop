@@ -207,6 +207,8 @@ div#main_shell_innercontainer pre#terminal4 {
 .xterm.enable-mouse-events {
     /* When mouse events are enabled (eg. tmux), revert to the standard pointer cursor */
     cursor: default;
+    height: 100%;/*Se agrega para que la consoa ocupe toda la region requerida en cualquier pantalla (.terminal .xterm .enable-mouse-events) decidi 
+    meter aqui y no crear otra entrada con las 3 clases*/
 }
 
 .xterm:not(.enable-mouse-events) {

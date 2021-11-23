@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-1711.21"};
+window.solar = {versions : electron.remote.app.getVersion() + "-2211.21"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -1260,12 +1260,14 @@ electronWin.on("leave-full-screen", () => {
     electron.remote.getCurrentWindow().setSize(960, 540);
 });
 ///////////////////////////////////////////Solar////////////////////////////////
-function xWindow(obj)
+function xWindow(obj,f,audioOff)
 {
+    if(!f) f = '';
     if(!obj) obj = {};
     if(!obj.id)
     {
-          window.audioManager.info.play(); //style="position:relative; top: 2px;"
+          if(!audioOff)  
+              window.audioManager.info.play(); //style="position:relative; top: 2px;"
           let titleClose = (!obj.titleClose)?"Close":obj.titleClose;
           let titleWnd = (!obj.title)?"Window":obj.title;
           let id = "id_pantalla-"+ require("nanoid")();
@@ -1296,11 +1298,11 @@ function xWindow(obj)
           iHeight = (pY + iHeight > (parseInt(recClient.height) - 35))?iHeight - pY:iHeight;
           iWidth = (pX + iWidth > (parseInt(recClient.width) - 37))?iWidth - pX:iWidth;
           let sContenido = (!obj.content)?"":obj.content;
-          let hBarraT = 20;
-          tmp.innerHTML = `<div id="${id}" class="info custom focus appXwnd ${noLimit} ${bgFnd}" augmented-ui="tl-clip br-clip ${agExec}" style="z-index:${zIndex}; left: ${pX}px; top: ${pY}px; width: ${iWidth}px; height: ${iHeight}px; opacity: 0.8; ${wndHidden}">
-             <div ontouchstart="xwTouchStart(event,'${id}')" onmousedown="xwMouseDown(event,'${id}')" style="border-bottom: 1px solid; position:absolute; left: 0px; top: 0px; width: 100%; height: ${hBarraT}px;">
+          let hBarraT = 2;
+          tmp.innerHTML = `<div id="${id}" class="info custom focus appXwnd ${noLimit} ${bgFnd}" augmented-ui="tl-clip br-clip ${agExec}" style="z-index:${zIndex}; left: ${pX}px; top: ${pY}px; width: ${iWidth/10}vh; height: ${iHeight/10}vh; opacity: 0.8; ${wndHidden}">
+             <div ontouchstart="xwTouchStart(event,'${id}')" onmousedown="xwMouseDown(event,'${id}')" style="border-bottom: 1px solid; position:absolute; left: 0px; top: 0px; width: 100%; height: ${hBarraT}vh;">
                 <table style="width: 100%;">
-                    <tr style="height: ${hBarraT}px;">
+                    <tr style="height: ${hBarraT}vh;">
                         <td>
                             <div style="position: relative; top: -1px; width: 97%; float: left;">${titleWnd}</div>
                             <b style="position: relative; top: 0px; left: -5px; float: right; width: 2%; border-left: 1px solid;  cursor: pointer;" title="${titleClose}" onclick="xWindow({id:'${id}'})">&nbsp;x</b>
@@ -1308,10 +1310,11 @@ function xWindow(obj)
                     </tr>
                 </table>        
             </div>
-            <div id="xWnd_contenido" style="border: 0px solid; position:absolute; left: 0px; top: ${hBarraT}px; width: ${iWidth}px; height: ${iHeight}px;">
+            <div id="xWnd_contenido" style="border: 0px solid; position:absolute; left: 0px; top: ${hBarraT}vh; width: 100%; height: ${iHeight/10}vh;">
                 ${sContenido}
             </div>
             <input type="button" id="code_${id}" onclick="${code}" style="display:none"/>
+            <input type="hidden" id="file_${id}" value="${f}"/>
         </div>`;
          let element = tmp.firstChild;
          window.keyboard.detach();
@@ -1351,7 +1354,8 @@ function xWindow(obj)
         //se define seccionpara variables globales dentro de la ventana
         window[obj.id] = {};
 
-        window.audioManager.info.play(); //style="position:relative; top: 2px;"
+          if(!audioOff)  
+            window.audioManager.info.play(); //style="position:relative; top: 2px;"
           let titleClose = (!obj.titleClose)?"Close":obj.titleClose;
           let titleWnd = (!obj.title)?"Window":obj.title;
           let id = obj.id;
@@ -1381,11 +1385,11 @@ function xWindow(obj)
           iWidth = (pX + iWidth > (parseInt(recClient.width) - 37))?iWidth - pX:iWidth;
           let wndHidden = (!obj.hidden)?'':(obj.hidden == 'true')?'display:none':'';
           let sContenido = (!obj.content)?"":obj.content;
-          let hBarraT = 20;
-          tmp.innerHTML = `<div id="${id}" class="info custom focus appXwnd ${noLimit} ${bgFnd}" augmented-ui="tl-clip br-clip ${agExec}" style="z-index:${zIndex}; left: ${pX}px; top: ${pY}px; width: ${iWidth}px; height: ${iHeight}px; opacity: 0.8; ${wndHidden}">
-                 <div ontouchstart="xwTouchStart(event,'${id}')" onmousedown="xwMouseDown(event,'${id}')"  style="border-bottom: 1px solid; position:absolute; left: 0px; top: 0px; width: 100%; height: ${hBarraT}px;">
+          let hBarraT = 2;
+          tmp.innerHTML = `<div id="${id}" class="info custom focus appXwnd ${noLimit} ${bgFnd}" augmented-ui="tl-clip br-clip ${agExec}" style="z-index:${zIndex}; left: ${pX}px; top: ${pY}px; width: ${iWidth/10}vh; height: ${iHeight/10}vh; opacity: 0.8; ${wndHidden}">
+                 <div ontouchstart="xwTouchStart(event,'${id}')" onmousedown="xwMouseDown(event,'${id}')"  style="border-bottom: 1px solid; position:absolute; left: 0px; top: 0px; width: 100%; height: ${hBarraT}vh;">
                     <table style="width: 100%;">
-                        <tr style="height: ${hBarraT}px;">
+                        <tr style="height: ${hBarraT}vh;">
                             <td>
                                 <div style="position: relative; top: -1px; width: 97%; float: left;">${titleWnd}</div>
                                 <b style="position: relative; top: -1px; left: -5px; float: right; width: 2%; border-left: 1px solid;  cursor: pointer;" title="${titleClose}" onclick="xWindow({id:'${id}'})">&nbsp;x</b>
@@ -1393,10 +1397,11 @@ function xWindow(obj)
                         </tr>
                     </table>        
                 </div>
-                <div id="xWnd_contenido" style="border: 0px solid; position:absolute; left: 0px; top: ${hBarraT}px; width: ${iWidth}px; height: ${iHeight}px;">
+                <div id="xWnd_contenido" style="border: 0px solid; position:absolute; left: 0px; top: ${hBarraT}vh; width: 100%; height: ${iHeight/10}vh;">
                     ${sContenido}
                 </div>
                 <input type="button" id="code_${id}" onclick="${code}" style="display:none"/>
+                <input type="hidden" id="file_${id}" value="${f}"/>
             </div>`;
          let element = tmp.firstChild;
          window.keyboard.detach();
@@ -1452,10 +1457,10 @@ function appXwnd(f)
     let wnd = JSON.parse(rawdata.replace(/\r?\n|\r/g,''));
     let code = '';
     if(!wnd.id)
-        code = xWindow(wnd);
+        code = xWindow(wnd,file);
     else
         if(!document.getElementById(wnd.id))
-            code = xWindow(wnd);
+            code = xWindow(wnd,file);
     code = document.getElementById(code);
     if(!code)
         return true;
@@ -1477,29 +1482,47 @@ function xWndExec(id,app)
     {
         if(app.endsWith("::")){ //para la nueva forma de ejecutar en terminal directamente
             app = app.replace("::",'');
-            xExecInTrm(app);
-            xWindow({"id":id});
+            //validar aqui
+            let which = require("child_process").execSync("which " + app.split(' ')[0].replace(/(\r\n|\n|\r)/gm, "") + ' | wc -l').toString();
+            if(parseInt(which) == 0){
+                desinstalarModulo(id,document.getElementById("file_" + id).value);
+            }else{
+                xExecInTrm(app);
+                xWindow({"id":id});
+            }
         }else{
 
             if(!app.startsWith("sudo ")){
-               const { exec } = require("child_process");
-               exec(app, (error, stdout, stderr) => {
-                    if (error) {
-                    	if(error.message.length > 100 || error.message.includes('stderr'))
-                    		errorLog(app,error.message);
-                    	else
-	                        new Modal({
-	                            type: "warning",
-	                            title: `Error ${app}`,
-	                            message: error.message
-	                        });
-                    }
-                });
-               xWindow({"id":id});
+                //validar aqui
+                let which = require("child_process").execSync("which " + app.split(' ')[0].replace(/(\r\n|\n|\r)/gm, "") + ' | wc -l').toString();               
+                if(parseInt(which) == 0){
+                    desinstalarModulo(id,document.getElementById("file_" + id).value);
+                }else{
+                   const { exec } = require("child_process");
+                   exec(app, (error, stdout, stderr) => {
+                        if (error) {
+                        	if(error.message.length > 100 || error.message.includes('stderr'))
+                        		errorLog(app,error.message);
+                        	else
+    	                        new Modal({
+    	                            type: "warning",
+    	                            title: `Error ${app}`,
+    	                            message: error.message
+    	                        });
+                        }
+                    });
+                   xWindow({"id":id});
+               }
             }else{
                 app = app.replace("sudo ",'');
-                xWndExecGksu(id,app);
-                xWindow({"id":id});
+                //validar aqui
+                let which = require("child_process").execSync("which " + app.split(' ')[0].replace(/(\r\n|\n|\r)/gm, "") + ' | wc -l').toString();
+                if(parseInt(which) == 0){
+                    desinstalarModulo(id,document.getElementById("file_" + id).value);
+                }else{
+                    xWndExecGksu(id,app);
+                    xWindow({"id":id});
+                }
             }
 
         }       
@@ -1671,6 +1694,11 @@ function xWndExecFDesktop(id,desk)
     }
     else
     {
+        if (!require('fs').existsSync(path.join(window["cApps"].osPathApps, desk + '.desktop'))) {
+                desinstalarModulo(id,document.getElementById("file_" + id).value);
+                return false;
+            }
+            
        const { exec } = require("child_process");
        exec(`grep '^Exec' ${path.join(window["cApps"].osPathApps, desk + '.desktop')} | tail -1 | sed 's/^Exec=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`, (error, stdout, stderr) => {
             if (error) {
@@ -2329,7 +2357,7 @@ function systemPoweroff(){
   title:"Power Off",
   x: ((parseInt(recClient.width)/2) - 250),
   y: ((parseInt(recClient.height)/2) - 109),
-  w: 500,
+  w: 450,
   h: 100,
   id: "wnd_powewroff",
   content:`<table style='width: 100%; height: 100%;'>
@@ -2342,10 +2370,10 @@ function systemPoweroff(){
         <button id='btn_pwof' onClick='xWndExec("wnd_powewroff","systemctl poweroff")' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 5px; top: -15px;'>Poweroff</button>
     </td>
     <td>
-        <button id='btn_ret' onClick='xWndExec("wnd_powewroff","systemctl reboot")' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 25px; top: -15px;'>Reboot</button>
+        <button id='btn_ret' onClick='xWndExec("wnd_powewroff","systemctl reboot")' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 2.5vh; top: -15px;'>Reboot</button>
     </td>
     <td>
-        <button id='btn_cle' onClick='electron.remote.app.exit(0);' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 45px; top: -15px;'>Exit Session</button>
+        <button id='btn_cle' onClick='electron.remote.app.exit(0);' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 2vh; top: -15px;'>Exit Session</button>
     </td>
   </tr></table>`,
   code:`document.getElementById('btn_pwof').focus();`,
@@ -2676,7 +2704,7 @@ function systemAlertBatterylow(){
   </tr>
   <tr>  
     <td>
-        <button id='btn_ok' onClick='xWindow({ id:"wnd_batterylow"});' onkeyup='if(event.keyCode == 27)xWindow({ id:"wnd_batterylow"});' style='position: relative; left: 240px;'>OK</button>
+        <button id='btn_ok' onClick='xWindow({ id:"wnd_batterylow"});' onkeyup='if(event.keyCode == 27)xWindow({ id:"wnd_batterylow"});' style='position: relative; left: 21.5vh;'>OK</button>
     </td>
   </tr></table>`,
   code:`document.getElementById('btn_ok').focus();`,
@@ -2701,4 +2729,69 @@ function systemAlertBatterylow(){
 
     return true;
     
+}
+
+function desinstalarModulo(id,app){
+  
+  recClient = document.body.getBoundingClientRect();
+  xWindow({"id":id});
+
+  let wnd = {
+  title:"App Not Installed",
+  /*x: 270,
+  y: 200,*/
+  x: ((parseInt(recClient.width)/2) - 250),
+  y: ((parseInt(recClient.height)/2) - 109),
+  w: 350,
+  h: 100,
+  id: "wnd_ani_"+id,
+  content:`<table style='width: 100%; height: 100%;'>
+  <tr>
+   <td colspan='2'>
+     You want to uninstall the module?
+   </td>
+  </tr>
+  <tr>
+     <td>
+       <button id="yes_wnd_ani_${id}" onClick="borrarXobj('wnd_ani_${id}','${app}');" onkeyup='desinstalarModuloKeyup("${id}",this,event)' style='position: relative; left: 0px; top: -1vh;'>
+         Yes
+       </button>
+     </td>
+     <td>
+       <button id="no_wnd_ani_${id}" onClick='xWindow({ id:"wnd_ani_${id}"});' onkeyup='desinstalarModuloKeyup("${id}",this,event)' style='position: relative; left: 25%; top: -1vh;'>
+         No
+       </button>
+      </td>
+   </tr>
+ </table>`,
+  code:`document.getElementById('yes_wnd_ani_${id}').focus();`,
+  noLimit: 0
+};
+    let code = '';
+    if(!wnd.id)
+        code = xWindow(wnd,'',true);
+    else
+        if(!document.getElementById(wnd.id))
+            code = xWindow(wnd,'',true);
+    code = document.getElementById(code);
+    if(!code)
+        return true;
+    code.click();
+    return true;
+}
+
+function borrarXobj(id_app,app){
+// continuar borrado
+  let resp = require('fs').unlinkSync(app);
+  xWindow({ id:id_app});
+}
+
+
+function desinstalarModuloKeyup(id,elemento, ev){
+
+    switch(ev.keyCode){
+        case 37: 
+        case 39: if(elemento) if(elemento.id == 'yes_wnd_ani_' + id) document.getElementById('no_wnd_ani_' + id).focus(); else document.getElementById('yes_wnd_ani_' + id).focus(); break;
+        case 27: xWindow({id:'wnd_ani_' + id}); break;
+    }
 }

@@ -620,6 +620,9 @@ this.cmdPath = async e =>{
                            icono = icono.toLowerCase().replace(window.entorno + '-','').split('-')[0];
                            icono = icono.toLowerCase().split('_')[0];
                            icono = icono.toLowerCase().split(' ')[0];
+
+                           icono = (this.fileIconsMatcher(e.name.toLowerCase(),true) != "")? this.fileIconsMatcher(e.name.toLowerCase()):icono;
+console.log(e.name.toLowerCase(),"datos " + this.fileIconsMatcher(e.name.toLowerCase(),true));                           
                            e.name = getTitleAppsDesktop(e.name + '.desktop');
 
                             if(!this.icons[icono]){
@@ -644,6 +647,7 @@ this.cmdPath = async e =>{
 
                                 }else{
                                    icon = this.icons[this.fileIconsMatcher(window.xobjDB[e.name.toLowerCase()].icon)];
+                                   icon = (this.fileIconsMatcher(e.name.toLowerCase(),true) != "")? this.icons[this.fileIconsMatcher(e.name.toLowerCase())]:icon;
                                    if(typeof icon === "undefined")
                                         icon = this.icons.appXwnd;  
                                 }                                   

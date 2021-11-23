@@ -155,7 +155,8 @@ try {
             //const { exec } = require("child_process");
             let cmd = 'load / < ' + path.join(electron.app.getPath("userData"), "user");
             //exec(cmd, (error, stdout, stderr) => {}); 
-            //el protector de pantalla solarlogo-floaters.desktop va en /usr/share/applications/screensavers se incluye ya en el live.           
+            //el protector de pantalla solarlogo-floaters.desktop va en /usr/share/applications/screensavers se incluye ya en el live.  
+            //para completar el cambio de cursor se tiene que colocar el tema del cursor aqui /home/solar/live-Solar/mnt/usr/share/icons/default         
             fs.writeFileSync(path.join(electron.app.getPath("userData"), "user.json"), JSON.stringify({dconf:cmd, init: true}, 4));
             fs.writeFileSync(path.join(electron.app.getPath("userData"), "user"), fs.readFileSync(path.join(__dirname, "apps","mate","user.dconf")));
 
@@ -164,10 +165,19 @@ try {
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","aplicaciones.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","aplicaciones.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","equipo.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","equipo.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","firefox.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","firefox.xobj"), {encoding:"utf-8"}));
-            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel0-blueman-manager.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel0-blueman-manager.xobj"), {encoding:"utf-8"}));
+            //fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel0-blueman-manager.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel0-blueman-manager.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel1-mate-volume-control.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel1-mate-volume-control.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel2-mate-display-properties.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel2-mate-display-properties.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel-wireless.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel-wireless.xobj"), {encoding:"utf-8"}));
+            
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","calc.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","calc.xobj"), {encoding:"utf-8"}));
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","gimp.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","gimp.xobj"), {encoding:"utf-8"}));
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","atril.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","atril.xobj"), {encoding:"utf-8"}));
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","libreoffice.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","libreoffice.xobj"), {encoding:"utf-8"}));
+
+            let which = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
+            if(parseInt(which) != 0)
+                fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","install-debian.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","install-debian.xobj"), {encoding:"utf-8"}));
         }); 
     }
 } catch(e) {
@@ -254,7 +264,10 @@ if (!fs.existsSync(xobjDB)) {
                                 break;
 
                     case 'appcnfgmnu': jsonXObjDB[ftobd] = {title: "App in Menu", icon: "config"};
-                                break;            
+                                break;
+
+                    case 'install-debian': jsonXObjDB[ftobd] = {title: "Install Debian", icon: "install-debian"};
+                                break;                         
 
                     default: let tit_ftobd = ftobd;
                             if(tit_ftobd.toLowerCase().startsWith("inpanel")){
@@ -268,6 +281,8 @@ if (!fs.existsSync(xobjDB)) {
                             }
                             icono = icono.toLowerCase().split('_')[0];
                             icono = icono.toLowerCase().split(' ')[0];
+                            fileIconsMatcher = require("./assets/misc/file-icons-match.js");
+                            icono = (fileIconsMatcher(ftobd,true) != "")? fileIconsMatcher(ftobd):icono;
     
                             jsonXObjDB[ftobd] = {title:tit_ftobd, icon:icono}; 
                             //jsonXObjDB[ftobd] = {title:ftobd.trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))), icon:ftobd}; 
@@ -314,7 +329,10 @@ if (!fs.existsSync(xobjDB)) {
                                 break;
 
                     case 'appcnfgmnu': jsonXObjDB[ftobd] = {title: "App in Menu", icon: "config"};
-                                break;            
+                                break;    
+
+                    case 'install-debian': jsonXObjDB[ftobd] = {title: "Install Debian", icon: "install-debian"};
+                                break;                     
 
                     default: let tit_ftobd = ftobd;
                             if(tit_ftobd.toLowerCase().startsWith("inpanel")){
@@ -328,6 +346,8 @@ if (!fs.existsSync(xobjDB)) {
                             }
                             icono = icono.toLowerCase().split('_')[0];
                             icono = icono.toLowerCase().split(' ')[0];
+                            fileIconsMatcher = require("./assets/misc/file-icons-match.js");
+                            icono = (fileIconsMatcher(ftobd,true) != "")? fileIconsMatcher(ftobd):icono;
     
                             jsonXObjDB[ftobd] = {title:tit_ftobd, icon:icono}; 
                             //jsonXObjDB[ftobd] = {title:ftobd.trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase()))), icon:ftobd}; 
