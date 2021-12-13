@@ -6,7 +6,8 @@ class Toplist {
         this.parent = document.getElementById(parentId);
         this._element = document.createElement("div");
         this._element.setAttribute("id", "mod_toplist");
-        this._element.innerHTML = `<h1>TOP PROCESSES<i>PID | NAME | CPU | MEM</i></h1><br>
+        //this._element.innerHTML = `<h1>TOP PROCESSES<i>PID | NAME | CPU | MEM</i></h1><br>
+        this._element.innerHTML = `<h1 onclick="xExecInTrm('top')" title="View" style="cursor: pointer;">TOP PROCESSES<i>NAME | CPU | MEM</i></h1><br>
         <table id="mod_toplist_table"></table>`;
 
         this.parent.append(this._element);
@@ -34,18 +35,28 @@ class Toplist {
 
             let list = data.list.sort((a, b) => {
                 return ((b.pcpu-a.pcpu)*100 + b.pmem-a.pmem);
-            }).splice(0, 5);
+            }).splice(0, 6);    
+            //}).splice(0, 5);
 
             document.querySelectorAll("#mod_toplist_table > tr").forEach(el => {
                 el.remove();
             });
+
             list.forEach(proc => {
-                let el = document.createElement("tr");
-                el.innerHTML = `<td>${proc.pid}</td>
-                                <td><strong>${proc.name}</strong></td>
-                                <td>${Math.round(proc.pcpu*10)/10}%</td>
-                                <td>${Math.round(proc.pmem*10)/10}%</td>`;
-                document.getElementById("mod_toplist_table").append(el);
+                if(proc.name != "solar-edex-" + window.entorno){
+
+                    let el = document.createElement("tr");
+                   // el.setAttribute("style","width: 100%");
+                    /*el.innerHTML = `<td>${proc.pid}</td>
+                                    <td><strong>${proc.name}</strong></td>
+                                    <td>${Math.round(proc.pcpu*10)/10}%</td>
+                                    <td>${Math.round(proc.pmem*10)/10}%</td>`;*/
+                    el.innerHTML = `<td><strong>${proc.name}</strong></td>
+                                    <td>${Math.round(proc.pcpu*10)/10}%</td>
+                                    <td>${Math.round(proc.pmem*10)/10}%</td>`;                
+                    document.getElementById("mod_toplist_table").append(el);
+
+                }
             });
         });
     }

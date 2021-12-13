@@ -115,7 +115,10 @@ if (!fs.existsSync(settingsFile)) {
         //sudoGUI: "",
         //showIP: true
         showPanel: false,
-        autoClosePanel: false
+        autoClosePanel: false,
+        capslock: false,
+        numlock: false,
+        showclocktopbar: false
     }, 4));
 }
 
@@ -133,7 +136,7 @@ if(entorno != '')
   {
      case "mate": 
         if (!fs.existsSync(startUp)) {
-            fs.writeFileSync(startUp, JSON.stringify({startApp:["mate-settings-daemon","mate-power-manager","mbexev"]}, 4));
+            fs.writeFileSync(startUp, JSON.stringify({startApp:["mate-settings-daemon","mate-power-manager","mbexev","statuskeyslock"]}, 4));
         }break;
   }
 }
@@ -163,7 +166,7 @@ try {
 
             //fs.writeFileSync(path.join(electron.app.getPath("userData").replace("Solar_eDEX","dconf"), "user"), fs.readFileSync(path.join(__dirname, "apps","mate","user")));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","aplicaciones.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","aplicaciones.xobj"), {encoding:"utf-8"}));
-            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","equipo.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","equipo.xobj"), {encoding:"utf-8"}));
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","home.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","home.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","firefox.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","firefox.xobj"), {encoding:"utf-8"}));
             //fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel0-blueman-manager.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel0-blueman-manager.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel1-mate-volume-control.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel1-mate-volume-control.xobj"), {encoding:"utf-8"}));
@@ -412,6 +415,14 @@ fs.readdirSync(innerFontsDir).forEach(e => {
     fs.writeFileSync(path.join(fontsDir, e), fs.readFileSync(path.join(innerFontsDir, e)));
 });
 
+/************************************Archivo de iconos externos**********************************/
+if (!fs.existsSync(path.join(electron.app.getPath("userData"), "iconext.json"))) {
+    fs.writeFileSync(path.join(electron.app.getPath("userData"), "iconext.json"), "{}");
+}
+
+
+ /***********************************************************************************************/
+
 function createWindow(settings) {
     signale.info("Creating window...");
 
@@ -423,6 +434,8 @@ function createWindow(settings) {
     }
     let {x, y, width, height} = display.bounds;
     width++; height++;
+
+    //signale.info(display);
 
     win = new BrowserWindow({
         title: "Solar-eDEX",

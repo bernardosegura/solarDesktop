@@ -1,0 +1,119 @@
+#!/bin/bash
+# A = 1, 1 = 2, A1 = 3
+
+key_lock=-1
+
+if [[ $1 == '' ]]; then
+    echo "Status Keys Lock v0.1 - Tools Solar"
+
+    while sleep 0.1; do
+
+        value="$(xset q | grep 'LED mask' | awk '{ print $NF }')"
+
+        if [ $(( 0x$value )) == 0 ]
+        then
+            if [[ $key_lock -ne 0 ]]
+            then
+                #echo "Caps Lock is off"
+                #echo "Num Lock is off"
+                rcmSolar='{"message":{"call":"keyslock", "numlock": false, "capslock": false}}' 
+                echo $rcmSolar > ~/.containerrcm/.rcmStatusKeysLock.rcmSolar 
+                key_lock=0
+            fi    
+        else
+            if [ $(( 0x$value )) == 1 ]
+            then
+                if [[ $key_lock -ne 1 ]]
+                then
+                    #echo "Caps Lock is on"
+                    #echo "Num Lock is off"
+                    rcmSolar='{"message":{"call":"keyslock", "numlock": false, "capslock": true}}' 
+                    echo $rcmSolar > ~/.containerrcm/.rcmStatusKeysLock.rcmSolar 
+                    key_lock=1
+                fi    
+            else
+                if [ $(( 0x$value )) == 2 ]
+                then
+                    if [[ $key_lock -ne 2 ]]
+                    then
+                        #echo "Caps Lock is off"
+                        #echo "Num Lock is on"
+                        rcmSolar='{"message":{"call":"keyslock", "numlock": true, "capslock": false}}' 
+                        echo $rcmSolar > ~/.containerrcm/.rcmStatusKeysLock.rcmSolar
+                        key_lock=2
+                    fi
+                else
+                    if [ $(( 0x$value )) == 3 ]
+                    then
+                        if [[ $key_lock -ne 3 ]]
+                        then
+                            #echo "Caps Lock is on"
+                            #echo "Num Lock is on"
+                            rcmSolar='{"message":{"call":"keyslock", "numlock": true, "capslock": true}}' 
+                            echo $rcmSolar > ~/.containerrcm/.rcmStatusKeysLock.rcmSolar
+                            key_lock=3
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    done
+else
+    value="$(xset q | grep 'LED mask' | awk '{ print $NF }')"
+
+    if [ $(( 0x$value )) == 0 ]
+    then
+        if [[ $key_lock -ne 0 ]]
+        then
+            if [[ $1 == 'num' ]]; then
+                echo "false"
+            fi  
+
+            if [[ $1 == 'caps' ]]; then
+                echo "false"
+            fi   
+        fi    
+    else
+        if [ $(( 0x$value )) == 1 ]
+        then
+            if [[ $key_lock -ne 1 ]]
+            then
+                if [[ $1 == 'num' ]]; then
+                    echo "false"
+                fi  
+
+                if [[ $1 == 'caps' ]]; then
+                    echo "true"
+                fi  
+            fi    
+        else
+            if [ $(( 0x$value )) == 2 ]
+            then
+                if [[ $key_lock -ne 2 ]]
+                then
+                    if [[ $1 == 'num' ]]; then
+                        echo "true"
+                    fi  
+
+                    if [[ $1 == 'caps' ]]; then
+                        echo "false"
+                    fi 
+                fi
+            else
+                if [ $(( 0x$value )) == 3 ]
+                then
+                    if [[ $key_lock -ne 3 ]]
+                    then
+                        if [[ $1 == 'num' ]]; then
+                            echo "true"
+                        fi  
+
+                        if [[ $1 == 'caps' ]]; then
+                            echo "true"
+                        fi 
+                    fi
+                fi
+            fi
+        fi
+    fi
+fi    

@@ -63,7 +63,7 @@ class WindowManager {
     int f;
   };*/
 
-  ::std::unordered_map<Window, XWindowAttributes> clientsAttr_;
+  //::std::unordered_map<Window, XWindowAttributes> clientsAttr_;
 
  private:
   // Invoked internally by Create().
@@ -92,6 +92,8 @@ class WindowManager {
   void OnFocusIn(const XFocusChangeEvent& e);
 
   void sendCountWindow();
+
+  void normalizarWindows(/*Window wnd*/);
 
   //static Window getWindow();
 
@@ -130,6 +132,7 @@ class WindowManager {
   // Atom constants.
   const Atom WM_PROTOCOLS;
   const Atom WM_DELETE_WINDOW;
+  bool wndFull;
 };
 
 #endif

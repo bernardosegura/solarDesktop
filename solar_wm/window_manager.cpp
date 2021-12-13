@@ -86,6 +86,8 @@ void WindowManager::Run() {
       return;
     }
   }
+  wndFull =  false;//activamos pantalla completa por default
+
   //   b. Set error handler.
   XSetErrorHandler(&WindowManager::OnXError);
   //   c. Grab X server to prevent windows from changing under us.
@@ -94,7 +96,7 @@ void WindowManager::Run() {
   //   d. Reparent existing top-level windows.
   //     i. Query existing top-level windows.
   
-  
+
   Window returned_root, returned_parent;
   Window* top_level_windows;
   unsigned int num_top_level_windows;
@@ -213,7 +215,7 @@ bool WindowManager::Frame(Window w, bool was_created_before_window_manager) {
  //LOG(INFO) << "Parametro " << configHome;
 
   // Visual properties of the frame to create.
-  const unsigned int BORDER_WIDTH = 1;
+  const unsigned int BORDER_WIDTH = 0;//1;
   unsigned long BORDER_COLOR_S = BORDER_COLOR;
   unsigned long BG_COLOR_S = BG_COLOR;
 
@@ -258,14 +260,17 @@ if(was_created_before_window_manager && (wndPanel == 0 || wndPanel == w)){
     }
   }
 
-if (/*!was_created_before_window_manager*/ x_window_attrs.x == 0 && x_window_attrs.y == 0) {
-  if((x_window_attrs.width + 1) >= x_root_attr.width)
+//if (/*!was_created_before_window_manager*/ x_window_attrs.x == 0 && x_window_attrs.y == 0) {// ya no es necesario...
+/*  if((x_window_attrs.width + 1) >= x_root_attr.width)
      x_window_attrs.width = x_root_attr.width - 2;
 
   if((x_window_attrs.height + 1) >= x_root_attr.height)
      x_window_attrs.height = x_root_attr.height - 2; 
-  } 
-//  LOG(INFO) << "Atributos Ventana" << x_window_attrs.width << " -- " << x_window_attrs.height;
+  } */
+
+ /*XClassHint wndClas;
+ XGetClassHint(display_, w, &wndClas); 
+  LOG(INFO) << "Atributos Ventana Classes " << wndClas.res_name << " -- " << wndClas.res_class;*/
 //  LOG(INFO) << "Atributos Root" << x_root_attr.width << " -- " << x_root_attr.height;
 
 //LOG(INFO) << "Atributos wnd " << x_window_attrs.x << ","<< x_window_attrs.y<< ","<< x_window_attrs.width<< ","<< x_window_attrs.height;
@@ -278,8 +283,10 @@ if (/*!was_created_before_window_manager*/ x_window_attrs.x == 0 && x_window_att
       root_,
       x_window_attrs.x,
       x_window_attrs.y,
-      x_window_attrs.width,
-      x_window_attrs.height,
+      /*x_window_attrs.width,
+      x_window_attrs.height,*/
+      x_root_attr.width,
+      x_root_attr.height,
       BORDER_WIDTH,
       BORDER_COLOR_S,
       BG_COLOR_S);
@@ -328,12 +335,17 @@ if (/*!was_created_before_window_manager*/ x_window_attrs.x == 0 && x_window_att
 /////////////////////////////////////////////          
       }else{
        clients_[w] = frame; 
+       clientBack[0] = frame;
+       clientBack[1] = w;
       }
     }
   }
   else
-  //{
+  {
     clients_[w] = frame;
+    clientBack[0] = frame;
+    clientBack[1] = w;
+  }
     /*wndAt wnd;
     wnd.x = x_window_attrs.x;
     wnd.y =  x_window_attrs.y;
@@ -518,7 +530,7 @@ Mod5Mask    |   128 | ???
       GrabModeAsync,
       GrabModeAsync);*/
 
-///////////////////////////////////Cambiar ventana y combinaciones posibles////////////////////////////// 
+//////////////////////////////////Mostrar Panel y combinaciones posibles////////////////////////////// 
  // e. tecla windows + tab
    XGrabKey(
       display_,
@@ -578,7 +590,7 @@ Mod5Mask    |   128 | ???
 
   }
 
-///////////////////////////////////Mostrar Panel y combinaciones posibles//////////////////////////////   
+///////////////////////////////////Cambiar ventana y combinaciones posibles//////////////////////////////   
   //   d. Switch windows with alt + tab.
   XGrabKey(
       display_,
@@ -754,6 +766,7 @@ Mod5Mask    |   128 | ???
      XFree(ch);
   }*/
 
+  normalizarWindows(/*w*/);
   sendCountWindow();
 
   return true;
@@ -816,6 +829,9 @@ void WindowManager::Unframe(Window w) {
       clientFocus[2] = clientFocus[0];
       clientFocus[3] = clientFocus[1];
 
+      clientBack[0] = clientFocus[0];
+      clientBack[1] = clientFocus[1];
+
       XRaiseWindow(display_, clientFocus[0]);
       XSetInputFocus(display_, clientFocus[1], RevertToPointerRoot, CurrentTime);
 /////////////////////////////////////////////       
@@ -843,6 +859,9 @@ void WindowManager::Unframe(Window w) {
       clientFocus[1] = clientFocus[3];
       clientFocus[2] = i->second;
       clientFocus[3] = i->first;
+
+      clientBack[0] = i->second;
+      clientBack[1] = i->first;
 
       XRaiseWindow(display_, i->second);
       XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
@@ -899,8 +918,8 @@ void WindowManager::Unframe(Window w) {
 
   clients_.erase(w);
 
-  if(clientsAttr_.find(w) != clientsAttr_.end())
-     clientsAttr_.erase(w);
+  /*if(clientsAttr_.find(w) != clientsAttr_.end())
+     clientsAttr_.erase(w);*/
   //LOG(INFO) << "Unframed window " << w << " [" << frame << "]";
 
   sendCountWindow();
@@ -912,7 +931,7 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
    // LOG(INFO) << "window " << e.window << " focus in " << clientFocus[3];
     if( e.window != clientFocus[3])
     {
-       if(e.window == panel[1])
+       if(e.window == panel[1]) //se quita para que al precionar la barra no mande a la pantalla
        {
               clientBack[0] = clients_[clientFocus[3]];
               clientBack[1] = clientFocus[3];
@@ -922,8 +941,10 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
                 clientFocus[2] = panel[0];
                 clientFocus[3] = panel[1];
 
-                 XRaiseWindow(display_, panel[0]);
-              //XSetInputFocus(display_, panel[0], RevertToPointerRoot, CurrentTime);
+                XRaiseWindow(display_, panel[0]);
+                //XSetInputFocus(display_, panel[0], RevertToPointerRoot, CurrentTime);
+                //sendCountWindow(); // se actualiza la lista de aplicaciones
+
           ///////////////////////////////////////////// 
        }else{
           //const Window frame = ;
@@ -935,9 +956,14 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
             clientFocus[2] = i->second;
             clientFocus[3] = i->first;
 
+            clientBack[0] = i->second;
+            clientBack[1] = i->first;
+
             XRaiseWindow(display_, i->second); 
             //XSetInputFocus(display_, e.window, RevertToPointerRoot, CurrentTime);
-          }  
+            sendCountWindow(); // se actualiza la lista de aplicaciones  
+          }
+
        }
     }
     /*if(prosccFoc){
@@ -1040,6 +1066,7 @@ void WindowManager::OnMapRequest(const XMapRequestEvent& e) {
 
     XWindowAttributes x_window_attrs;
     CHECK(XGetWindowAttributes(display_, frame, &x_window_attrs));
+
     /*Status stat;
     stat = XGetWindowAttributes(display_, frame, &x_window_attrs);
     if(stat == 0) exit(-1);*/
@@ -1054,6 +1081,7 @@ void WindowManager::OnMapRequest(const XMapRequestEvent& e) {
             e.window,
             x_window_attrs.width, x_window_attrs.height);
 ////////////////////////////////////////////////////////////////////////
+ //normalizarWindows(/*w*/);
 
 }
 
@@ -1078,6 +1106,7 @@ void WindowManager::OnConfigureRequest(const XConfigureRequestEvent& e) {
   XConfigureWindow(display_, e.window, e.value_mask, &changes);
   //LOG(INFO) << "Resize " << e.window << " to " << Size<int>(e.width, e.height);
  //LOG(INFO) << "windows " << changes.x  <<" -- " << changes.y <<" -- " << e.window;
+  normalizarWindows(/*w*/); //se agrega aqui ya que hay ventanas que se reconfiguran una vez creadas.
 
 }
 
@@ -1285,8 +1314,12 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
       clientFocus[2] = i->second;
       clientFocus[3] = i->first;
 
+      clientBack[0] = i->second;
+      clientBack[1] = i->first;
+
       XRaiseWindow(display_, i->second);
       XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
+      sendCountWindow(); // se actualiza la lista de aplicaciones  
 ///////////////////////////////////////////// 
 
     }else{
@@ -1412,7 +1445,7 @@ auto nextW = clients_.find(w);
 
   if(e.keycode == XKeysymToKeycode(display_, XK_F11)){
     
-    CHECK(clients_.count(e.window));
+    /*CHECK(clients_.count(e.window));
     const Window frame = clients_[e.window];
 
     auto wnd = clientsAttr_.find(e.window);
@@ -1423,9 +1456,11 @@ auto nextW = clients_.find(w);
       CHECK(XGetWindowAttributes(display_, root_, &x_root_attr));
       CHECK(XGetWindowAttributes(display_, frame, &wndAt));
 
-      clientsAttr_[e.window] = wndAt;
-      
-      XMoveWindow(
+      clientsAttr_[e.window] = wndAt;*/
+      wndFull = !wndFull;
+      normalizarWindows(/*e.window*/);
+       
+      /*XMoveWindow(
             display_,
             frame,
             0,0);
@@ -1446,12 +1481,12 @@ auto nextW = clients_.find(w);
         XResizeWindow(
             display_,
             e.window,
-            x_root_attr.width - 2, x_root_attr.height - 2);
+            x_root_attr.width - 2, x_root_attr.height - 2);*/
 
-    }
-    else{// es pantalla normal
+    /*}
+    else{// es pantalla normal*/
 
-      XMoveWindow(
+      /*XMoveWindow(
             display_,
             frame,
             wnd->second.x,wnd->second.y);
@@ -1464,10 +1499,11 @@ auto nextW = clients_.find(w);
         XResizeWindow(
             display_,
             e.window,
-            wnd->second.width, wnd->second.height);
+            wnd->second.width, wnd->second.height);*/
+       /*normalizarWindows(false);
 
         clientsAttr_.erase(e.window);
-    }
+    }*/
     /*wndAt tmpWnd = clientsAttr_[e.window]; //+++
 
     if(tmpWnd.f == 0)//+++
@@ -1576,12 +1612,14 @@ void WindowManager::sendCountWindow() {
   memset(coma, 0, 2);
   memset(jMed, 0, 12);
   memset(wnd_id, 0, 500);
-  memset(json_wnd, 0, 10000);
-  memset(json, 0, 10100);
+  memset(json_wnd, 0, 10111);
+  memset(json, 0, 10211);
   auto window = clients_.begin();
     while (window != clients_.end()) {
         XTextProperty text_prop; //para el titulo de las vemtanas
+        XClassHint wndClas; //para el nombre d ela classe
         XGetWMName(display_, window->first, &text_prop);
+        XGetClassHint(display_, window->first, &wndClas); 
         sprintf(wnd_id,"%s{\"id\":\"%d\",\"name\":\"",coma,(int)window->first);
         strcpy(json_wnd+strlen(json_wnd),wnd_id);
 
@@ -1598,7 +1636,10 @@ void WindowManager::sendCountWindow() {
               strcpy(json_wnd+strlen(json_wnd),letra);
           }
 
+         strcpy(json_wnd+strlen(json_wnd),"\",\"class\":\"");
+         strcpy(json_wnd+strlen(json_wnd),wndClas.res_class);
          strcpy(json_wnd+strlen(json_wnd),"\"}");
+
         //sprintf(wnd_id,"%s{\"id\":\"%d\",\"name\":\"%s\"}",coma,(int)window->first,text_prop.value);
         //strcpy(json_wnd+strlen(json_wnd),wnd_id);
         sprintf(coma,",");
@@ -1682,3 +1723,82 @@ void WindowManager::hiloWnd() {
 //sleep(1000);
   //}
 }*/
+void WindowManager::normalizarWindows(/*Window wnd*/) {
+
+  int y = 0;
+  int height = 0;
+  int tamanioTopBarra = 23;// sin borde //24; //conborde
+  XWindowAttributes x_root_attr;
+
+  XGetWindowAttributes(display_, root_, &x_root_attr);
+
+  if(!wndFull){
+    y = y + tamanioTopBarra; 
+    height = height + tamanioTopBarra;
+  }
+   //LOG(INFO) << " Full -->  " <<   wndFull ;
+
+  /*XMoveWindow(
+            display_,
+            clients_[wnd],
+            0,y);
+      
+////////////////Colocamos la ventana en 0 tambien ////////////////////////////////////////////////////////
+      XMoveWindow(
+            display_,
+            wnd,
+            0,0);
+////////////////////////////////////////////////////////////////////////
+
+
+        XResizeWindow(
+            display_,
+            clients_[wnd],
+            x_root_attr.width - 2, x_root_attr.height - height);
+        // 2. Resize client window.
+        XResizeWindow(
+            display_,
+            wnd,
+            x_root_attr.width - 2, x_root_attr.height - height);*/
+
+
+  auto window = clients_.begin();
+  while (window != clients_.end()) {
+
+    //if(wnd != window->first){
+
+    /*XWMHints *hint;
+    hint  = XGetWMHints(display_, window->first);
+
+
+    LOG(INFO) << " sttus -->  "<< window->first << " -- " <<   hint->icon_window;*/
+
+      XMoveWindow(
+            display_,
+            window->second,
+            0,y);
+      
+////////////////Colocamos la ventana en 0 tambien ////////////////////////////////////////////////////////
+      XMoveWindow(
+            display_,
+            window->first,
+            0,0);
+////////////////////////////////////////////////////////////////////////
+
+
+        XResizeWindow(
+            display_,
+            window->second,
+            x_root_attr.width - 0, x_root_attr.height - height);
+        // 2. Resize client window.
+        XResizeWindow(
+            display_,
+            window->first,
+            x_root_attr.width - 0, x_root_attr.height - height);
+
+   // }
+
+        ++window;
+    }
+
+}

@@ -12,6 +12,9 @@ class FilesystemDisplay {
         this._formatBytes = (a,b) => {if(0==a)return"0 Bytes";var c=1024,d=b||2,e=["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"],f=Math.floor(Math.log(a)/Math.log(c));return parseFloat((a/Math.pow(c,f)).toFixed(d))+" "+e[f]};
         this.fileIconsMatcher = require("./assets/misc/file-icons-match.js");
         this.icons = require("./assets/icons/file-icons.json");
+        let iconext = require(path.join(require("electron").remote.app.getPath("userData"),"iconext.json"));
+        Object.assign(this.icons,iconext);
+
         this.edexIcons = {
             theme: {
                 width: 24,
@@ -385,6 +388,16 @@ this.cmdPath = async e =>{
                 type: "Battery"
             }); 
 
+            this.cwd.splice(2, 0, {
+                name: "Num Lock",
+                type: "num-lock"
+            }); 
+
+            this.cwd.splice(3, 0, {
+                name: "Caps Lock",
+                type: "caps-lock"
+            }); 
+
             this.dirpath = tcwd;
             this.render(this.cwd);
             this._reading = false;
@@ -509,9 +522,25 @@ this.cmdPath = async e =>{
                     case "Battery":
                         icon = this.icons.battery;
                         type = "--";
-                        e.category = "Battery";
+                        e.category = "Indicator";
                         inpanel = true;
                         break;    
+                    case "num-lock":
+                        icon = this.icons["num-lock"];
+                        type = "--";
+                        cmd = "execKeyLock('num')";
+                        e.category = "Indicator";
+                        inpanel = true;
+                        idInpanel = 'num-lock';
+                        break;   
+                    case "caps-lock":
+                        icon = this.icons["caps-lock"];
+                        type = "--";
+                        cmd = "execKeyLock('caps')";
+                        e.category = "Indicator";
+                        inpanel = true;
+                        idInpanel = 'caps-lock';
+                        break;       
                     case "showDisks":
                         icon = this.icons.showDisks;
                         type = "--";
@@ -598,7 +627,7 @@ this.cmdPath = async e =>{
 
                         if(e.name.toLowerCase().startsWith("inpanel")){
                             inpanel = true;
-                            idInpanel = e.name.toLowerCase();
+                            idInpanel = (idInpanel != '')?idInpanel:e.name.toLowerCase();
                         }
 
                         if(this.dirpath == path.join(require("electron").remote.app.getPath("home"),"modulos"))
@@ -622,7 +651,7 @@ this.cmdPath = async e =>{
                            icono = icono.toLowerCase().split(' ')[0];
 
                            icono = (this.fileIconsMatcher(e.name.toLowerCase(),true) != "")? this.fileIconsMatcher(e.name.toLowerCase()):icono;
-console.log(e.name.toLowerCase(),"datos " + this.fileIconsMatcher(e.name.toLowerCase(),true));                           
+                         
                            e.name = getTitleAppsDesktop(e.name + '.desktop');
 
                             if(!this.icons[icono]){
@@ -684,10 +713,37 @@ console.log(e.name.toLowerCase(),"datos " + this.fileIconsMatcher(e.name.toLower
             if(e.name.startsWith(".")) e.name = e.name.replace('.','');
             if(e.category != "showDisks" && e.category != "up"){ //se comenta para deshabilitar el filemanager
                 if(inpanel){
+                    let none = '<-keys->';
+                    let modKeys = '';
+
                     if(e.type == 'Battery')
                        window.maxBattery = icon.max;
+
+                   if(idInpanel == 'num-lock'){
+                        none = 'style="<-keys->"';
+
+                        if(window.settings.numlock)
+                            modKeys += 'display: none; ';
+
+                        let active = require("child_process").execSync("statuskeyslock num" ).toString().startsWith('true');
+                        if(!active)
+                            modKeys += 'opacity: 0.5;'; 
+                   }
+
+                   if(idInpanel == 'caps-lock'){
+                        none = 'style="<-keys->"';
+
+                        if(window.settings.capslock)
+                            modKeys += 'display: none; ';
+
+                        let active = require("child_process").execSync("statuskeyslock caps" ).toString().startsWith('true');
+                        if(!active)
+                            modKeys += 'opacity: 0.5;'; 
+                   }
+
+                    none = none.replace('<-keys->',modKeys);
                                                   
-                    fileMainPanel += `<div class="icono_panel" ${(idInpanel != '')?'id="' + idInpanel + '"':''} ${(e.type == 'Battery')?'id="' + window.idBattery + '"':''} ${(e.type == 'Battery')?'style="opacity: 0.5; ' +window.batteryNone+ '"':''} ${(idInpanel == 'inpanel-wireless' || idInpanel == 'inpanel-red')?'style="opacity: 0.5;"':''} onclick="${cmd}" title="${e.name}">
+                    fileMainPanel += `<div class="icono_panel" ${(idInpanel != '')?'id="' + idInpanel + '"':''} ${(e.type == 'Battery')?'id="' + window.idBattery + '"':''} ${(e.type == 'Battery')?'style="opacity: 0.5; ' +window.batteryNone+ '"':''} ${(idInpanel == 'inpanel-wireless' || idInpanel == 'inpanel-red')?'style="opacity: 0.5;"':''} ${none} onclick="${cmd}" title="${e.name}">
                                          <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}" style="width: 100%; height: 100%;">
                                             ${icon.svg}
                                             ${(e.type == 'Battery')?icon.plug.replace("<--id_plug-->",window.idBattery + '_plug') + icon.energy.replace("<--id_energy-->",window.idBattery + '_energy'):""}

@@ -1964,6 +1964,13 @@ function matchIcon(filename,retorno) {
     // se agrega por que el proceso de iconos corta los - y manda como icono install
     if (/install-debian[^]*$/i.test(filename)){ return "install-debian"; } //al iniciar mandaba un book, entra en algun otro apartado, se comentaro.
     if (/install-solar[^]*$/i.test(filename)){ return "install"; }
+    if (/google-chrome[^]*$/i.test(filename)){ return "chrome"; }
+    if (/caja[^]*$/i.test(filename)){ return "dir-open"; }
+    if (/home[^]*$/i.test(filename)){ return "dir"; }
+    if (/casa[^]*$/i.test(filename)){ return "dir"; }
+    if (/disks[^]*$/i.test(filename)){ return "disk"; }
+    if (/system-monitor[^]*$/i.test(filename)){ return "sysmon"; }
+    
 
     if(retorno){ return ""; }
 }

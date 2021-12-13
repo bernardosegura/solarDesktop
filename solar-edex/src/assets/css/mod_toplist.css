@@ -58,7 +58,8 @@ table#mod_toplist_table td {
 
 table#mod_toplist_table td:nth-child(2) {
     max-width: 7vw;
-    min-width: 7vw;
+    /*min-width: 7vw;*/
+    min-width: 3vw;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

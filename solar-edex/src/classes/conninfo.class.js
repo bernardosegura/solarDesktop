@@ -4,6 +4,16 @@ class Conninfo {
 
         // Create DOM
         this.parent = document.getElementById(parentId);
+        /*this._element = document.createElement("div");
+        this._element.setAttribute("id", "mod_conninfo");
+        this._element.innerHTML = `<div id="mod_conninfo_innercontainer">
+                <h1>NETWORK TRAFFIC<i>UP / DOWN, MB/S</i></h1>
+                <h2>TOTAL<i>0B OUT, 0B IN</i></h2>
+                <canvas id="mod_conninfo_canvas_top"></canvas>
+                <canvas id="mod_conninfo_canvas_bottom"></canvas>
+                <h3>OFFLINE</h3>
+            </div>`;
+        this.parent.append(this._element);  */  
         this.parent.innerHTML += `<div id="mod_conninfo">
             <div id="mod_conninfo_innercontainer">
                 <h1>NETWORK TRAFFIC<i>UP / DOWN, MB/S</i></h1>

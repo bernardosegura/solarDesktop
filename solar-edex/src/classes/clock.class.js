@@ -40,6 +40,8 @@ class Clock {
         }
 
         let clockString = `${array[0]}:${array[1]}:${array[2]}`;
+        if(document.getElementById("id_task_reloj"))
+            document.getElementById("id_task_reloj").innerHTML = `<b>${array[0]}:${array[1]}${((window.settings.ampm)?' ':':')}${array[2]}</b>`;
         array = clockString.match(/.{1}/g);
         clockString = "";
         array.forEach(e => {

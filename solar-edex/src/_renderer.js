@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-2211.21"};
+window.solar = {versions : electron.remote.app.getVersion() + "-1212.21 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -9,6 +9,7 @@ window.maxBattery = 0;
 window.upowerFlag = false;
 window.batteryNone = '';
 window.alertLowBattery = false;
+window.backWnd = '0';
 
 window.eval = global.eval = function () {
     throw new Error("eval() is disabled for security reasons.");
@@ -356,7 +357,18 @@ let i = 0;
 
 // Create the UI's html structure and initialize the terminal client and the keyboard
 async function initUI() {
-    document.body.innerHTML += `<section id="main_panel">
+    let tAdmin = 'mate-time-admin';
+    let execTime = `onclick="timeAdmin('${tAdmin}')" style="cursor: pointer;" title="Time Admin"`;
+    let which = require("child_process").execSync("which " + tAdmin + ' | wc -l').toString();
+    let time = (parseInt(which) != 0)? true:false;
+
+    document.body.innerHTML += `<section class="top_panel">
+        <section id="main_panel"></section>
+        <section  class="task_panel">
+            <div id="id_task_reloj" class="task_reloj" ${((!window.settings.showclocktopbar)?'style="display: block; cursor: pointer; margin-right: 0.5vh;"':'style="display: none; cursor: pointer; margin-right: 0.5vh;"')} ${(time)?execTime:''}></div>
+            <div id='id_task_panel' style="float: left;">                         
+            </div>                          
+        </section>
     </section>
     <section class="mod_column" id="mod_column_left">
         <h3 class="title"><p id='idUser'></p><p id='idName'></p></h3>
@@ -453,7 +465,7 @@ async function initUI() {
     window.mods.netstat = new Netstat("inpanel-wireless|inpanel-red");
     // se quitan modulos de mundo y monitoreo red, aprovechar panel en futura version.
     //window.mods.globe = new LocationGlobe("mod_column_right");
-    //window.mods.conninfo = new Conninfo("mod_column_right");
+    //window.mods.conninfo = new Conninfo("mod_column_left");//("mod_column_right");
 
     // Fade-in animations
     document.querySelectorAll(".mod_column").forEach(e => {
@@ -652,6 +664,15 @@ window.openSettings = async () => {
 
     if(!window.settings.ampm)
         window.settings.ampm = false;
+
+    if(!window.settings.numlock)
+        window.settings.numlock = false;
+
+    if(!window.settings.capslock)
+        window.settings.capslock = false;
+
+    if(!window.settings.showclocktopbar)
+        window.settings.showclocktopbar = false;
     // Unlink the tactile keyboard from the terminal emulator to allow filling in the settings fields
     window.keyboard.detach();
 
@@ -841,11 +862,35 @@ window.openSettings = async () => {
                         </select></td>
                     </tr>
                     <tr>
-                        <td>Auto Close Right Panel</td>
+                        <td>showClockTopBar</td>
+                        <td>Hide clock in top bar</td>
+                        <td><select id="settingsEditor-showclocktopbar" onchange="showclocktopbar();">
+                            <option>${window.settings.showclocktopbar}</option>
+                            <option>${!window.settings.showclocktopbar}</option>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>autoClosePanel</td>
                         <td>Automatic closing right panel, with XWindow opening and closing event</td>
                         <td><select id="settingsEditor-autoClosePanel">
                             <option>${window.settings.autoClosePanel}</option>
                             <option>${!window.settings.autoClosePanel}</option>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>numLock</td>
+                        <td>Hide num lock indicator</td>
+                        <td><select id="settingsEditor-numlock" onchange="setnumlock();">
+                            <option>${window.settings.numlock}</option>
+                            <option>${!window.settings.numlock}</option>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>capsLock</td>
+                        <td>Hide caps lock indicator</td>
+                        <td><select id="settingsEditor-capslock" onchange="setcapsock();">
+                            <option>${window.settings.capslock}</option>
+                            <option>${!window.settings.capslock}</option>
                         </select></td>
                     </tr>
                 </table>
@@ -869,6 +914,33 @@ window.openSettings = async () => {
       
     });
 };
+
+function showclocktopbar(){
+    window.settings.showclocktopbar = (!window.settings.showclocktopbar);
+    
+    if(!window.settings.showclocktopbar)
+        document.getElementById('id_task_reloj').style.display = 'block';
+    else
+        document.getElementById('id_task_reloj').style.display = 'none';
+}
+
+function setnumlock(){
+    window.settings.numlock = (!window.settings.numlock);
+    
+    if(!window.settings.numlock)
+        document.getElementById('num-lock').style.display = 'block';
+    else
+        document.getElementById('num-lock').style.display = 'none';
+}
+
+function setcapsock(){
+    window.settings.capslock = (!window.settings.capslock);
+    
+    if(!window.settings.capslock)
+        document.getElementById('caps-lock').style.display = 'block';
+    else
+        document.getElementById('caps-lock').style.display = 'none';
+}
 
 window.writeSettingsFile = () => {
     window.settings = {
@@ -899,7 +971,10 @@ window.writeSettingsFile = () => {
         //showIP: true,//netShowIP(), *revisar con el ocultamiento
         showPanel: window.settings.showPanel,
         ampm: window.settings.ampm,
-        autoClosePanel: (document.getElementById("settingsEditor-autoClosePanel").value === "true")
+        autoClosePanel: (document.getElementById("settingsEditor-autoClosePanel").value === "true"),
+        capslock: (document.getElementById("settingsEditor-capslock").value === "true"),
+        numlock: (document.getElementById("settingsEditor-numlock").value === "true"),
+        showclocktopbar: (document.getElementById("settingsEditor-showclocktopbar").value === "true")
     };
 
     Object.keys(window.settings).forEach(key => {
@@ -2303,7 +2378,7 @@ async function showTogglePanel(show){
             document.getElementById("main_shell").setAttribute("style", "left: 8%; width: 82%;");
 
         }else{
-            document.getElementById("main_panel").setAttribute("style", "width: 65%;");
+            //document.getElementById("main_panel").setAttribute("style", "width: 83%;"); //este reduce la barra principal.
             document.getElementById("main_shell").setAttribute("style", "left: 0%; width: 65%;");
             await _delay(500);
             document.getElementById("mod_column_right").setAttribute("style", "");
@@ -2476,20 +2551,81 @@ new restCommMesg("rcmSolar",(data)=>{
                 if(window.settings.autoClosePanel)
                     showTogglePanel(true);
                 let xapp = '';
+                let xappBarr = '';
+                window.backWnd = '0';
                 if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
                     document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.window.length;
                 if(data.message.window.length > 0){
                     let wndBack;
+                    let icons = require("./assets/icons/file-icons.json");
+                    let iconext = require(path.join(electron.remote.app.getPath("userData"),"iconext.json"));
+                    let fileIconsMatcher = require("./assets/misc/file-icons-match.js");
+                    let icon = "";
+                    let iconname ='';
+                    let wndBackOpaco = '';
+                    Object.assign(icons,iconext);
+
                     for (let i = 0; i < data.message.window.length; i++) {
-                        if(data.message.number == data.message.window[i].id && data.message.window.length > 1)
+                        if(data.message.number == data.message.window[i].id /*&& data.message.window.length > 1*/){
                             wndBack = 'style="opacity: 0.5"';
-                        else
+                            wndBackOpaco = ' opacity: 0.5';
+                            window.backWnd = data.message.number;
+                        }
+                        else{
                             wndBack = '';
-                       xapp +='<h1 '+wndBack+'>[ <b onclick="closeNativeWindow('+data.message.window[i].id+')" title="Close Window">X</b> ] <b onclick="goNativeWindow('+data.message.window[i].id+')" title="Go Window">'+((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")+'</b></h1>';
+                            wndBackOpaco = '';
+                        }
+                        //crear icono con data.message.window[i].class --> buscar en minusculas y si no partilo y biscar y el primero que se encuentre es el icono y si no poner un default
+                        data.message.window[i].class = data.message.window[i].class.toLowerCase();
+                        icon = icons[data.message.window[i].class];
+                        if (typeof icon === "undefined") {
+                            iconName = fileIconsMatcher(data.message.window[i].class);
+                            icon = icons[iconName];
+                            if (typeof icon === "undefined") {
+                                let classNameApp = data.message.window[i].class.replace('-',' ').replace('_',' ');
+                                classNameApp = classNameApp.split(' ');
+                                for(let x=0; x < classNameApp.length; x++){
+                                    icon = icons[classNameApp[x]];
+                                    if (typeof icon === "undefined") {
+                                        iconName = fileIconsMatcher(classNameApp[x]);
+                                        icon = icons[iconName];
+                                        if (typeof icon === "undefined") {
+                                            if (x == (classNameApp.length - 1)) {
+                                                icon = icons["x11-window"]; //.appXwnd;
+                                            }
+                                        }else
+                                            break;
+                                    }else
+                                        break;
+                                }
+    
+                            }
+                        }
+                        
+                       //console.log(data.message.window[i].class); 
+                       iconname = `<div class="task_app" style="left: -0.5vh; cursor: pointer;" onclick="goNativeWindow('${data.message.window[i].id}')" title="Go Window">
+                                         <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
+                                            ${icon.svg}
+                                        </svg>                                    
+                                      </div> `;
+
+                      xappBarr += `<div class="task_app" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask('${data.message.window[i].id}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
+                                         <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
+                                            ${icon.svg}
+                                        </svg>                                    
+                                      </div> `;                
+                        
+
+                       xapp += '<h1 '+wndBack+'>'+iconname+'[ <b onclick="closeNativeWindow('+data.message.window[i].id+')" title="Close Window">X</b> ] <b onclick="goNativeWindow('+data.message.window[i].id+')" title="Go Window">'+((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")+'</b></h1>';
                     }
                 }
+
+                if(document.querySelector("#id_task_panel"))
+                    document.querySelector("#id_task_panel").innerHTML = decodeURIComponent(escape(xappBarr));
+
                 if(document.querySelector("#id_panel_xwindow")){
                     document.querySelector("#id_panel_xwindow").innerHTML = xapp;
+                    
                     let h1 = document.querySelectorAll("#id_panel_xwindow > h1");
                     for(let i=0; i < h1.length; i++){
                         try {
@@ -2511,6 +2647,12 @@ new restCommMesg("rcmSolar",(data)=>{
             systemPoweroff();
         }
 
+        if(data.message.call.toLowerCase() == 'keyslock'){
+            procKeysLock(data.message);
+        }
+
+        //
+
         /*if(data.message.call.toLowerCase() == 'netshowip'){
             //if(data.message.value){
                 netShowIP(data.message.value);
@@ -2519,6 +2661,30 @@ new restCommMesg("rcmSolar",(data)=>{
     }
 
 });
+
+function procKeysLock(data){
+
+    if(document.getElementById('num-lock') && document.getElementById('caps-lock'))
+    {
+        if(!data.numlock){
+            //document.getElementById('num-lock').setAttribute("style","opacity: 0.5");
+            document.getElementById('num-lock').style.opacity = 0.5;
+        }else{
+            //document.getElementById('num-lock').setAttribute("style","");
+            document.getElementById('num-lock').style.opacity = 1;
+        }
+
+        if(!data.capslock){
+             //document.getElementById('caps-lock').setAttribute("style","opacity: 0.5");
+             document.getElementById('caps-lock').style.opacity = 0.5;
+        }else{
+            //document.getElementById('caps-lock').setAttribute("style","");
+            document.getElementById('caps-lock').style.opacity = 1;
+        }
+
+    }
+    
+}
 
 function xExecInTrm(cmd){
     let execute = false;
@@ -2586,18 +2752,63 @@ function powerPreferences(){
 
 function timeAdmin(app){
     const { exec } = require("child_process");
-    exec(app, (error, stdout, stderr) => {
-        //if (error) {
-            //if(error.message.length > 100 || error.message.includes('stderr'))
-                errorLog(app,error.message,true);
-            /*else
-                new Modal({
-                    type: "warning",
-                    title: `Error ${app}`,
-                    message: error.message
-                });*/
-        //}
+    exec("kill -9 $(ps ax | grep -e " + app + " | grep -v grep | awk '{print $1}')", (error, stdout, stderr) => {
+            exec(app, (error, stdout, stderr) => {
+            //if (error) {
+                //if(error.message.length > 100 || error.message.includes('stderr'))
+                    errorLog(app,error.message,true);
+                /*else
+                    new Modal({
+                        type: "warning",
+                        title: `Error ${app}`,
+                        message: error.message
+                    });*/
+            //}
+        }); 
     });
+}
+
+function goNativeWindowTask(wnd){
+
+    if(wnd == window.backWnd || window.backWnd == '0'){
+
+        const { exec } = require("child_process");
+        let cmd = "xdotool windowfocus " + wnd;   
+        if(window.settings.autoClosePanel)
+            showTogglePanel(true);
+        window.audioManager.stdin.play();
+     
+        exec(cmd, (error, stdout, stderr) => {
+            if (error) {
+                    errorLog("goNativeWindowTask",error.message);
+            }
+
+        });
+
+    }else{
+        const { exec } = require("child_process");
+        let cmd = "xdotool windowfocus " + window.backWnd;     
+        exec(cmd, (error, stdout, stderr) => {
+
+            cmd = "xdotool windowfocus " + wnd;   
+            if(window.settings.autoClosePanel)
+                showTogglePanel(true);
+            window.audioManager.stdin.play();
+         
+            exec(cmd, (error, stdout, stderr) => {
+                if (error) {
+                        errorLog("goNativeWindowTask",error.message);
+                }
+
+            });
+
+            if (error) {
+                    errorLog("goNativeWindowTask",error.message);
+            }
+
+        });
+    }
+    
 }
 
 function goNativeWindow(wnd){
@@ -2794,4 +3005,19 @@ function desinstalarModuloKeyup(id,elemento, ev){
         case 39: if(elemento) if(elemento.id == 'yes_wnd_ani_' + id) document.getElementById('no_wnd_ani_' + id).focus(); else document.getElementById('yes_wnd_ani_' + id).focus(); break;
         case 27: xWindow({id:'wnd_ani_' + id}); break;
     }
+}
+
+function execKeyLock(keyLock){
+    
+    const { exec } = require("child_process");
+    let cmd = "xdotool key ";   
+
+    switch(keyLock){
+        case 'num': cmd += "Num_Lock";
+                    break;
+        case 'caps': cmd += "Caps_Lock";
+                    break;
+    }
+    exec(cmd, (error, stdout, stderr) => {});    
+
 }

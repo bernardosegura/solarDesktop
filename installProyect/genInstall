@@ -1,4 +1,4 @@
-#! /home/solar/py3/bin/python 
+#! /home/bernardosegura/py3/bin/python 
 
 #import os
 from os import path

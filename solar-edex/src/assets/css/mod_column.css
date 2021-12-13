@@ -1,6 +1,7 @@
 section.mod_column {
     width: 17%;
-    top: 2.5vh;
+    /*top: 2.5vh;*/
+    top: 4.26vh;
     min-height: 10%;
     max-height: 96%;
     padding: 1.39vh;
@@ -20,7 +21,8 @@ section.mod_column.activated {
 }
 
 section.mod_column > h3.title {
-    top: 0.74vh;
+    /*top: 0.74vh;*/
+    top: 2.5vh;
     width: 14.8%;
 }
 
