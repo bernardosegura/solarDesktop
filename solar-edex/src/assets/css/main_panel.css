@@ -51,7 +51,8 @@ section#mod_column_right > div b {
 }
 
 .task_reloj{
-    width: 6.5vh;
+    /*width: 6.5vh;*/
+    width: auto;
     height: 2vh; 
     float: left; 
     position: relative; 
