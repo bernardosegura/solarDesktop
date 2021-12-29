@@ -1952,7 +1952,7 @@ function matchIcon(filename,retorno) {
     if (/\.mud$/i.test(filename)) { return "zork"; }*/
     //if (/red$/i.test(filename)) { return "wireless"; } // ya existe un red jajaja    
     if (/volume$/i.test(filename)) { return "sound"; } // agregamosun homologo para el sonido
-    //if (/mate-volume[^]*$/i.test(filename) || /matevolume[^]*$/i.test(filename)) { return "sound"; } //mate-volume
+    if (/volume-control[^]*$/i.test(filename) /*|| /matevolume[^]*$/i.test(filename)*/) { return "sound"; } //mate-volume
     if (/display[^]*$/i.test(filename)) { return "display"; }
     if (/blueman[^]*$/i.test(filename)) { return "bluetooth-b"; }
     if (/aplicaciones$/i.test(filename)) { return "applications"; }
@@ -1970,7 +1970,7 @@ function matchIcon(filename,retorno) {
     if (/casa[^]*$/i.test(filename)){ return "dir"; }
     if (/disks[^]*$/i.test(filename)){ return "disk"; }
     if (/system-monitor[^]*$/i.test(filename)){ return "sysmon"; }
-    
+    if (/power-preferences[^]*$/i.test(filename)){ return "power-manager"; }
 
     if(retorno){ return ""; }
 }

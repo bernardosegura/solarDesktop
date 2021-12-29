@@ -49,6 +49,7 @@ class WindowManager {
   unsigned long BORDER_COLOR;
   unsigned long BG_COLOR;
   unsigned long wndPanel;
+  int screenWidth;
   Window panel[2];
   Window clientBack[2];
   Window clientFocus[4];
@@ -91,7 +92,7 @@ class WindowManager {
   //void OnEnterNotify(const XButtonEvent& e);
   void OnFocusIn(const XFocusChangeEvent& e);
 
-  void sendCountWindow();
+  void sendCountWindow(bool isPanel);
 
   void normalizarWindows(/*Window wnd*/);
 

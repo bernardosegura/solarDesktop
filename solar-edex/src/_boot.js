@@ -21,19 +21,49 @@ process.on("uncaughtException", e => {
 });
 
 
+let dev = false;
+//let extraInfo = false;
+
+process.argv.forEach(function (val, index, array) {
+  if(val.toLowerCase() == 'dev')
+      dev = true;
+//////////////////////////////////Se agrega para lo de sisplays/////////
+  /*if(val.toLowerCase() == 'displays'){
+        extraInfo = true;
+        app.on('ready', async () => {
+             signale.start(`Number of monitors:`);
+             console.log(electron.screen.getAllDisplays().length);
+             app.quit();
+         });
+       }
+
+       if(val.toLowerCase() == 'width'){
+        extraInfo = true;
+        app.on('ready', async () => {
+             signale.start(`Monitor width:`);
+             console.log(electron.screen.getPrimaryDisplay().bounds.width);
+             app.quit();
+         });
+       }
+
+       if(val.toLowerCase() == 'height'){
+        extraInfo = true;
+        app.on('ready', async () => {  
+             signale.start(`Monitor height:`);
+             console.log(electron.screen.getPrimaryDisplay().bounds.height);
+             app.quit();
+         });
+       }*/
+////////////////////////////////////////////////////////////////////       
+});
+
 
 signale.start(`Starting Solar-eDEX v${app.getVersion()}`);
 signale.info(`With Node ${process.versions.node} and Electron ${process.versions.electron}`);
 signale.info(`Renderer is Chrome ${process.versions.chrome}`);
 
-let dev = false;
 
-process.argv.forEach(function (val, index, array) {
-  if(val == 'dev')
-      dev = true;
-});
-
-if(!dev){
+if(!dev /*&& !extraInfo*/){
     const gotLock = app.requestSingleInstanceLock();
     if (!gotLock) {
         signale.fatal("Error: Another instance of Solar-eDEX is already running. Cannot proceed.");
@@ -176,8 +206,9 @@ try {
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","calc.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","calc.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","gimp.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","gimp.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","atril.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","atril.xobj"), {encoding:"utf-8"}));
-            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","libreoffice.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","libreoffice.xobj"), {encoding:"utf-8"}));
-
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","libreoffice-startcenter.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","libreoffice.xobj"), {encoding:"utf-8"}));
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","eom.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","eom.xobj"), {encoding:"utf-8"}));
+            
             let which = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
             if(parseInt(which) != 0)
                 fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","install-debian.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","install-debian.xobj"), {encoding:"utf-8"}));
@@ -277,7 +308,7 @@ if (!fs.existsSync(xobjDB)) {
                                tit_ftobd = tit_ftobd.replace(tit_ftobd.split('-')[0] + '-',""); 
                             }
                             let icono = tit_ftobd.toLowerCase().replace(entorno + '-','').split('-')[0];
-                            tit_ftobd = require("child_process").execSync(`grep '^Name=' /usr/share/applications/${tit_ftobd}.desktop | tail -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
+                            tit_ftobd = require("child_process").execSync(`grep '^Name=' /usr/share/applications/${tit_ftobd}.desktop | head -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
                             if(tit_ftobd == ''){
                                 tit_ftobd = icono;
                                 tit_ftobd = tit_ftobd.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));                           
@@ -342,7 +373,7 @@ if (!fs.existsSync(xobjDB)) {
                                tit_ftobd = tit_ftobd.replace(tit_ftobd.split('-')[0] + '-',""); 
                             }
                             let icono = tit_ftobd.toLowerCase().replace(entorno + '-','').split('-')[0];
-                            tit_ftobd = require("child_process").execSync(`grep '^Name=' /usr/share/applications/${tit_ftobd}.desktop | tail -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
+                            tit_ftobd = require("child_process").execSync(`grep '^Name=' /usr/share/applications/${tit_ftobd}.desktop | head -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
                             if(tit_ftobd == ''){
                                 tit_ftobd = icono;
                                 tit_ftobd = tit_ftobd.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));                           

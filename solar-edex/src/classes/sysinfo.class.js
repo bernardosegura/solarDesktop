@@ -40,8 +40,10 @@ class Sysinfo {
                 <h2>0:0:0</h2>
             </div>
             <div ${(!window.wm)?'style="display:none;"':''}>
-                <h1 title="Opened Native Window" onclick="showTogglePanel();" style="cursor:pointer;">X11</h1>
-                <h2 title="Opened Native Window" onclick="showTogglePanel();" style="cursor:pointer;">0</h2>
+                <!--h1 title="Opened Native Window" onclick="showTogglePanel();" style="cursor:pointer;">X11</h1-->
+                <h1 title="Opened Native X Window System" onclick="showTogglePanel();">X11</h1>
+                <h2 title="Opened Native X Window System" onclick="showTogglePanel();">0</h2>
+                <!--h2 title="Opened Native Window" onclick="showTogglePanel();" style="cursor:pointer;">0</h2-->
             </div>
             <!--div id="lbl_porcentCharge" title="">
                 <h1>POWER</h1>

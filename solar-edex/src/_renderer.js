@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-1212.21 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-2212.21 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -361,10 +361,14 @@ async function initUI() {
     let execTime = `onclick="timeAdmin('${tAdmin}')" style="cursor: pointer;" title="Time Admin"`;
     let which = require("child_process").execSync("which " + tAdmin + ' | wc -l').toString();
     let time = (parseInt(which) != 0)? true:false;
+    /*let time = true;
+    let execTime = `onclick="mostrarPanel()" style="cursor: pointer;" title="Hide X Window System"`;*/
 
     document.body.innerHTML += `<section class="top_panel">
+        <!--div style="position: absolute;height: 23px;width: 100%; background: linear-gradient(90deg,var(--color_light_black) 1.85vh,transparent 1%) center,linear-gradient(var(--color_light_black) 1.85vh,transparent 1%) center,var(--color_grey); opacity: 0.4;"></div-->
         <section id="main_panel"></section>
         <section  class="task_panel">
+            <!--div class="task_app" id="id_goPanel" style="cursor: pointer;" onclick="mostrarPanel()" title="Solar-eDEX"></div-->
             <div id="id_task_reloj" class="task_reloj" ${((!window.settings.showclocktopbar)?'style="display: block; cursor: pointer; margin-right: 0.5vh;"':'style="display: none; cursor: pointer; margin-right: 0.5vh;"')} ${(time)?execTime:''}></div>
             <div id='id_task_panel' style="float: left;">                         
             </div>                          
@@ -542,6 +546,13 @@ async function initUI() {
     }
 
     await _delay(200);
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    /*let icons = require("./assets/icons/file-icons.json").solar;
+    document.querySelector("#id_goPanel").innerHTML = `<svg viewBox="0 0 ${icons.width} ${icons.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
+                                            ${icons.svg}
+                                        </svg>`; */
+    /////////////////////////////////////////////////////////////////////////////////////
 
     //window.updateCheck = new UpdateChecker(); /* implementar uno en su momento.*/
 }
@@ -1775,7 +1786,9 @@ function xWndExecFDesktop(id,desk)
             }
             
        const { exec } = require("child_process");
-       exec(`grep '^Exec' ${path.join(window["cApps"].osPathApps, desk + '.desktop')} | tail -1 | sed 's/^Exec=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`, (error, stdout, stderr) => {
+       //exec(`grep '^Exec' ${path.join(window["cApps"].osPathApps, desk + '.desktop')} | tail -1 | sed 's/^Exec=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`, (error, stdout, stderr) => {
+       exec(`grep '^Exec' ${path.join(window["cApps"].osPathApps, desk + '.desktop')} | head -1 | sed 's/^Exec=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`, (error, stdout, stderr) => {
+        
             if (error) {
                 new Modal({
                     type: "warning",
@@ -1843,10 +1856,10 @@ function loadWM(cBorder,cBack, wndPanel)
         window['wndPanel'].cBorder = cBorder;
         window['wndPanel'].cBack = cBack;
         window['wndPanel'].wndPanel = 0;
-        hWm = spawn(wm,[parseInt(cBorder,16),parseInt(cBack,16)]);
+        hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,parseInt(cBorder,16),parseInt(cBack,16)]);
     }    
     else
-       hWm = spawn(wm,[parseInt(cBorder,16),parseInt(cBack,16),wndPanel]); 
+       hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,parseInt(cBorder,16),parseInt(cBack,16),wndPanel]); 
 
 
     hWm.stderr.on('data', (data)=>{
@@ -2249,7 +2262,8 @@ function getTitleAppsDesktop(app){
     }
     try {
              
-      retorno = require("child_process").execSync(`grep '^Name=' ${path.join(window["cApps"].osPathApps, app)} | tail -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
+      //retorno = require("child_process").execSync(`grep '^Name=' ${path.join(window["cApps"].osPathApps, app)} | tail -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
+      retorno = require("child_process").execSync(`grep '^Name=' ${path.join(window["cApps"].osPathApps, app)} | head -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
      
     }catch(err) { // manejar variable error para cuando el directorio no tenga elementos
         new Modal({
@@ -2293,13 +2307,13 @@ function xWndExecSudo(id,app,pass)
                     });
 
                 }else{
-
-                    new Modal({
-                        type: "warning",
-                        title: `Error ${app}`,
-                        message: stderr.replace(/sudo/g,'')
-                   });
-
+                    if(!id.startsWith("wnd_rootar_id_time-admin-")){
+                        new Modal({
+                            type: "warning",
+                            title: `Error ${app}`,
+                            message: stderr.replace(/sudo/g,'')
+                       });
+                    }
                 }
 
             }
@@ -2371,6 +2385,7 @@ function xWndExecGksu(id,app){
 //echo '{"message":{"call":"MsgBox","title":"Titulo","text":"Holiss"}}' > ~/.containerrcm/.rcmC2m.rcmSolar
 
 async function showTogglePanel(show){
+    return false;
     if(!show){ //si es falso o nula interactuar
         if(window.settings.showPanel){
             document.getElementById("mod_column_right").setAttribute("style", "display: none;");
@@ -2426,7 +2441,8 @@ async function showTogglePanel(show){
 }
 
 function systemPoweroff(){
-    recClient = document.body.getBoundingClientRect();
+  recClient = document.body.getBoundingClientRect();
+  mostrarPanel();
 
   let wnd = {
   title:"Power Off",
@@ -2550,13 +2566,13 @@ new restCommMesg("rcmSolar",(data)=>{
             if(data.message.window){
                 if(window.settings.autoClosePanel)
                     showTogglePanel(true);
-                let xapp = '';
+                //let xapp = '';
                 let xappBarr = '';
                 window.backWnd = '0';
                 if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
                     document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.window.length;
                 if(data.message.window.length > 0){
-                    let wndBack;
+                    //let wndBack;
                     let icons = require("./assets/icons/file-icons.json");
                     let iconext = require(path.join(electron.remote.app.getPath("userData"),"iconext.json"));
                     let fileIconsMatcher = require("./assets/misc/file-icons-match.js");
@@ -2567,16 +2583,17 @@ new restCommMesg("rcmSolar",(data)=>{
 
                     for (let i = 0; i < data.message.window.length; i++) {
                         if(data.message.number == data.message.window[i].id /*&& data.message.window.length > 1*/){
-                            wndBack = 'style="opacity: 0.5"';
+                           // wndBack = 'style="opacity: 0.5"';
                             wndBackOpaco = ' opacity: 0.5';
                             window.backWnd = data.message.number;
                         }
                         else{
-                            wndBack = '';
+                            //wndBack = '';
                             wndBackOpaco = '';
                         }
                         //crear icono con data.message.window[i].class --> buscar en minusculas y si no partilo y biscar y el primero que se encuentre es el icono y si no poner un default
                         data.message.window[i].class = data.message.window[i].class.toLowerCase();
+                        //console.log(data.message.window[i].class);
                         icon = icons[data.message.window[i].class];
                         if (typeof icon === "undefined") {
                             iconName = fileIconsMatcher(data.message.window[i].class);
@@ -2603,27 +2620,27 @@ new restCommMesg("rcmSolar",(data)=>{
                         }
                         
                        //console.log(data.message.window[i].class); 
-                       iconname = `<div class="task_app" style="left: -0.5vh; cursor: pointer;" onclick="goNativeWindow('${data.message.window[i].id}')" title="Go Window">
+                       /*iconname = `<div class="task_app" style="left: -0.5vh; cursor: pointer;" onclick="goNativeWindow('${data.message.window[i].id}')" title="Go Window">
                                          <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
                                             ${icon.svg}
                                         </svg>                                    
-                                      </div> `;
+                                      </div> `;*/
 
-                      xappBarr += `<div class="task_app" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask('${data.message.window[i].id}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
+                      xappBarr += `<div class="task_app" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window[i].id}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
                                          <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
                                             ${icon.svg}
                                         </svg>                                    
                                       </div> `;                
                         
 
-                       xapp += '<h1 '+wndBack+'>'+iconname+'[ <b onclick="closeNativeWindow('+data.message.window[i].id+')" title="Close Window">X</b> ] <b onclick="goNativeWindow('+data.message.window[i].id+')" title="Go Window">'+((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")+'</b></h1>';
+                       //xapp += '<h1 '/*+wndBack*/+'>'+iconname+'[ <b onclick="closeNativeWindow('+data.message.window[i].id+')" title="Close Window">X</b> ] <b onclick="goNativeWindow('+data.message.window[i].id+')" title="Go Window">'+((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")+'</b></h1>';
                     }
                 }
 
                 if(document.querySelector("#id_task_panel"))
                     document.querySelector("#id_task_panel").innerHTML = decodeURIComponent(escape(xappBarr));
 
-                if(document.querySelector("#id_panel_xwindow")){
+                /*if(document.querySelector("#id_panel_xwindow")){
                     document.querySelector("#id_panel_xwindow").innerHTML = xapp;
                     
                     let h1 = document.querySelectorAll("#id_panel_xwindow > h1");
@@ -2634,7 +2651,7 @@ new restCommMesg("rcmSolar",(data)=>{
                             continue;
                         }
                     } 
-                }
+                }*/
                 
                 //console.log(data.message.window);
             }else{
@@ -2713,6 +2730,8 @@ function xExecInTrm(cmd){
                 title: `Not terminals available`,
                 message: "This application is executed in terminal but there are not available."
             });
+        }else{
+           mostrarPanel();
         }
 
     }
@@ -2729,6 +2748,7 @@ function errorLog(name,message,noshwomsg){
             title: `Error ${app}`,
             message: `Log in ${name}`
         });
+        mostrarPanel();
     }
 }
 
@@ -2751,12 +2771,15 @@ function powerPreferences(){
 }
 
 function timeAdmin(app){
-    const { exec } = require("child_process");
-    exec("kill -9 $(ps ax | grep -e " + app + " | grep -v grep | awk '{print $1}')", (error, stdout, stderr) => {
-            exec(app, (error, stdout, stderr) => {
+    /*const { exec } = require("child_process");
+    exec("kill -9 $(ps ax | grep -e " + app + " | grep -v grep | awk '{print $1}')", (error, stdout, stderr) => {*/
+            let id = 'id_time-admin-' + require("nanoid")();
+            xWndExecGksu(id,app);
+            mostrarPanel();
+            /*exec(app, (error, stdout, stderr) => {
             //if (error) {
                 //if(error.message.length > 100 || error.message.includes('stderr'))
-                    errorLog(app,error.message,true);
+                    errorLog(app,error.message,true);*/
                 /*else
                     new Modal({
                         type: "warning",
@@ -2764,33 +2787,18 @@ function timeAdmin(app){
                         message: error.message
                     });*/
             //}
-        }); 
-    });
+        //}); 
+    //});
 }
 
-function goNativeWindowTask(wnd){
+function goNativeWindowTask(obj,wnd){
 
-    if(wnd == window.backWnd || window.backWnd == '0'){
+    if(obj.style.opacity != 0.5){
 
-        const { exec } = require("child_process");
-        let cmd = "xdotool windowfocus " + wnd;   
-        if(window.settings.autoClosePanel)
-            showTogglePanel(true);
-        window.audioManager.stdin.play();
-     
-        exec(cmd, (error, stdout, stderr) => {
-            if (error) {
-                    errorLog("goNativeWindowTask",error.message);
-            }
+        if(wnd == window.backWnd || window.backWnd == '0'){
 
-        });
-
-    }else{
-        const { exec } = require("child_process");
-        let cmd = "xdotool windowfocus " + window.backWnd;     
-        exec(cmd, (error, stdout, stderr) => {
-
-            cmd = "xdotool windowfocus " + wnd;   
+            const { exec } = require("child_process");
+            let cmd = "xdotool windowfocus " + wnd;   
             if(window.settings.autoClosePanel)
                 showTogglePanel(true);
             window.audioManager.stdin.play();
@@ -2802,12 +2810,36 @@ function goNativeWindowTask(wnd){
 
             });
 
-            if (error) {
-                    errorLog("goNativeWindowTask",error.message);
-            }
+        }else{
+            const { exec } = require("child_process");
+            let cmd = "xdotool windowfocus " + window.backWnd;     
+            exec(cmd, (error, stdout, stderr) => {
 
-        });
+                cmd = "xdotool windowfocus " + wnd;   
+                if(window.settings.autoClosePanel)
+                    showTogglePanel(true);
+                window.audioManager.stdin.play();
+             
+                exec(cmd, (error, stdout, stderr) => {
+                    if (error) {
+                            errorLog("goNativeWindowTask",error.message);
+                    }
+
+                });
+
+                if (error) {
+                        errorLog("goNativeWindowTask",error.message);
+                }
+
+            });
+        }
+
+    }else{
+        obj.style.opacity = 1;
+        mostrarPanel();
     }
+
+    
     
 }
 
@@ -2945,6 +2977,8 @@ function systemAlertBatterylow(){
 function desinstalarModulo(id,app){
   
   recClient = document.body.getBoundingClientRect();
+  mostrarPanel();
+  
   xWindow({"id":id});
 
   let wnd = {
@@ -3020,4 +3054,10 @@ function execKeyLock(keyLock){
     }
     exec(cmd, (error, stdout, stderr) => {});    
 
+}
+
+function mostrarPanel(){ //Win+Tab
+    const { exec } = require("child_process");
+    let cmd = "xdotool key Super+Tab";       
+    exec(cmd, (error, stdout, stderr) => {});   
 }

@@ -87,6 +87,17 @@ void WindowManager::Run() {
     }
   }
   wndFull =  false;//activamos pantalla completa por default
+  /*panel[0] = 0;
+  panel[1] = 0;
+  clientBack[0] = 0;
+  clientBack[1] = 0;
+  clientFocus[0] = 0;
+  clientFocus[1] = 0;
+  clientFocus[2] = 0;
+  clientFocus[3] = 0;*/
+  //memset(panel, 0, 2);
+  //memset(clientBack, 0, 2);
+  //memset(clientFocus, 0, 4);
 
   //   b. Set error handler.
   XSetErrorHandler(&WindowManager::OnXError);
@@ -219,6 +230,9 @@ bool WindowManager::Frame(Window w, bool was_created_before_window_manager) {
   unsigned long BORDER_COLOR_S = BORDER_COLOR;
   unsigned long BG_COLOR_S = BG_COLOR;
 
+  unsigned int monitores = 1;
+  int width = 0;
+
   // We shouldn't be framing windows we've already framed.
   //CHECK(!clients_.count(w));
   // Se cambia por que el check bota la aplicacion  si no se cumple la condicion
@@ -231,9 +245,11 @@ bool WindowManager::Frame(Window w, bool was_created_before_window_manager) {
   //CHECK(XGetWindowAttributes(display_, w, &x_window_attrs)); // crash con unas ventanas como fantasmas
   XGetWindowAttributes(display_, w, &x_window_attrs);
   //LOG(INFO) << "Sabes que ...your_event_mask  " << x_window_attrs.your_event_mask << " root " << x_window_attrs.root << " evtAll " << x_window_attrs.all_event_masks;
-  if(x_window_attrs.root != root_){// estas ventanas son fantasmas hasta donde se detecto.
+  if(x_window_attrs.root != root_ ){// estas ventanas son fantasmas hasta donde se detecto.
       return false;
     }
+
+   //LOG(INFO) << "Sabes que ...colormap  " << x_window_attrs.colormap << " -- " << x_window_attrs.map_installed;
   /*if((int)x_window_attrs.root == 0)// estas ventanas son fantasmas hasta donde se detecto.
       return;*/
 
@@ -276,6 +292,14 @@ if(was_created_before_window_manager && (wndPanel == 0 || wndPanel == w)){
 //LOG(INFO) << "Atributos wnd " << x_window_attrs.x << ","<< x_window_attrs.y<< ","<< x_window_attrs.width<< ","<< x_window_attrs.height;
 //LOG(INFO) << "Atributos override_redirect " << x_window_attrs.override_redirect;
 
+  if(screenWidth != 0)
+    monitores = x_root_attr.width/screenWidth;
+
+if(monitores > 1)
+      width = screenWidth;
+else
+      width = x_root_attr.width;
+
 
   // 3. Create frame.
   const Window frame = XCreateSimpleWindow(
@@ -285,7 +309,8 @@ if(was_created_before_window_manager && (wndPanel == 0 || wndPanel == w)){
       x_window_attrs.y,
       /*x_window_attrs.width,
       x_window_attrs.height,*/
-      x_root_attr.width,
+      //x_root_attr.width,
+      width,
       x_root_attr.height,
       BORDER_WIDTH,
       BORDER_COLOR_S,
@@ -334,17 +359,21 @@ if(was_created_before_window_manager && (wndPanel == 0 || wndPanel == w)){
       clientFocus[3] = panel[1];
 /////////////////////////////////////////////          
       }else{
-       clients_[w] = frame; 
-       clientBack[0] = frame;
-       clientBack[1] = w;
+        //if(x_window_attrs.map_installed != 1){
+          clients_[w] = frame; 
+          clientBack[0] = frame;
+          clientBack[1] = w;
+        //}
       }
     }
   }
   else
   {
-    clients_[w] = frame;
-    clientBack[0] = frame;
-    clientBack[1] = w;
+     //if(x_window_attrs.map_installed != 1){
+        clients_[w] = frame;
+        clientBack[0] = frame;
+        clientBack[1] = w;
+    //}
   }
     /*wndAt wnd;
     wnd.x = x_window_attrs.x;
@@ -767,7 +796,7 @@ Mod5Mask    |   128 | ???
   }*/
 
   normalizarWindows(/*w*/);
-  sendCountWindow();
+  sendCountWindow(false);
 
   return true;
 }
@@ -777,6 +806,8 @@ void WindowManager::Unframe(Window w) {
 
   // We reverse the steps taken in Frame().
   const Window frame = clients_[w];
+
+  bool isPanel = false;
 
 /*//////////////////////////////////////////////////////
    XWindowAttributes x_frame_attrs;
@@ -879,6 +910,8 @@ void WindowManager::Unframe(Window w) {
 
       XRaiseWindow(display_, panel[0]);
       XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+
+      isPanel = true;
 /////////////////////////////////////////////           
         }
 
@@ -894,6 +927,8 @@ void WindowManager::Unframe(Window w) {
 
       XRaiseWindow(display_, panel[0]);
       XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+
+      isPanel = true;
 /////////////////////////////////////////////         
       }
     }
@@ -911,6 +946,8 @@ void WindowManager::Unframe(Window w) {
 
       XRaiseWindow(display_, panel[0]);
       XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+
+      isPanel = true;
 ///////////////////////////////////////////// 
   }
 
@@ -918,11 +955,11 @@ void WindowManager::Unframe(Window w) {
 
   clients_.erase(w);
 
+  sendCountWindow(isPanel);
   /*if(clientsAttr_.find(w) != clientsAttr_.end())
      clientsAttr_.erase(w);*/
   //LOG(INFO) << "Unframed window " << w << " [" << frame << "]";
 
-  sendCountWindow();
 }
 
 //por si una ventana obtiene el foco y esta no pone la ventanta hasta arriba.      
@@ -933,15 +970,33 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
     {
        if(e.window == panel[1]) //se quita para que al precionar la barra no mande a la pantalla
        {
-              clientBack[0] = clients_[clientFocus[3]];
+              /*clientBack[0] = clients_[clientFocus[3]];
               clientBack[1] = clientFocus[3];
           /////////////////////////////////////////////
                 clientFocus[0] = clientFocus[2];
                 clientFocus[1] = clientFocus[3];
                 clientFocus[2] = panel[0];
-                clientFocus[3] = panel[1];
+                clientFocus[3] = panel[1];*/
 
-                XRaiseWindow(display_, panel[0]);
+                auto i = clients_.find(clientBack[1]);
+                if(i != clients_.end())
+                {
+                  /*XWindowAttributes attr_Xwin;
+                  XGetWindowAttributes(display_, clientBack[0], &attr_Xwin);
+                  if(attr_Xwin.x < screenWidth){*/
+                    XRaiseWindow(display_, clientBack[0]);
+                    XSetInputFocus(display_, clientBack[1], RevertToPointerRoot, CurrentTime);
+                 /* }else{
+                    XRaiseWindow(display_, panel[0]);
+                    XSetInputFocus(display_, panel[0], RevertToPointerRoot, CurrentTime);
+                    sendCountWindow(true);
+                  }*/
+                }else{
+                  XRaiseWindow(display_, panel[0]);
+                  XSetInputFocus(display_, panel[0], RevertToPointerRoot, CurrentTime);
+                  sendCountWindow(true);
+                }
+                //XRaiseWindow(display_, panel[0]);
                 //XSetInputFocus(display_, panel[0], RevertToPointerRoot, CurrentTime);
                 //sendCountWindow(); // se actualiza la lista de aplicaciones
 
@@ -960,8 +1015,8 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
             clientBack[1] = i->first;
 
             XRaiseWindow(display_, i->second); 
-            //XSetInputFocus(display_, e.window, RevertToPointerRoot, CurrentTime);
-            sendCountWindow(); // se actualiza la lista de aplicaciones  
+            XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
+            sendCountWindow(false); // se actualiza la lista de aplicaciones  
           }
 
        }
@@ -1157,6 +1212,11 @@ void WindowManager::OnButtonPress(const XButtonEvent& e) {
 
           XRaiseWindow(display_, frame); 
           XSetInputFocus(display_, e.window, RevertToPointerRoot, CurrentTime);
+
+          clientBack[0] = frame;
+          clientBack[1] = e.window;
+
+          sendCountWindow(false); // se actualiza la lista de aplicaciones  
         ///////////////////////////////////////////// 
       /*}        
   }else{
@@ -1278,12 +1338,22 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
             auto wAnd = clients_.begin();
             auto wAndBuff = wAnd;
 
+            Status retorno;
+            XClassHint wndClas;
+            retorno = XGetClassHint(display_, i->first, &wndClas);
+
             for( auto x = clients_.begin(); x != clients_.end(); x++){
+                retorno = XGetClassHint(display_, x->first, &wndClas);
+                if(retorno == 0){
+                  continue;
+                }
                if(x == i){
                  wAndBuff = wAnd;
                }else{
                  wAnd = x;
                }
+               XFree(wndClas.res_class);
+               XFree(wndClas.res_name); 
             } 
 
             if(i == clients_.begin()){
@@ -1300,6 +1370,27 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
             if (i == clients_.end()) {
               i = clients_.begin();
             }
+
+            Status retorno;
+            XClassHint wndClas;
+            retorno = XGetClassHint(display_, i->first, &wndClas);
+            bool flag = false;
+            if(retorno == 0){
+              for(auto xy = clients_.begin(); xy != clients_.end(); xy++){
+                if(xy == i)
+                  flag = true;
+                if(flag){
+                  retorno = XGetClassHint(display_, xy->first, &wndClas);
+                  if(retorno != 0){
+                    i = xy;
+                    XFree(wndClas.res_class);
+                    XFree(wndClas.res_name); 
+                    break;
+                  }
+                }  
+              }
+            }
+            
         //////////////////////////////Fin  
 
       }
@@ -1319,7 +1410,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
 
       XRaiseWindow(display_, i->second);
       XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
-      sendCountWindow(); // se actualiza la lista de aplicaciones  
+      sendCountWindow(false); // se actualiza la lista de aplicaciones  
 ///////////////////////////////////////////// 
 
     }else{
@@ -1347,6 +1438,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
 
                 XRaiseWindow(display_, clientBack[0]);
                 XSetInputFocus(display_, clientBack[1], RevertToPointerRoot, CurrentTime);
+                sendCountWindow(false);
              /*}else{
 
                   //wtmp = clients_.begin();
@@ -1390,8 +1482,12 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
               clientFocus[2] = wtmp->second;
               clientFocus[3] = wtmp->first;
 
+              clientBack[0] = wtmp->second;
+              clientBack[1] = wtmp->first;
+
               XRaiseWindow(display_, wtmp->second);
               XSetInputFocus(display_, wtmp->first, RevertToPointerRoot, CurrentTime);
+              sendCountWindow(false);
         ///////////////////////////////////////////// 
 
         }
@@ -1429,7 +1525,7 @@ auto nextW = clients_.find(w);
     /*XRaiseWindow(display_, panel[0]);
     XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);*/
 
-    sendCountWindow(); // actualizamos primero los titulos para que se cierre el panel...
+    sendCountWindow(true); // actualizamos primero los titulos para que se cierre el panel...
     
 /////////////////////////////////////////////
       clientFocus[0] = clientFocus[2];
@@ -1588,7 +1684,7 @@ int WindowManager::OnWMDetected(Display* display, XErrorEvent* e) {
   return 0;
 }
 
-void WindowManager::sendCountWindow() {
+void WindowManager::sendCountWindow(bool isPanel) {
 
   static char *home = NULL;
   //static char *rcm;
@@ -1601,9 +1697,9 @@ void WindowManager::sendCountWindow() {
   char coma[2];
   char jMed[12];
   char wnd_id[500];
-  char json_wnd[10000];
+  char json_wnd[10111];
   //char *json;
-  char json[10100];
+  char json[10211];
   char letra[6];
   FILE *pFile;
 
@@ -1618,37 +1714,60 @@ void WindowManager::sendCountWindow() {
     while (window != clients_.end()) {
         XTextProperty text_prop; //para el titulo de las vemtanas
         XClassHint wndClas; //para el nombre d ela classe
-        XGetWMName(display_, window->first, &text_prop);
-        XGetClassHint(display_, window->first, &wndClas); 
-        sprintf(wnd_id,"%s{\"id\":\"%d\",\"name\":\"",coma,(int)window->first);
-        strcpy(json_wnd+strlen(json_wnd),wnd_id);
+        XWindowAttributes attr_next;
+        Status retorno; 
+        retorno = XGetWindowAttributes(display_, window->first, &attr_next);
+        //LOG(INFO) << "XGetWindowAttributes " <<retorno;
+        retorno = XGetWMName(display_, window->first, &text_prop);
+        //LOG(INFO) << "XGetWMName " <<retorno;
+        retorno = XGetClassHint(display_, window->first, &wndClas);
+        //LOG(INFO) << "XGetClassHint " <<retorno << " -- " << clients_.size(); ///////////////////////validar status de funciones de arriba//////////////////////////////////////////////
+        //LOG(INFO) << "XGetClassHint " <<BadWindow; //3
+        if(/*attr_next.map_installed != 1 ||*/ retorno != 0){
+          sprintf(wnd_id,"%s{\"id\":\"%ld\",\"name\":\"",coma,window->first);
+          strcpy(json_wnd+strlen(json_wnd),wnd_id);
+          if(text_prop.value != NULL)
+            for (long unsigned int i = 0; i < strlen((char *)text_prop.value); i++){
+              memset(letra, 0, 6);
+              //LOG(INFO) << strlen((char *)text_prop.value) << " - letra " << (int) text_prop.value[i] << text_prop.value[i];
+              if (((int)text_prop.value[i] >= 160 && (int)text_prop.value[i] < 256) || ((int)text_prop.value[i] == 34)) { //https://www.utf8-chartable.de/unicode-utf8-table.pl?number=1024&utf8=dec&unicodeinhtml=dec&htmlent=1
+                    sprintf(letra,"&#%d;",(int)text_prop.value[i]);
+                }else{
+                  if ((int)text_prop.value[i] > 31 && (int)text_prop.value[i] < 127) 
+                      sprintf(letra,"%c",text_prop.value[i]);
+                }
+                strcpy(json_wnd+strlen(json_wnd),letra);
+            }
+           strcpy(json_wnd+strlen(json_wnd),"\",\"class\":\"");
+           //if(attr_next.map_installed != 1) 
+           strcpy(json_wnd+strlen(json_wnd),wndClas.res_class);
+           //else
+              //strcpy(json_wnd+strlen(json_wnd),"NULL");
+           strcpy(json_wnd+strlen(json_wnd),"\"}");
 
-        if(text_prop.value != NULL)
-          for (long unsigned int i = 0; i < strlen((char *)text_prop.value); i++){
-            memset(letra, 0, 6);
-            //LOG(INFO) << strlen((char *)text_prop.value) << " - letra " << (int) text_prop.value[i] << text_prop.value[i];
-            if (((int)text_prop.value[i] >= 160 && (int)text_prop.value[i] < 256) || ((int)text_prop.value[i] == 34)) { //https://www.utf8-chartable.de/unicode-utf8-table.pl?number=1024&utf8=dec&unicodeinhtml=dec&htmlent=1
-                  sprintf(letra,"&#%d;",(int)text_prop.value[i]);
-              }else{
-                if ((int)text_prop.value[i] > 31 && (int)text_prop.value[i] < 127) 
-                    sprintf(letra,"%c",text_prop.value[i]);
-              }
-              strcpy(json_wnd+strlen(json_wnd),letra);
-          }
+          //sprintf(wnd_id,"%s{\"id\":\"%d\",\"name\":\"%s\"}",coma,(int)window->first,text_prop.value);
+          //strcpy(json_wnd+strlen(json_wnd),wnd_id);
+          sprintf(coma,",");
 
-         strcpy(json_wnd+strlen(json_wnd),"\",\"class\":\"");
-         strcpy(json_wnd+strlen(json_wnd),wndClas.res_class);
-         strcpy(json_wnd+strlen(json_wnd),"\"}");
-
-        //sprintf(wnd_id,"%s{\"id\":\"%d\",\"name\":\"%s\"}",coma,(int)window->first,text_prop.value);
-        //strcpy(json_wnd+strlen(json_wnd),wnd_id);
-        sprintf(coma,",");
-        ++window;
+          XFree(wndClas.res_class);
+          XFree(wndClas.res_name); 
+        }/*else{
+          sprintf(wnd_id,"%s{\"id\":\"-1\",\"name\":\"",coma);
+          strcpy(json_wnd+strlen(json_wnd),wnd_id);
+          strcpy(json_wnd+strlen(json_wnd),"\",\"class\":\"");
+          strcpy(json_wnd+strlen(json_wnd),"\"}");
+          sprintf(coma,",");
+        }*/  
+        ++window;        
     }
 
   //sprintf(jMed,"%d",(int)clients_.size());
-  //LOG(INFO) << "X11 " <<clients_.size(); 
-  sprintf(jMed,"%d",(int)clientBack[1]);
+  //LOG(INFO) << "X11 " <<clients_.size();
+  if(!isPanel)   
+    sprintf(jMed,"%ld",clientBack[1]);
+  else
+    sprintf(jMed,"0");
+ 
   //json = (char *) malloc(strlen(jIni) + strlen(jMed) + strlen(jFin) + 1 + strlen(wnd_id));
   strcpy(json,jIni);
   strcat(json,jMed);
@@ -1674,7 +1793,8 @@ strcat(rcm,path);
 pFile = fopen(rcm,"w");
 if(pFile != NULL){
   fputs(json,pFile);
-  fclose(pFile);
+  //fwrite (json , sizeof(char), sizeof(json), pFile);
+  fclose(pFile); 
 }
 //free(rcm);
 //LOG(INFO) << "Home: [" <<  rcm  << "]";
@@ -1723,20 +1843,84 @@ void WindowManager::hiloWnd() {
 //sleep(1000);
   //}
 }*/
-void WindowManager::normalizarWindows(/*Window wnd*/) {
+void WindowManager::normalizarWindows(/*Window wnd*/){
 
-  int y = 0;
-  int height = 0;
+  int y = 0,x = 0;
+  int height = 0,width = 0;
   int tamanioTopBarra = 23;// sin borde //24; //conborde
-  XWindowAttributes x_root_attr;
+  unsigned int monitores = 1;
+  XWindowAttributes x_root_attr,attr_Xwin;  
 
   XGetWindowAttributes(display_, root_, &x_root_attr);
 
-  if(!wndFull){
-    y = y + tamanioTopBarra; 
-    height = height + tamanioTopBarra;
-  }
-   //LOG(INFO) << " Full -->  " <<   wndFull ;
+  if(screenWidth != 0)
+    monitores = x_root_attr.width/screenWidth;
+   
+  auto window = clients_.begin();
+  while (window != clients_.end()){
+
+    //if(wnd != window->first){
+
+    /*XWMHints *hint;
+    hint  = XGetWMHints(display_, window->first);
+
+
+    LOG(INFO) << " sttus -->  "<< window->first << " -- " <<   hint->icon_window;*/
+    if(monitores > 1){
+      XGetWindowAttributes(display_, window->second, &attr_Xwin);
+      y = 0;
+      height = 0;
+      width = screenWidth;
+      if(attr_Xwin.x < screenWidth){
+        x = 0;
+        if(!wndFull){
+          y = tamanioTopBarra; 
+          height = tamanioTopBarra;
+        }
+      }else{
+         x = attr_Xwin.x/screenWidth;
+         x = screenWidth * x;
+      }
+    }else{ 
+      x = 0;
+      y = 0;
+      height = 0;
+      width = x_root_attr.width;
+      if(!wndFull){
+        y = tamanioTopBarra; 
+        height = tamanioTopBarra;
+      }
+    }
+
+      XMoveWindow(
+            display_,
+            window->second,
+            x,y);
+      
+////////////////Colocamos la ventana en 0 tambien ////////////////////////////////////////////////////////
+      XMoveWindow(
+            display_,
+            window->first,
+            0,0);
+////////////////////////////////////////////////////////////////////////
+
+
+        XResizeWindow(
+            display_,
+            window->second,
+            width - 0, x_root_attr.height - height);
+        // 2. Resize client window.
+        XResizeWindow(
+            display_,
+            window->first,
+            width - 0, x_root_attr.height - height);
+
+   // }
+
+        ++window;
+    }
+
+    //LOG(INFO) << " Full -->  " <<   wndFull ;
 
   /*XMoveWindow(
             display_,
@@ -1760,45 +1944,5 @@ void WindowManager::normalizarWindows(/*Window wnd*/) {
             display_,
             wnd,
             x_root_attr.width - 2, x_root_attr.height - height);*/
-
-
-  auto window = clients_.begin();
-  while (window != clients_.end()) {
-
-    //if(wnd != window->first){
-
-    /*XWMHints *hint;
-    hint  = XGetWMHints(display_, window->first);
-
-
-    LOG(INFO) << " sttus -->  "<< window->first << " -- " <<   hint->icon_window;*/
-
-      XMoveWindow(
-            display_,
-            window->second,
-            0,y);
-      
-////////////////Colocamos la ventana en 0 tambien ////////////////////////////////////////////////////////
-      XMoveWindow(
-            display_,
-            window->first,
-            0,0);
-////////////////////////////////////////////////////////////////////////
-
-
-        XResizeWindow(
-            display_,
-            window->second,
-            x_root_attr.width - 0, x_root_attr.height - height);
-        // 2. Resize client window.
-        XResizeWindow(
-            display_,
-            window->first,
-            x_root_attr.width - 0, x_root_attr.height - height);
-
-   // }
-
-        ++window;
-    }
 
 }

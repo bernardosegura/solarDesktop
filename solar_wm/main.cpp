@@ -44,22 +44,31 @@ if(argc == 1)
 	argv[1] = cDef;
 	argv[2] = cDef;
   argv[3] = cDef;
+  argv[4] = cDef;
 }
 
 if(argc == 2)
 {
 	argv[2] = cDef;
   argv[3] = cDef;
+  argv[4] = cDef;
 }
 
 if(argc == 3)
 {
   argv[3] = cDef;
+  argv[4] = cDef;
 }
 
-window_manager->BORDER_COLOR = std::stol(argv[1]);
-window_manager->BG_COLOR = std::stol(argv[2]);
-window_manager->wndPanel = std::stol(argv[3]);
+if(argc == 4)
+{
+  argv[4] = cDef;
+}
+
+window_manager->screenWidth = std::stol(argv[1]);
+window_manager->BORDER_COLOR = std::stol(argv[2]);
+window_manager->BG_COLOR = std::stol(argv[3]);
+window_manager->wndPanel = std::stol(argv[4]);
 
   window_manager->Run();
 
