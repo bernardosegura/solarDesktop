@@ -29,7 +29,8 @@ class Netstat {
         this.offline = false;
         //this.lastconn = {finished: true};
         this.iface = null;
-
+        this.iconWired = require("./assets/icons/file-icons.json").wired;
+        this.iconWireless = require("./assets/icons/file-icons.json").wireless;
         /*this._httpsAgent = new require("https").Agent({
             keepAlive: false,
             maxSockets: 10
@@ -49,7 +50,7 @@ class Netstat {
             let net = data[0];
             let netID = 0;
 
-            if(!document.getElementById(this.parent[0]) && !document.getElementById(this.parent[1]))
+            if(!document.getElementById(this.parent[0]) && !document.getElementById(this.parent[1]) && !document.getElementById(this.parent[2]))
                 return false;
 
             if(window.objRedId != ''){
@@ -72,6 +73,12 @@ class Netstat {
                         window.objRedId = this.parent[1];
                         this.paren_t = document.getElementById(this.parent[1]);
                         window.objRedTitle = this.paren_t.getAttribute("title");
+                    }else{
+                        if(document.getElementById(this.parent[2])){
+                            window.objRedId = this.parent[2];
+                            this.paren_t = document.getElementById(this.parent[2]);
+                            window.objRedTitle = this.paren_t.getAttribute("title");
+                        }
                     }
                 }
              }
@@ -153,6 +160,8 @@ class Netstat {
                             if(window.ssidWifi == '' && net.type == "wireless"){
                                 const { exec } = require("child_process");
                                 let cmd = "nmcli -t -f NAME connection show --active";//"nmcli -t -f active,ssid dev wifi | cut -d\\' -f2 | grep '^yes*\\|^si*'"; // funciona pero la nueva esta mejor
+                                
+                                document.querySelector("#" + this.paren_t.id + " > svg").innerHTML = this.iconWireless.svg;
                                 exec(cmd, (error, stdout, stderr) => {
 
                                     if(stdout != ''){
@@ -167,7 +176,21 @@ class Netstat {
                                     }
 
                                 });
+                            }else{
+                                if(net.type =="wired"){
+                                    document.querySelector("#" + this.paren_t.id + " > svg").innerHTML = this.iconWired.svg;
+                                }
+                                
                             }
+                            if(window.ifaceNet.icon != net.type){
+                                if(net.type == "wireless")
+                                    window.ifaceNet.icon = net.type;
+                                else
+                                   window.ifaceNet.icon = "wired";
+                               
+                                require("fs").writeFileSync(window.ifaceNetFile, JSON.stringify(window.ifaceNet, "", 4));
+                            }
+
                         }    
                     });
 

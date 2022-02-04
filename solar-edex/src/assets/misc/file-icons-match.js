@@ -1950,7 +1950,8 @@ function matchIcon(filename,retorno) {
     if (/\.zabstr?$/i.test(filename)) { return "zork"; }
     if (/\.zil$/i.test(filename)) { return "zork"; }
     if (/\.mud$/i.test(filename)) { return "zork"; }*/
-    //if (/red$/i.test(filename)) { return "wireless"; } // ya existe un red jajaja    
+    if (/network$/i.test(filename) || /red$/i.test(filename)) { return window.ifaceNet.icon; }
+    //if (/red$/i.test(filename)) { return "wireless"; } // ya existe un red jajaja  
     if (/volume$/i.test(filename)) { return "sound"; } // agregamosun homologo para el sonido
     if (/volume-control[^]*$/i.test(filename) /*|| /matevolume[^]*$/i.test(filename)*/) { return "sound"; } //mate-volume
     if (/display[^]*$/i.test(filename)) { return "display"; }

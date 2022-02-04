@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-2212.21 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-2401.22 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -49,6 +49,9 @@ const themesDir = path.join(settingsDir, "themes");
 const keyboardsDir = path.join(settingsDir, "keyboards");
 const fontsDir = path.join(settingsDir, "fonts");
 const settingsFile = path.join(settingsDir, "settings.json");
+
+window.ifaceNetFile = path.join(settingsDir, "ifaceNet.json");
+window.ifaceNet = require(ifaceNetFile);
 
 // Load config
 window.settings = require(settingsFile);
@@ -368,7 +371,7 @@ async function initUI() {
         <!--div style="position: absolute;height: 23px;width: 100%; background: linear-gradient(90deg,var(--color_light_black) 1.85vh,transparent 1%) center,linear-gradient(var(--color_light_black) 1.85vh,transparent 1%) center,var(--color_grey); opacity: 0.4;"></div-->
         <section id="main_panel"></section>
         <section  class="task_panel">
-            <!--div class="task_app" id="id_goPanel" style="cursor: pointer;" onclick="mostrarPanel()" title="Solar-eDEX"></div-->
+            <div class="task_app" id="id_closeXWindPanel" style="cursor: pointer; display: none;" onclick="closeNativeWindow()" title="Close Window"></div>
             <div id="id_task_reloj" class="task_reloj" ${((!window.settings.showclocktopbar)?'style="display: block; cursor: pointer; margin-right: 0.5vh;"':'style="display: none; cursor: pointer; margin-right: 0.5vh;"')} ${(time)?execTime:''}></div>
             <div id='id_task_panel' style="float: left;">                         
             </div>                          
@@ -466,7 +469,7 @@ async function initUI() {
     window.objRedId = '';
     window.objRedTitle = '';
     window.ssidWifi = '';
-    window.mods.netstat = new Netstat("inpanel-wireless|inpanel-red");
+    window.mods.netstat = new Netstat("inpanel-wireless|inpanel-red|inpanel-network");
     // se quitan modulos de mundo y monitoreo red, aprovechar panel en futura version.
     //window.mods.globe = new LocationGlobe("mod_column_right");
     //window.mods.conninfo = new Conninfo("mod_column_left");//("mod_column_right");
@@ -548,10 +551,10 @@ async function initUI() {
     await _delay(200);
 
     //////////////////////////////////////////////////////////////////////////////////////
-    /*let icons = require("./assets/icons/file-icons.json").solar;
-    document.querySelector("#id_goPanel").innerHTML = `<svg viewBox="0 0 ${icons.width} ${icons.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
+    let icons = require("./assets/icons/file-icons.json").closeWin;
+    document.querySelector("#id_closeXWindPanel").innerHTML = `<svg viewBox="0 0 ${icons.width} ${icons.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
                                             ${icons.svg}
-                                        </svg>`; */
+                                        </svg>`;
     /////////////////////////////////////////////////////////////////////////////////////
 
     //window.updateCheck = new UpdateChecker(); /* implementar uno en su momento.*/
@@ -2569,6 +2572,7 @@ new restCommMesg("rcmSolar",(data)=>{
                 //let xapp = '';
                 let xappBarr = '';
                 window.backWnd = '0';
+                document.querySelector("#id_closeXWindPanel").style.display = 'none';
                 if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
                     document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.window.length;
                 if(data.message.window.length > 0){
@@ -2579,6 +2583,7 @@ new restCommMesg("rcmSolar",(data)=>{
                     let icon = "";
                     let iconname ='';
                     let wndBackOpaco = '';
+                    //let showCloseWindow = false;
                     Object.assign(icons,iconext);
 
                     for (let i = 0; i < data.message.window.length; i++) {
@@ -2586,10 +2591,14 @@ new restCommMesg("rcmSolar",(data)=>{
                            // wndBack = 'style="opacity: 0.5"';
                             wndBackOpaco = ' opacity: 0.5';
                             window.backWnd = data.message.number;
+                            document.querySelector("#id_closeXWindPanel").style.display = 'block';
+                            //showCloseWindow = true;
                         }
                         else{
                             //wndBack = '';
                             wndBackOpaco = '';
+                            /*if(!showCloseWindow)
+                                document.querySelector("#id_closeXWindPanel").style.display = 'none';*/
                         }
                         //crear icono con data.message.window[i].class --> buscar en minusculas y si no partilo y biscar y el primero que se encuentre es el icono y si no poner un default
                         data.message.window[i].class = data.message.window[i].class.toLowerCase();
@@ -2873,7 +2882,8 @@ function goNativeWindow(wnd){
 function closeNativeWindow(wnd){
     const { exec } = require("child_process");
     //let cmd = "xdotool windowclose " + wnd;
-    let cmd = "xdotool windowfocus " + wnd + " key --clearmodifiers --delay 100 alt+F4";   
+    wnd = !wnd ? "": " windowfocus " + wnd;
+    let cmd = "xdotool" + wnd + " key --clearmodifiers --delay 100 alt+F4";   
     if(window.settings.autoClosePanel) 
         showTogglePanel(true);
     window.audioManager.stdin.play();

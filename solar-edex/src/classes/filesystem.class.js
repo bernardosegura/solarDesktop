@@ -743,7 +743,7 @@ this.cmdPath = async e =>{
 
                     none = none.replace('<-keys->',modKeys);
                                                   
-                    fileMainPanel += `<div class="icono_panel" ${(idInpanel != '')?'id="' + idInpanel + '"':''} ${(e.type == 'Battery')?'id="' + window.idBattery + '"':''} ${(e.type == 'Battery')?'style="opacity: 0.5; ' +window.batteryNone+ '"':''} ${(idInpanel == 'inpanel-wireless' || idInpanel == 'inpanel-red')?'style="opacity: 0.5;"':''} ${none} onclick="${cmd}" title="${e.name}">
+                    fileMainPanel += `<div class="icono_panel" ${(idInpanel != '')?'id="' + idInpanel + '"':''} ${(e.type == 'Battery')?'id="' + window.idBattery + '"':''} ${(e.type == 'Battery')?'style="opacity: 0.5; ' +window.batteryNone+ '"':''} ${(idInpanel == 'inpanel-wireless' || idInpanel == 'inpanel-red' || idInpanel == 'inpanel-network')?'style="opacity: 0.5;"':''} ${none} onclick="${cmd}" title="${e.name}">
                                          <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}" style="width: 100%; height: 100%;">
                                             ${icon.svg}
                                             ${(e.type == 'Battery')?icon.plug.replace("<--id_plug-->",window.idBattery + '_plug') + icon.energy.replace("<--id_energy-->",window.idBattery + '_energy'):""}

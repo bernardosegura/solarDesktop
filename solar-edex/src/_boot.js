@@ -97,6 +97,7 @@ const innerFontsDir = path.join(__dirname, "assets/fonts");
 const registerKeys = path.join(electron.app.getPath("userData"), "kinit.json");
 const startUp = path.join(electron.app.getPath("userData"), "startUp.json");
 const xobjDB = path.join(electron.app.getPath("userData"), "xobjDB.json");
+const ifaceNet = path.join(electron.app.getPath("userData"), "ifaceNet.json");
 const entornosDisponibles = ["mate"];
 var entorno = '';
 entornosDisponibles.forEach((val, index) => {
@@ -201,7 +202,7 @@ try {
             //fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel0-blueman-manager.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel0-blueman-manager.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel1-mate-volume-control.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel1-mate-volume-control.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel2-mate-display-properties.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel2-mate-display-properties.xobj"), {encoding:"utf-8"}));
-            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel-wireless.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel-wireless.xobj"), {encoding:"utf-8"}));
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel-network.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel-network.xobj"), {encoding:"utf-8"}));
             
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","calc.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","calc.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","gimp.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","gimp.xobj"), {encoding:"utf-8"}));
@@ -452,6 +453,17 @@ if (!fs.existsSync(path.join(electron.app.getPath("userData"), "iconext.json")))
 }
 
 
+ /***********************************************************************************************/
+ /************************************ifaceNet***************************************************/
+ if (!fs.existsSync(ifaceNet)) {
+
+    let jsonIfaceNet = {icon:"wireless"};
+    try {
+      fs.writeFileSync(ifaceNet, JSON.stringify(jsonIfaceNet, 4));
+    }catch(err) { 
+        signale.info(err);
+    }
+ } 
  /***********************************************************************************************/
 
 function createWindow(settings) {
