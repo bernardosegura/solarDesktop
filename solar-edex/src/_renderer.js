@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-2401.22 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-1302.22 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -371,7 +371,7 @@ async function initUI() {
         <!--div style="position: absolute;height: 23px;width: 100%; background: linear-gradient(90deg,var(--color_light_black) 1.85vh,transparent 1%) center,linear-gradient(var(--color_light_black) 1.85vh,transparent 1%) center,var(--color_grey); opacity: 0.4;"></div-->
         <section id="main_panel"></section>
         <section  class="task_panel">
-            <div class="task_app" id="id_closeXWindPanel" style="cursor: pointer; display: none;" onclick="closeNativeWindow()" title="Close Window"></div>
+            <div class="task_app" id="id_closeXWindPanel" style="cursor: pointer; visibility: hidden;" onclick="closeNativeWindow()" title="Close Window"></div>
             <div id="id_task_reloj" class="task_reloj" ${((!window.settings.showclocktopbar)?'style="display: block; cursor: pointer; margin-right: 0.5vh;"':'style="display: none; cursor: pointer; margin-right: 0.5vh;"')} ${(time)?execTime:''}></div>
             <div id='id_task_panel' style="float: left;">                         
             </div>                          
@@ -2572,7 +2572,7 @@ new restCommMesg("rcmSolar",(data)=>{
                 //let xapp = '';
                 let xappBarr = '';
                 window.backWnd = '0';
-                document.querySelector("#id_closeXWindPanel").style.display = 'none';
+                document.querySelector("#id_closeXWindPanel").style.visibility = 'hidden';
                 if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
                     document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.window.length;
                 if(data.message.window.length > 0){
@@ -2591,7 +2591,7 @@ new restCommMesg("rcmSolar",(data)=>{
                            // wndBack = 'style="opacity: 0.5"';
                             wndBackOpaco = ' opacity: 0.5';
                             window.backWnd = data.message.number;
-                            document.querySelector("#id_closeXWindPanel").style.display = 'block';
+                            document.querySelector("#id_closeXWindPanel").style.visibility = 'visible';
                             //showCloseWindow = true;
                         }
                         else{
