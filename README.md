@@ -23,7 +23,7 @@ $ npm run build
 
 __Imagen ISO__ de solar-edex
 
-Se preparó imagen precompilada del entorno.
+Se preparó imagen live precompilada del entorno.
 - [Debian 11 con version 3.1.0-1302.22 Beta](https://drive.google.com/file/d/1-32pVUu4YZl4c8cpRHtaT_fmeLViyKua/view?usp=drivesdk)
 
 El entorno cuenta con 2 tipo de aplicaciones.
