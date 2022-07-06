@@ -12,8 +12,8 @@ class FilesystemDisplay {
         this._formatBytes = (a,b) => {if(0==a)return"0 Bytes";var c=1024,d=b||2,e=["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"],f=Math.floor(Math.log(a)/Math.log(c));return parseFloat((a/Math.pow(c,f)).toFixed(d))+" "+e[f]};
         this.fileIconsMatcher = require("./assets/misc/file-icons-match.js");
         this.icons = require("./assets/icons/file-icons.json");
-        let iconext = require(path.join(require("electron").remote.app.getPath("userData"),"iconext.json"));
-        Object.assign(this.icons,iconext);
+        /*let iconext = require(path.join(require("electron").remote.app.getPath("userData"),"iconext.json"));
+        Object.assign(this.icons,iconext);*/
 
         this.edexIcons = {
             theme: {
@@ -398,6 +398,11 @@ this.cmdPath = async e =>{
                 type: "caps-lock"
             }); 
 
+             /*this.cwd.splice(4, 0, {
+                    name: "Go up",
+                    type: "up"
+                });*/
+
             this.dirpath = tcwd;
             this.render(this.cwd);
             this._reading = false;
@@ -446,6 +451,11 @@ this.cmdPath = async e =>{
             let inpanel = false;
             let idInpanel = '';
 
+            let iconext = require(path.join(require("electron").remote.app.getPath("userData"),"iconext.json"));
+            Object.assign(this.icons,iconext);
+
+
+
             if(this.dirpath == path.join(require("electron").remote.app.getPath("home"),"modulos"))
             {
                 window.cApps.xobjFile = [];
@@ -458,9 +468,9 @@ this.cmdPath = async e =>{
 
                 if (!this._noTracking) {
                     if (e.type === "dir" || e.type.endsWith("Dir")) {
-                        cmd = `window.term[window.currentTerm].writelr('cd \\'${e.name.replace(/\\/g, "\\\\")}\\'')`;
+                        cmd = `window.fsDisp.readFS('${path.resolve(this.dirpath, e.name).replace(/\\/g, '\\\\')}')`; //`window.term[window.currentTerm].writelr('cd \\'${e.name.replace(/\\/g, "\\\\")}\\'')`;
                     } else if (e.type === "up") {
-                        cmd = `window.term[window.currentTerm].writelr('cd ..')`;
+                        cmd = `window.fsDisp.readFS('${path.resolve(this.dirpath, '..').replace(/\\/g, '\\\\')}')`; //`window.term[window.currentTerm].writelr('cd ..')`;
                     } else if (e.type === "disk" || e.type === "rom" || e.type === "usb") {
                         if (process.platform === "win32") {
                             cmd = `window.term[window.currentTerm].writelr('${e.path.replace(/\\/g, "\\\\")}')`;
@@ -593,7 +603,7 @@ this.cmdPath = async e =>{
                         if (typeof icon === "undefined") {
                             if (e.type === "file") icon = this.icons.file;
                             if (e.type === "dir") {
-                                icon = this.icons.dir;
+                                icon = this.icons.group;//this.icons.dir;//aqui icono grupo
                             }
                             if (typeof icon === "undefined") icon = this.icons.other;
                         } else {
@@ -711,7 +721,7 @@ this.cmdPath = async e =>{
 
                 //filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" onclick="${cmd}" title="${e.name}${tamanio}${e.lastAccessed}">
             if(e.name.startsWith(".")) e.name = e.name.replace('.','');
-            if(e.category != "showDisks" && e.category != "up"){ //se comenta para deshabilitar el filemanager
+            if(e.category != "showDisks" /*&& e.category != "up"*/){ //se comenta para deshabilitar el filemanager
                 if(inpanel){
                     let none = '<-keys->';
                     let modKeys = '';
@@ -753,15 +763,27 @@ this.cmdPath = async e =>{
                     inpanel = false;  
                     idInpanel = "";              
                 }else{
-                    filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" onclick="${cmd}" title="${e.name}${tamanio}">
-                                <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
-                                    ${icon.svg}
-                                </svg>
-                                <h3>${e.name}</h3>
-                                <h4>${type}</h4>
-                                <h4>${e.size}</h4>
-                                <h4>${e.lastAccessed}</h4>
-                            </div>`;
+                    if(path.join(require("electron").remote.app.getPath("home"),"modulos") == this.dirpath){
+                        if(e.category != "up")
+                            filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" onclick="${cmd}" title="${e.name}${tamanio}">
+                                        <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
+                                            ${icon.svg}
+                                        </svg>
+                                        <h3>${e.name}</h3>
+                                        <h4>${type}</h4>
+                                        <h4>${e.size}</h4>
+                                        <h4>${e.lastAccessed}</h4>
+                                    </div>`;            
+                     }else
+                         filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" onclick="${cmd}" title="${e.name}${tamanio}">
+                                    <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
+                                        ${icon.svg}
+                                    </svg>
+                                    <h3>${e.name}</h3>
+                                    <h4>${type}</h4>
+                                    <h4>${e.size}</h4>
+                                    <h4>${e.lastAccessed}</h4>
+                                </div>`;           
                 }
             }
 //+++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -808,8 +830,9 @@ this.cmdPath = async e =>{
             }
 
 //para tratar de solucionar que no se muestren todos los elementos del directorio
-            if((blockList.length - (2 + appsinPanel)) !== this.filesContainer.childNodes.length) // -2 por el showDisk y Up y mas las aplicaciones en el nuevo panel superior
-            {
+
+            if((blockList.length - ((path.join(require("electron").remote.app.getPath("home"),"modulos") == this.dirpath?2:1)/*2*/ + appsinPanel)) !== this.filesContainer.childNodes.length) // -2 por el showDisk y Up y mas las aplicaciones en el nuevo panel superior
+            {//le reste 1 para reintegrar el up
                  this.readFS(this.dirpath);
             }
 
@@ -898,8 +921,11 @@ this.cmdPath = async e =>{
                                 window.xobjDB[file.toLowerCase()] = {title: titulo, icon:icono.toLowerCase()};
                            }
                         }else{
-                            //window.xobjDB.files = window.xobjDB.files.filter( el => el[file] === window.xobjDB.files[file]);  
-                            delete  window.xobjDB[file.toLowerCase()]; 
+                            //window.xobjDB.files = window.xobjDB.files.filter( el => el[file] === window.xobjDB.files[file]); 
+                            if(!file.toLowerCase().endsWith('_chrome'))
+                            { 
+                                 delete  window.xobjDB[file.toLowerCase()]; 
+                            }
                         }
                         
                         fs.writeFileSync(path.join(require("electron").remote.app.getPath("userData"), "xobjDB.json"), JSON.stringify(window.xobjDB, 4));

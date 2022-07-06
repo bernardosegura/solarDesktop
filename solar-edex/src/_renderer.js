@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-1302.22 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-0606.22 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -1522,7 +1522,7 @@ function appXwnd(f)
         f += '.xobj';
 
     let file = f;
-    let fs = require('fs');
+    //let fs = require('fs');
 
     if(!fs.existsSync(file)) 
         {
@@ -1783,15 +1783,26 @@ function xWndExecFDesktop(id,desk)
     }
     else
     {
-        if (!require('fs').existsSync(path.join(window["cApps"].osPathApps, desk + '.desktop'))) {
+        if (!/*require('fs')*/fs.existsSync(path.join(window["cApps"].osPathApps, desk + '.desktop'))) {
                 desinstalarModulo(id,document.getElementById("file_" + id).value);
                 return false;
             }
             
        const { exec } = require("child_process");
        //exec(`grep '^Exec' ${path.join(window["cApps"].osPathApps, desk + '.desktop')} | tail -1 | sed 's/^Exec=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`, (error, stdout, stderr) => {
-       exec(`grep '^Exec' ${path.join(window["cApps"].osPathApps, desk + '.desktop')} | head -1 | sed 's/^Exec=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`, (error, stdout, stderr) => {
-        
+       let ini = require('ini');
+
+       if(fs.existsSync(`${path.join(window["cApps"].osPathApps, desk + '.desktop')}`)){
+            
+            var config = ini.parse(fs.readFileSync(`${path.join(window["cApps"].osPathApps, desk + '.desktop')}`, 'utf8'));
+
+            if(config["Desktop Entry"].Exec)
+                xWndExec(id,config["Desktop Entry"].Exec);
+       }
+
+       
+                    
+       /*exec(`grep '^Exec' ${path.join(window["cApps"].osPathApps, desk + '.desktop')} | head -1 | sed 's/^Exec=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`, (error, stdout, stderr) => {    
             if (error) {
                 new Modal({
                     type: "warning",
@@ -1804,8 +1815,7 @@ function xWndExecFDesktop(id,desk)
             {
                 xWndExec(id,stdout);
             }
-        });
-       
+        });*/
     }
 }
 
@@ -1826,7 +1836,7 @@ function createXln(appDesk)
         mName = appDesk;
         
     }
-    let fs = require('fs');
+    //let fs = require('fs');
     if (!fs.existsSync(require('path').join(require('electron').remote.app.getPath('home'), 'modulos/' + mName + '.xobj'))) {
         fs.writeFileSync(require('path').join(require('electron').remote.app.getPath('home'), 'modulos/' + mName + '.xobj'), JSON.stringify(code));
 
@@ -2266,8 +2276,17 @@ function getTitleAppsDesktop(app){
     try {
              
       //retorno = require("child_process").execSync(`grep '^Name=' ${path.join(window["cApps"].osPathApps, app)} | tail -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
-      retorno = require("child_process").execSync(`grep '^Name=' ${path.join(window["cApps"].osPathApps, app)} | head -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
-     
+      let ini = require('ini');
+
+      if(fs.existsSync(`${path.join(window["cApps"].osPathApps, app)}`)){
+
+        var config = ini.parse(fs.readFileSync(`${path.join(window["cApps"].osPathApps, app)}`, 'utf8'));
+
+        if(config["Desktop Entry"].Name)
+            retorno = config["Desktop Entry"].Name; //require("child_process").execSync(`grep '^Name='  | head -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
+        else
+            retorno = ''; 
+      }
     }catch(err) { // manejar variable error para cuando el directorio no tenga elementos
         new Modal({
                 type: "warning",
@@ -3037,7 +3056,7 @@ function desinstalarModulo(id,app){
 
 function borrarXobj(id_app,app){
 // continuar borrado
-  let resp = require('fs').unlinkSync(app);
+  let resp = /*require('fs')*/fs.unlinkSync(app);
   xWindow({ id:id_app});
 }
 
@@ -3071,3 +3090,104 @@ function mostrarPanel(){ //Win+Tab
     let cmd = "xdotool key Super+Tab";       
     exec(cmd, (error, stdout, stderr) => {});   
 }
+
+async function leerWebApps() {
+    //const fs = require('fs');
+    //const os = require("os");
+
+    let content = [];
+    let webApps = [];
+    try {
+         
+         if(fs.existsSync(electron.remote.app.getPath('home') + "/.local/share/applications")){
+            content = await fs.readdirSync(electron.remote.app.getPath('home') + "/.local/share/applications");
+             content = content.filter(function(value, index, arr){ 
+                return ((value + '').startsWith("chrome-") && (value + '').endsWith(".desktop"));
+            });
+         }    
+
+         await new Promise((resolve, reject) => {
+            if (content.length === 0) resolve();
+                content.forEach(async (file, i) => {
+                    ini = require('ini');
+
+                    if(fs.existsSync(electron.remote.app.getPath('home') + "/.local/share/applications/" + file)){
+
+                        var config = ini.parse(fs.readFileSync(/*os.homedir()*/electron.remote.app.getPath('home') + "/.local/share/applications/" + file, 'utf8'));
+                        if(config["Desktop Entry"].Name)
+                            webApps[config["Desktop Entry"].Name] = {cmd:config["Desktop Entry"].Exec, class:((config["Desktop Entry"].StartupWMClass)?config["Desktop Entry"].StartupWMClass:"")};
+                    }               
+                });
+              resolve();  
+         });       
+         
+
+    }catch(err) { // manejar variable error para cuando el directorio no tenga elementos
+        console.warn(err);
+        new Modal({
+            type: "warning",
+            title: `Error leerWebApps`,
+            message: err.message
+        });
+    }
+
+    return webApps;
+
+}
+
+async function getNameWApps(webApps) {
+    
+    let wAppsName = [];
+    try {
+        
+        Object.keys(webApps).forEach(key => {
+           wAppsName.push(key);
+        });
+
+    }catch(err) { // manejar variable error para cuando el directorio no tenga elementos
+        console.warn(err);
+        new Modal({
+            type: "warning",
+            title: `Error getNameWApps`,
+            message: err.message
+        });
+    }
+
+    return wAppsName;
+
+}
+
+async function createWmodule(key,icon){   
+  //const fs = require('fs');  
+  //const os = require("os");
+  if (!fs.existsSync(path.join(electron.remote.app.getPath('home'), `modulos/${icon}_chrome.xobj`))){
+      
+      let icons = require('./assets/icons/file-icons.json');
+      let iconext = require(path.join(electron.remote.app.getPath('userData'),'iconext.json'));
+      let webApps = await leerWebApps();
+      let newIcon = {};
+
+      if(!icons[icon])
+        newIcon = iconext[icon];
+      else
+        newIcon = icons[icon]; 
+
+      window.xobjDB[`${icon}_chrome`] = {title: key, "icon":icon};
+
+      iconext[webApps[key].class] = newIcon;
+
+      let modulo = `{"title":"","x":0,"y":0,"w":0,"h":0,"code":"xWndExec('${icon}_chrome','${webApps[key].cmd}')","id":"${icon}_chrome","hidden":"true"}`;
+
+      fs.writeFileSync(path.join(require("electron").remote.app.getPath("userData"), "iconext.json"), JSON.stringify(iconext, 4));
+      //fs.writeFileSync(path.join(require("electron").remote.app.getPath("userData"), "xobjDB.json"), JSON.stringify(window.xobjDB, 4));
+      fs.writeFileSync(path.join(electron.remote.app.getPath('home'), `modulos/${icon}_chrome.xobj`), modulo);
+      
+  }else{
+    new Modal({
+            type: "warning",
+            title: `Error ${icon}_chrome`,
+            message: 'Exists module'
+        });
+  }
+}
+

@@ -1740,7 +1740,13 @@ void WindowManager::sendCountWindow(bool isPanel) {
             }
            strcpy(json_wnd+strlen(json_wnd),"\",\"class\":\"");
            //if(attr_next.map_installed != 1) 
-           strcpy(json_wnd+strlen(json_wnd),wndClas.res_class);
+           if(strcmp(wndClas.res_class,"Google-chrome") == 0 && strcmp(wndClas.res_name,"google-chrome") != 0)
+            strcpy(json_wnd+strlen(json_wnd),wndClas.res_name);
+           else
+              if(strcmp(wndClas.res_class,"Chromium-browser") == 0 && strcmp(wndClas.res_name,"chromium-browser") != 0)
+                strcpy(json_wnd+strlen(json_wnd),wndClas.res_name);
+              else
+                strcpy(json_wnd+strlen(json_wnd),wndClas.res_class);
            //else
               //strcpy(json_wnd+strlen(json_wnd),"NULL");
            strcpy(json_wnd+strlen(json_wnd),"\"}");

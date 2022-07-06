@@ -167,7 +167,8 @@ if(entorno != '')
   {
      case "mate": 
         if (!fs.existsSync(startUp)) {
-            fs.writeFileSync(startUp, JSON.stringify({startApp:["mate-settings-daemon","mate-power-manager","mbexev","statuskeyslock"]}, 4));
+            //fs.writeFileSync(startUp, JSON.stringify({startApp:["mate-settings-daemon","mate-power-manager","mbexev","statuskeyslock"]}, 4));
+            fs.writeFileSync(startUp, JSON.stringify({startApp:["mate-settings-daemon","mate-power-manager","statuskeyslock"]}, 4));
         }break;
   }
 }
@@ -184,7 +185,7 @@ try {
     fs.mkdirSync(path.join(electron.app.getPath("home"), "modulos"));
     signale.info(`Created modulos dir at ${path.join(electron.app.getPath("home"), "modulos")}`);
     if(entorno == "mate"){
-       require("username")().then(user => {
+        require("username")().then(async user => {
 
             //const { exec } = require("child_process");
             let cmd = 'load / < ' + path.join(electron.app.getPath("userData"), "user");
@@ -196,7 +197,8 @@ try {
 
 
             //fs.writeFileSync(path.join(electron.app.getPath("userData").replace("Solar_eDEX","dconf"), "user"), fs.readFileSync(path.join(__dirname, "apps","mate","user")));
-            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","aplicaciones.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","aplicaciones.xobj"), {encoding:"utf-8"}));
+           //lo saque por que al iniciar esto tardaba en ejecutar y al crear el xobjDB no existian.
+           /* fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","aplicaciones.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","aplicaciones.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","home.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","home.xobj"), {encoding:"utf-8"}));
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","firefox.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","firefox.xobj"), {encoding:"utf-8"}));
             //fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel0-blueman-manager.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel0-blueman-manager.xobj"), {encoding:"utf-8"}));
@@ -213,7 +215,26 @@ try {
             let which = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
             if(parseInt(which) != 0)
                 fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","install-debian.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","install-debian.xobj"), {encoding:"utf-8"}));
-        }); 
+            */
+        });
+        
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","aplicaciones.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","aplicaciones.xobj"), {encoding:"utf-8"}));
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","home.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","home.xobj"), {encoding:"utf-8"}));
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","firefox.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","firefox.xobj"), {encoding:"utf-8"}));
+        //fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel0-blueman-manager.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel0-blueman-manager.xobj"), {encoding:"utf-8"}));
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel1-mate-volume-control.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel1-mate-volume-control.xobj"), {encoding:"utf-8"}));
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel2-mate-display-properties.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel2-mate-display-properties.xobj"), {encoding:"utf-8"}));
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel-network.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel-network.xobj"), {encoding:"utf-8"}));
+        
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","calc.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","calc.xobj"), {encoding:"utf-8"}));
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","gimp.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","gimp.xobj"), {encoding:"utf-8"}));
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","atril.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","atril.xobj"), {encoding:"utf-8"}));
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","libreoffice-startcenter.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","libreoffice.xobj"), {encoding:"utf-8"}));
+        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","eom.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","eom.xobj"), {encoding:"utf-8"}));
+        
+        let which = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
+        if(parseInt(which) != 0)
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","install-debian.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","install-debian.xobj"), {encoding:"utf-8"}));
     }
 } catch(e) {
     signale.info(`Base modulos dir is ${path.join(electron.app.getPath("home"), "modulos")}`);     
@@ -230,6 +251,14 @@ if (!fs.existsSync(path.join(electron.app.getPath("home"), "modulos/d2m.xobj")))
 
 if (!fs.existsSync(path.join(electron.app.getPath("home"), "modulos/appcnfgmnu.xobj"))) {
     fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos/appcnfgmnu.xobj"), fs.readFileSync(path.join(__dirname, "apps/appcnfgmnu.xobj"), {encoding:"utf-8"}));
+}
+
+if (!fs.existsSync(path.join(electron.app.getPath("home"), "modulos/wapp2mod.xobj"))) {
+    fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos/wapp2mod.xobj"), fs.readFileSync(path.join(__dirname, "apps/wapp2mod.xobj"), {encoding:"utf-8"}));
+}
+
+if (!fs.existsSync(path.join(electron.app.getPath("home"), "modulos/iconext.xobj"))) {
+    fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos/iconext.xobj"), fs.readFileSync(path.join(__dirname, "apps/iconext.xobj"), {encoding:"utf-8"}));
 }
 
 
@@ -302,18 +331,36 @@ if (!fs.existsSync(xobjDB)) {
                                 break;
 
                     case 'install-debian': jsonXObjDB[ftobd] = {title: "Install Debian", icon: "install-debian"};
-                                break;                         
+                                break;
+
+                    case 'wapp2mod': jsonXObjDB[ftobd] = {title: "WebApp to Module", icon:ftobd};
+                                break;
+
+                    case 'iconext': jsonXObjDB[ftobd] = {title: "Add Icon to System", icon:ftobd};
+                                break;            
+                      
 
                     default: let tit_ftobd = ftobd;
                             if(tit_ftobd.toLowerCase().startsWith("inpanel")){
                                tit_ftobd = tit_ftobd.replace(tit_ftobd.split('-')[0] + '-',""); 
                             }
                             let icono = tit_ftobd.toLowerCase().replace(entorno + '-','').split('-')[0];
-                            tit_ftobd = require("child_process").execSync(`grep '^Name=' /usr/share/applications/${tit_ftobd}.desktop | head -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
-                            if(tit_ftobd == ''){
+                            let ini = require('ini');
+
+                            if(!fs.existsSync(`/usr/share/applications/${tit_ftobd}.desktop`)){
                                 tit_ftobd = icono;
                                 tit_ftobd = tit_ftobd.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));                           
+                            }else{
+                               var config = ini.parse(fs.readFileSync(`/usr/share/applications/${tit_ftobd}.desktop`, 'utf8'));
+                               tit_ftobd = (config["Desktop Entry"].Name)?config["Desktop Entry"].Name:''; 
+                               //require("child_process").execSync(`grep '^Name=' /usr/share/applications/${tit_ftobd}.desktop | head -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
+                                if(tit_ftobd == ''){
+                                    tit_ftobd = icono;
+                                    tit_ftobd = tit_ftobd.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));                           
+                                }
                             }
+
+                            
                             icono = icono.toLowerCase().split('_')[0];
                             icono = icono.toLowerCase().split(' ')[0];
                             fileIconsMatcher = require("./assets/misc/file-icons-match.js");
@@ -367,18 +414,35 @@ if (!fs.existsSync(xobjDB)) {
                                 break;    
 
                     case 'install-debian': jsonXObjDB[ftobd] = {title: "Install Debian", icon: "install-debian"};
-                                break;                     
+                                break;  
+
+                    case 'wapp2mod': jsonXObjDB[ftobd] = {title: "WebApp to Module", icon:ftobd};
+                                break; 
+
+                    case 'iconext': jsonXObjDB[ftobd] = {title: "Add Icon to System", icon:ftobd};
+                                break;                                          
 
                     default: let tit_ftobd = ftobd;
                             if(tit_ftobd.toLowerCase().startsWith("inpanel")){
                                tit_ftobd = tit_ftobd.replace(tit_ftobd.split('-')[0] + '-',""); 
                             }
                             let icono = tit_ftobd.toLowerCase().replace(entorno + '-','').split('-')[0];
-                            tit_ftobd = require("child_process").execSync(`grep '^Name=' /usr/share/applications/${tit_ftobd}.desktop | head -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
-                            if(tit_ftobd == ''){
+                            let ini = require('ini');
+
+                            if(!fs.existsSync(`/usr/share/applications/${tit_ftobd}.desktop`)){
                                 tit_ftobd = icono;
                                 tit_ftobd = tit_ftobd.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));                           
+                            }else{
+                               var config = ini.parse(fs.readFileSync(`/usr/share/applications/${tit_ftobd}.desktop`, 'utf8'));
+                               tit_ftobd = (config["Desktop Entry"].Name)?config["Desktop Entry"].Name:''; 
+                               //tit_ftobd = require("child_process").execSync(`grep '^Name=' /usr/share/applications/${tit_ftobd}.desktop | head -1 | sed 's/^Name=//' | sed 's/%.//' | sed 's/^"//g' | sed 's/" *$//g'`).toString().replace("\n",'');
+                                if(tit_ftobd == ''){
+                                    tit_ftobd = icono;
+                                    tit_ftobd = tit_ftobd.replace(/-/g,' ').replace(/_/g,' ').trim().toLowerCase().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));                           
+                                }
                             }
+                            
+                            
                             icono = icono.toLowerCase().split('_')[0];
                             icono = icono.toLowerCase().split(' ')[0];
                             fileIconsMatcher = require("./assets/misc/file-icons-match.js");

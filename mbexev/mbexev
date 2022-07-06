@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Mouse Button Extended Events v0.1 - Tools Solar"
+echo "Mouse Button Extended Events v0.2 - Tools Solar"
 echo ""
 
 if [ ! -n "$(which xinput)" ]; then
@@ -14,6 +14,17 @@ if [ ! -n "$(which xdotool)" ]; then
         exit 1
 fi 
 
+if [[ $1 == '' ]]; then
+        echo $0 "[id]" 
+        echo "" 
+        echo "list of devices available"
+        xinput --list
+        echo ""
+        exit 1
+fi 
+
+MOUSE_ID=$1
+
 xmodmap -e "pointer = 1 2 3 4 5 6 7 0 0" 2>/dev/null #deshabilitamos los bonotes 8 y 9 al ejecutar driver y mandamos el warning a el poso sin fondo jajaja 2 es el STDERR
 #--> no es necesario mapear todos los botones 20 0 n botones pero te manda un warnin indicando que solo los colocados seran mapeados
 
@@ -25,11 +36,13 @@ trap "xmodmap -e 'pointer = 1 2 3 4 5 6 7 8 9' 2>/dev/null" EXIT #habilitamos lo
 
 
 #MOUSE_ID=$(xinput --list | grep -i -m 1 'mouse' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
-MOUSE_ID=$(xinput --list | grep -i 'gaming mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+#el id se manda de parametro
+#MOUSE_ID=$(xinput --list | grep -i 'gaming mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
 
 #if [[ $MOUSE_ID = '' ]]; then
 	#MOUSE_ID=$(xinput --list | grep -i 'pointer' | grep -i -m 1 -v 'master\|mouse\|xtest' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
 #    MOUSE_ID=$(xinput --list | grep -i 'mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+#    MOUSE_ID=$(xinput --list | grep -i 'optical mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
 #fi
 
 if [[ ! $MOUSE_ID = '' ]]; then
@@ -53,11 +66,13 @@ while sleep 0.1; do
     mouseButton=$(comm -13 <(echo "$STATE1") <(echo "$STATE2"))
     STATE1=$STATE2
     #MOUSE_ID=$(xinput --list | grep -i 'mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
-    MOUSE_ID=$(xinput --list | grep -i 'gaming mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+    #se comenta ya que se pasara por parametro el id
+    #MOUSE_ID=$(xinput --list | grep -i 'gaming mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
 
     #if [[ $MOUSE_ID = '' ]]; then
     	#MOUSE_ID=$(xinput --list | grep -i 'pointer' | grep -i -m 1 -v 'master\|mouse\|xtest' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
     #    MOUSE_ID=$(xinput --list | grep -i 'mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
+    #    MOUSE_ID=$(xinput --list | grep -i 'optical mouse' | grep -i -m 1 -v 'consumer\|keyboard' | grep -o 'id=[0-9]\+' | grep -o '[0-9]\+')
     #fi	
 
 

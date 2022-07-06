@@ -1972,6 +1972,10 @@ function matchIcon(filename,retorno) {
     if (/disks[^]*$/i.test(filename)){ return "disk"; }
     if (/system-monitor[^]*$/i.test(filename)){ return "sysmon"; }
     if (/power-preferences[^]*$/i.test(filename)){ return "power-manager"; }
+    if (/microsoft-edge$/i.test(filename)){ return "edge"; }
+    if (/visual-code$/i.test(filename)){ return "visualcode"; }
+    if (/vcode$/i.test(filename)) { return "visualcode"; }
+    if (/chromium-browser[^]*$/i.test(filename)){ return "chromium"; }
 
     if(retorno){ return ""; }
 }
