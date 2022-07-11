@@ -1797,7 +1797,7 @@ function xWndExecFDesktop(id,desk)
             var config = ini.parse(fs.readFileSync(`${path.join(window["cApps"].osPathApps, desk + '.desktop')}`, 'utf8'));
 
             if(config["Desktop Entry"].Exec)
-                xWndExec(id,config["Desktop Entry"].Exec);
+                xWndExec(id,(config["Desktop Entry"].Exec).replace('%U','')); //quitamos el parametro %U ya que no lo tomaba como vacio al ejecutar por la interfaz.
        }
 
        
