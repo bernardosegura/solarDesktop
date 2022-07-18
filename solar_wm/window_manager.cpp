@@ -1328,19 +1328,33 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
              (e.keycode == XKeysymToKeycode(display_, XK_Tab))) {
     // alt + tab: Switch window.
       // 1. Find next window.
-      auto i = clients_.find(e.window);
+
+/******************limpiamos las ventanas fantasmas*/  
+    for( auto wAll = clients_.begin(); wAll != clients_.end(); wAll++){
+        Status retorno;
+        XClassHint wndClas;
+        //********************************checamos si la primera ventana no es fantasma
+        retorno = XGetClassHint(display_, wAll->first, &wndClas);
+        if(retorno == 0){
+          clients_.erase(wAll->first);
+        }else{
+          XFree(wndClas.res_class);
+          XFree(wndClas.res_name); 
+        }
+        //*****************************************
+    } 
+//********************************************************
+
+    auto i = clients_.find(e.window);
     if(i != clients_.end())
     {  
-
       if((e.state & ControlMask)){
-
         /////////////////////Invertir seleccion de ventana
             auto wAnd = clients_.begin();
             auto wAndBuff = wAnd;
 
             Status retorno;
             XClassHint wndClas;
-            retorno = XGetClassHint(display_, i->first, &wndClas);
 
             for( auto x = clients_.begin(); x != clients_.end(); x++){
                 retorno = XGetClassHint(display_, x->first, &wndClas);
@@ -1363,11 +1377,10 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
         ////////////////////////////////////////Fin 
 
       }else{
-
         ////////////////////////Seleccion de ventana 
             CHECK(i != clients_.end());
             ++i;
-            if (i == clients_.end()) {
+            if (i == clients_.end()) { 
               i = clients_.begin();
             }
 
@@ -1414,7 +1427,6 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
 ///////////////////////////////////////////// 
 
     }else{
-
       if(clients_.size() > 0)
       {
         auto wtmp = clients_.find(clientBack[1]);
@@ -1422,7 +1434,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
         //LOG(INFO) << "window  " << clientBack[1]<< " status  " << clients_[clientBack[1]];
 
         if(wtmp != clients_.end() && clients_[clientBack[1]] != 0)//)
-        {     
+        {
              /* XRaiseWindow(display_, clientBack[0]);
               XSetInputFocus(display_, clientBack[1], RevertToPointerRoot, CurrentTime);*/
             /////////////////////////////////////////////
@@ -1463,9 +1475,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
              } */   
     ///////////////////////////////////////////// 
         }else{
-
           if(wtmp != clients_.end())clients_.erase(clientBack[1]); 
-
           wtmp = clients_.begin();
           CHECK(wtmp != clients_.end());
           ++wtmp;
