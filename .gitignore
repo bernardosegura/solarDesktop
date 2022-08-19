@@ -20,6 +20,3 @@ solar_wm/solar_wm
 
 #ejecutable del rcmSend
 rcmSend/rcmSend
-
-#json lock
-package-lock.json
