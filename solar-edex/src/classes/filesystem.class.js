@@ -376,6 +376,11 @@ this.cmdPath = async e =>{
                     name: "Go up",
                     type: "up"
                 });
+
+                /*this.cwd.splice(2, 0, {
+                    name: "Update",
+                    type: "update"
+                });*/
             }
 
              this.cwd.splice(0, 0, {
@@ -493,6 +498,10 @@ this.cmdPath = async e =>{
                         cmd = `window.term[window.currentTerm].write('\\'${path.resolve(this.dirpath, e.name)}\\'')`;
                     }
                 }
+
+                /*if (e.type === "update") {
+                    cmd = "window.fsDisp.readFS(document.getElementById('fs_disp_title_dir').innerText)";
+                }*/
 
                 if (e.type === "system") {
                     cmd = "";

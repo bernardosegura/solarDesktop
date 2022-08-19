@@ -1,6 +1,13 @@
 const signale = require("signale");
 const {app, BrowserWindow, dialog, shell} = require("electron");
+var appExpress = require('express')();
+var serverApp = require('http').Server(appExpress);
+const WebSocketServer = require("websocket").server;
 
+const wsServer = new WebSocketServer({
+    httpServer: serverApp,
+    autoAcceptConnections: false
+});
 
 process.on("uncaughtException", e => {
     signale.fatal(e);
@@ -586,6 +593,8 @@ function createWindow(settings) {
 //  window['idPanel'] = win.id;
 
     win.webContents.executeJavaScript('window.entorno = "' + entorno + '";');
+
+    return win;
 }
 
 app.on('ready', async () => {
@@ -636,7 +645,19 @@ app.on('ready', async () => {
     signale.pending("Starting multithreaded calls controller...");
     require("./_multithread.js");
 
-    createWindow(settings);
+    let ventana = createWindow(settings);
+
+    wsServer.on("request", (request) =>{
+   
+        const connection = request.accept(null, request.origin);
+        if(!request.origin.endsWith("rcmSolar")) connection.close(); 
+        
+        connection.on("message", (message) => {
+            ventana.webContents.executeJavaScript('rcmSend(' + message[message.type+"Data"] + ');');
+        });
+    });
+
+    serverApp.listen((settings.port - 1 ) || 2999);
 
     // Support for more terminals, used for creating tabs (currently limited to 4 extra terms)
     extraTtys = {};

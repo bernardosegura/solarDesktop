@@ -50,6 +50,7 @@ class WindowManager {
   unsigned long BG_COLOR;
   unsigned long wndPanel;
   int screenWidth;
+  unsigned int focusMonitor;
   Window panel[2];
   Window clientBack[2];
   Window clientFocus[4];

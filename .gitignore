@@ -17,3 +17,9 @@ installProyect/elementsInstall
 #administrador de ventanas
 solar_wm/*.o
 solar_wm/solar_wm
+
+#ejecutable del rcmSend
+rcmSend/rcmSend
+
+#json lock
+package-lock.json

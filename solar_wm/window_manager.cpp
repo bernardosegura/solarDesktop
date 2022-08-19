@@ -30,7 +30,10 @@ extern "C" {
 //#include <thread>
 
 //#include <sys/type.h>
-#include <pwd.h>
+//#include <pwd.h>
+
+//#include <sys/wait.h>
+//#include <unistd.h>
 
 using ::std::max;
 using ::std::mutex;
@@ -1232,10 +1235,24 @@ void WindowManager::OnButtonPress(const XButtonEvent& e) {
       /////////////////////////////////////////////   
         }
   }*/
+  
+    focusMonitor = 1;
 
+    if(screenWidth != 0)
+      focusMonitor = (e.x_root/screenWidth) + 1;      
 }
 
-void WindowManager::OnButtonRelease(const XButtonEvent& e) {}
+void WindowManager::OnButtonRelease(const XButtonEvent& e) {
+  if (e.state & Button1Mask ) {
+      unsigned int focusMonitorRelease = 1; 
+
+      if(screenWidth != 0)
+        focusMonitorRelease = (e.x_root/screenWidth) + 1;
+      if(focusMonitor != focusMonitorRelease)
+        normalizarWindows();
+
+    }
+}
 
 void WindowManager::OnMotionNotify(const XMotionEvent& e) {
   //if(ctrl_L){
@@ -1696,10 +1713,10 @@ int WindowManager::OnWMDetected(Display* display, XErrorEvent* e) {
 
 void WindowManager::sendCountWindow(bool isPanel) {
 
-  static char *home = NULL;
+  //static char *home = NULL;
   //static char *rcm;
-  static char rcm[256];
-  const char *path = "/.containerrcm/.wm.rcmSolar";
+  static char rcm[10225];//[10225];//[256];
+  const char *path = "/bin/rcmSend"; //"/.containerrcm/.wm.rcmSolar";
   const char *jIni = "{\"message\":{\"call\":\"nNativeApps\",\"number\":\"";
   const char *jFin = "\",\"window\":[";
   const char *jWndFin = "]}}";
@@ -1711,7 +1728,7 @@ void WindowManager::sendCountWindow(bool isPanel) {
   //char *json;
   char json[10211];
   char letra[6];
-  FILE *pFile;
+  //FILE *pFile;
 
   //sprintf(wnd_id,"");
   //sprintf(coma,"");
@@ -1792,6 +1809,7 @@ void WindowManager::sendCountWindow(bool isPanel) {
   strcat(json,jWndFin);
 
 //LOG(INFO) << "JSON Window " << json;
+ /* 
   if(!home){
     home = getenv("HOME");
   }
@@ -1811,9 +1829,36 @@ if(pFile != NULL){
   fputs(json,pFile);
   //fwrite (json , sizeof(char), sizeof(json), pFile);
   fclose(pFile); 
-}
+}*/
+
 //free(rcm);
-//LOG(INFO) << "Home: [" <<  rcm  << "]";
+//////////////se implementa con rcmSend///////////  
+  memset(rcm, 0, 10225);
+  //strcpy(rcm,"rcmSend wm '");
+  //strcpy(rcm,"wm '");
+  strcpy(rcm,"'");
+  strcat(rcm,json);
+  strcat(rcm,"' 2>&1");
+  //strcat(rcm,"'");
+
+  //system(rcm);
+  //pFile = popen(rcm, "r");
+  //pclose(pFile);
+  //wait(&status);
+  
+  char* arg[] = {(char*)"rcmSend",(char*)"wm",json,NULL}; 
+  pid_t child_pid;
+  child_pid = fork();
+  if(child_pid == 0) {
+    execv(path, arg);
+  }
+  /*else{
+    int status;
+    wait(&status);//con este era el mismo comortamiento que popen, system...
+    LOG(INFO) << "rcm: [" <<  status  << "]";
+  }*/
+  //LOG(INFO) << "rcm: [" <<  rcm  << "]"; 
+
 }
 
 /*Window WindowManager::getWindow() {

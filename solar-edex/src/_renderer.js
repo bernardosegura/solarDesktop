@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-0606.22 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-1608.22 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -10,6 +10,8 @@ window.upowerFlag = false;
 window.batteryNone = '';
 window.alertLowBattery = false;
 window.backWnd = '0';
+window.enableLocalRCM = false;
+//window.settings.port
 
 window.eval = global.eval = function () {
     throw new Error("eval() is disabled for security reasons.");
@@ -1203,6 +1205,11 @@ function registerKeyboardShortcuts() {
          //se comenta para deshabilitar el filemanager y que solo funcione en la carpeta de modulos.
         //window.fsDisp.watchFS(document.getElementById("fs_disp_title_dir").innerHTML);
     });*/
+    globalShortcut.register("F5", () => {
+        if(require("path").join(require("electron").remote.app.getPath("home"),"modulos") != document.getElementById('fs_disp_title_dir').innerText)
+            window.fsDisp.readFS(document.getElementById('fs_disp_title_dir').innerText);
+    });
+    
 
 //se cambia por que no se propaga el ESC y eso afecto el funcionamiento del admon archivos mc
     globalShortcut.register("Control+Escape", () => { //antes "Escape" pro no funciono esc + tab en mc.
@@ -1242,7 +1249,7 @@ registerKeyboardShortcuts();
 //////////////////////////Solar registerKeys////////////////////////////
 function fnRegisterKeys()
 {
-    let registerExist = [,"Alt+W","Control+Shift+S","Control+Shift+K","Command+C","Command+V","Ctrl+Shift+C","Ctrl+Shift+V","Control+Tab","Control+Shift+Tab","Control+1","Control+2","Control+3","Control+4","Control+5","Control+Shift+H","Control+Shift+L","Control+Shift+P","Control+Escape"];
+    let registerExist = [,"Alt+W","Control+Shift+S","Control+Shift+K","Command+C","Command+V","Ctrl+Shift+C","Ctrl+Shift+V","Control+Tab","Control+Shift+Tab","Control+1","Control+2","Control+3","Control+4","Control+5","Control+Shift+H","Control+Shift+L","Control+Shift+P","Control+Escape","F5"];
     
     for(let i=0; i < registerKeys.register.length; i++)
     { 
@@ -2529,183 +2536,202 @@ function escToClose(idW, ev){
     }    
 }
 
-new restCommMesg("rcmSolar",(data)=>{
+function rcmSend(data){
+    if (typeof data == "object"){
+        callRCM(data);
+        //console.log(data);
+    }
+    
+}
+
+function callRCM(data){
     if(data.message.call){
 
-        if(data.message.call.toLowerCase() == 'msgbox'){
-            data.message.title = (!data.message.title)?"":data.message.title;
-            data.message.text = (!data.message.text)?"":data.message.text;
-            new Modal({
-                        type: "warning",
-                        title: data.message.title,
-                        message: data.message.text
-                   });            
-        }
+            if(data.message.call.toLowerCase() == 'msgbox'){
+                data.message.title = (!data.message.title)?"":data.message.title;
+                data.message.text = (!data.message.text)?"":data.message.text;
+                new Modal({
+                            type: "warning",
+                            title: data.message.title,
+                            message: data.message.text
+                       });            
+            }
 
-        if(data.message.call.toLowerCase() == 'changeimage'){
-            if(!data.message.img){
-                document.body.style.setProperty('background-size','');
-                document.body.style.setProperty('background-image',"");
-                //document.body.style.setProperty('--color_light_black',window.theme.terminal.background);  
-                window.termThemeTmp.background = window.theme.terminal.backgroundtmp;
-                Object.keys(window.term).forEach(key => {
-                    window.term[key].term.setOption("theme",window.termThemeTmp);
-                });
-                window.setBGI.transparency = false;
-                
-            }else{
-                data.message.img = (data.message.img != '')? "url(" + data.message.img + ")":"";
-                document.body.style.setProperty('background-size','cover');
-                document.body.style.setProperty('background-image',data.message.img);
-
-                if(data.message.transparency){
-                    window.termThemeTmp.background = window.setColorT;
-                    Object.keys(window.term).forEach((key,inx) => {
-                        window.term[key].term.setOption("allowTransparency",data.message.transparency);
-                        window.term[key].term.setOption("theme",window.termThemeTmp);
-                    });
-                    window.setBGI.transparency = true;
-                    
-                }else{
+            if(data.message.call.toLowerCase() == 'changeimage'){
+                if(!data.message.img){
+                    document.body.style.setProperty('background-size','');
+                    document.body.style.setProperty('background-image',"");
+                    //document.body.style.setProperty('--color_light_black',window.theme.terminal.background);  
                     window.termThemeTmp.background = window.theme.terminal.backgroundtmp;
-                    Object.keys(window.term).forEach((key,inx) => {
+                    Object.keys(window.term).forEach(key => {
                         window.term[key].term.setOption("theme",window.termThemeTmp);
                     });
                     window.setBGI.transparency = false;
-                }                
+                    
+                }else{
+                    data.message.img = (data.message.img != '')? "url(" + data.message.img + ")":"";
+                    document.body.style.setProperty('background-size','cover');
+                    document.body.style.setProperty('background-image',data.message.img);
+
+                    if(data.message.transparency){
+                        window.termThemeTmp.background = window.setColorT;
+                        Object.keys(window.term).forEach((key,inx) => {
+                            window.term[key].term.setOption("allowTransparency",data.message.transparency);
+                            window.term[key].term.setOption("theme",window.termThemeTmp);
+                        });
+                        window.setBGI.transparency = true;
+                        
+                    }else{
+                        window.termThemeTmp.background = window.theme.terminal.backgroundtmp;
+                        Object.keys(window.term).forEach((key,inx) => {
+                            window.term[key].term.setOption("theme",window.termThemeTmp);
+                        });
+                        window.setBGI.transparency = false;
+                    }                
+                }
+                window.setBGI.change = true;
             }
-            window.setBGI.change = true;
-        }
 
-        if(data.message.call.toLowerCase() == 'appxwnd'){
-            if(data.message.file){
-                appXwnd(data.message.file);
+            if(data.message.call.toLowerCase() == 'appxwnd'){
+                if(data.message.file){
+                    appXwnd(data.message.file);
+                }
             }
-        }
 
-        if(data.message.call.toLowerCase() == 'nnativeapps'){
-            if(!data.message.number) data.message.number = 0;
-            if(data.message.window){
-                if(window.settings.autoClosePanel)
-                    showTogglePanel(true);
-                //let xapp = '';
-                let xappBarr = '';
-                window.backWnd = '0';
-                document.querySelector("#id_closeXWindPanel").style.visibility = 'hidden';
-                if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
-                    document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.window.length;
-                if(data.message.window.length > 0){
-                    //let wndBack;
-                    let icons = require("./assets/icons/file-icons.json");
-                    let iconext = require(path.join(electron.remote.app.getPath("userData"),"iconext.json"));
-                    let fileIconsMatcher = require("./assets/misc/file-icons-match.js");
-                    let icon = "";
-                    let iconname ='';
-                    let wndBackOpaco = '';
-                    //let showCloseWindow = false;
-                    Object.assign(icons,iconext);
+            if(data.message.call.toLowerCase() == 'nnativeapps'){
+                if(!data.message.number) data.message.number = 0;
+                if(data.message.window){
+                    if(window.settings.autoClosePanel)
+                        showTogglePanel(true);
+                    //let xapp = '';
+                    let xappBarr = '';
+                    window.backWnd = '0';
+                    document.querySelector("#id_closeXWindPanel").style.visibility = 'hidden';
+                    if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
+                        document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.window.length;
+                    if(data.message.window.length > 0){
+                        //let wndBack;
+                        let icons = require("./assets/icons/file-icons.json");
+                        let iconext = require(path.join(electron.remote.app.getPath("userData"),"iconext.json"));
+                        let fileIconsMatcher = require("./assets/misc/file-icons-match.js");
+                        let icon = "";
+                        let iconname ='';
+                        let wndBackOpaco = '';
+                        //let wndBackBorder = '';
+                        //let showCloseWindow = false;
+                        Object.assign(icons,iconext);
 
-                    for (let i = 0; i < data.message.window.length; i++) {
-                        if(data.message.number == data.message.window[i].id /*&& data.message.window.length > 1*/){
-                           // wndBack = 'style="opacity: 0.5"';
-                            wndBackOpaco = ' opacity: 0.5';
-                            window.backWnd = data.message.number;
-                            document.querySelector("#id_closeXWindPanel").style.visibility = 'visible';
-                            //showCloseWindow = true;
-                        }
-                        else{
-                            //wndBack = '';
-                            wndBackOpaco = '';
-                            /*if(!showCloseWindow)
-                                document.querySelector("#id_closeXWindPanel").style.display = 'none';*/
-                        }
-                        //crear icono con data.message.window[i].class --> buscar en minusculas y si no partilo y biscar y el primero que se encuentre es el icono y si no poner un default
-                        data.message.window[i].class = data.message.window[i].class.toLowerCase();
-                        //console.log(data.message.window[i].class);
-                        icon = icons[data.message.window[i].class];
-                        if (typeof icon === "undefined") {
-                            iconName = fileIconsMatcher(data.message.window[i].class);
-                            icon = icons[iconName];
+                        for (let i = 0; i < data.message.window.length; i++) {
+                            if(data.message.number == data.message.window[i].id /*&& data.message.window.length > 1*/){
+                               // wndBack = 'style="opacity: 0.5"';
+                                wndBackOpaco = ''; //' opacity: 0.6';
+                                //wndBackBorder = ' border: 1px solid';
+                                window.backWnd = data.message.number;
+                                document.querySelector("#id_closeXWindPanel").style.visibility = 'visible';
+                                //showCloseWindow = true;
+                            }
+                            else{
+                                //wndBack = '';
+                                wndBackOpaco = ' opacity: 0.6';
+                                //wndBackBorder = '';
+                                /*if(!showCloseWindow)
+                                    document.querySelector("#id_closeXWindPanel").style.display = 'none';*/
+                            }
+                            //crear icono con data.message.window[i].class --> buscar en minusculas y si no partilo y biscar y el primero que se encuentre es el icono y si no poner un default
+                            data.message.window[i].class = data.message.window[i].class.toLowerCase();
+                            //console.log(data.message.window[i].class);
+                            icon = icons[data.message.window[i].class];
                             if (typeof icon === "undefined") {
-                                let classNameApp = data.message.window[i].class.replace('-',' ').replace('_',' ');
-                                classNameApp = classNameApp.split(' ');
-                                for(let x=0; x < classNameApp.length; x++){
-                                    icon = icons[classNameApp[x]];
-                                    if (typeof icon === "undefined") {
-                                        iconName = fileIconsMatcher(classNameApp[x]);
-                                        icon = icons[iconName];
+                                iconName = fileIconsMatcher(data.message.window[i].class);
+                                icon = icons[iconName];
+                                if (typeof icon === "undefined") {
+                                    let classNameApp = data.message.window[i].class.replace('-',' ').replace('_',' ');
+                                    classNameApp = classNameApp.split(' ');
+                                    for(let x=0; x < classNameApp.length; x++){
+                                        icon = icons[classNameApp[x]];
                                         if (typeof icon === "undefined") {
-                                            if (x == (classNameApp.length - 1)) {
-                                                icon = icons["x11-window"]; //.appXwnd;
-                                            }
+                                            iconName = fileIconsMatcher(classNameApp[x]);
+                                            icon = icons[iconName];
+                                            if (typeof icon === "undefined") {
+                                                if (x == (classNameApp.length - 1)) {
+                                                    icon = icons["x11-window"]; //.appXwnd;
+                                                }
+                                            }else
+                                                break;
                                         }else
                                             break;
-                                    }else
-                                        break;
+                                    }
+        
                                 }
-    
                             }
+                            
+                           //console.log(data.message.window[i].class); 
+                           /*iconname = `<div class="task_app" style="left: -0.5vh; cursor: pointer;" onclick="goNativeWindow('${data.message.window[i].id}')" title="Go Window">
+                                             <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
+                                                ${icon.svg}
+                                            </svg>                                    
+                                          </div> `;*/
+
+                          xappBarr += `<div class="task_app" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window[i].id}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
+                                             <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
+                                                ${icon.svg}
+                                            </svg>                                    
+                                          </div> `;                
+                            
+
+                           //xapp += '<h1 '/*+wndBack*/+'>'+iconname+'[ <b onclick="closeNativeWindow('+data.message.window[i].id+')" title="Close Window">X</b> ] <b onclick="goNativeWindow('+data.message.window[i].id+')" title="Go Window">'+((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")+'</b></h1>';
                         }
-                        
-                       //console.log(data.message.window[i].class); 
-                       /*iconname = `<div class="task_app" style="left: -0.5vh; cursor: pointer;" onclick="goNativeWindow('${data.message.window[i].id}')" title="Go Window">
-                                         <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
-                                            ${icon.svg}
-                                        </svg>                                    
-                                      </div> `;*/
-
-                      xappBarr += `<div class="task_app" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window[i].id}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
-                                         <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
-                                            ${icon.svg}
-                                        </svg>                                    
-                                      </div> `;                
-                        
-
-                       //xapp += '<h1 '/*+wndBack*/+'>'+iconname+'[ <b onclick="closeNativeWindow('+data.message.window[i].id+')" title="Close Window">X</b> ] <b onclick="goNativeWindow('+data.message.window[i].id+')" title="Go Window">'+((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")+'</b></h1>';
                     }
-                }
 
-                if(document.querySelector("#id_task_panel"))
-                    document.querySelector("#id_task_panel").innerHTML = decodeURIComponent(escape(xappBarr));
+                    if(document.querySelector("#id_task_panel"))
+                        document.querySelector("#id_task_panel").innerHTML = decodeURIComponent(escape(xappBarr));
 
-                /*if(document.querySelector("#id_panel_xwindow")){
-                    document.querySelector("#id_panel_xwindow").innerHTML = xapp;
+                    /*if(document.querySelector("#id_panel_xwindow")){
+                        document.querySelector("#id_panel_xwindow").innerHTML = xapp;
+                        
+                        let h1 = document.querySelectorAll("#id_panel_xwindow > h1");
+                        for(let i=0; i < h1.length; i++){
+                            try {
+                              h1[i].innerHTML = decodeURIComponent(escape(h1[i].innerHTML));
+                            } catch (error) {
+                                continue;
+                            }
+                        } 
+                    }*/
                     
-                    let h1 = document.querySelectorAll("#id_panel_xwindow > h1");
-                    for(let i=0; i < h1.length; i++){
-                        try {
-                          h1[i].innerHTML = decodeURIComponent(escape(h1[i].innerHTML));
-                        } catch (error) {
-                            continue;
-                        }
-                    } 
-                }*/
-                
-                //console.log(data.message.window);
-            }else{
-                if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
-                    document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = "0";
+                    //console.log(data.message.window);
+                }else{
+                    if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
+                        document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = "0";
+                }
             }
+
+            if(data.message.call.toLowerCase() == 'poweroff'){
+                systemPoweroff();
+            }
+
+            if(data.message.call.toLowerCase() == 'keyslock'){
+                procKeysLock(data.message);
+            }
+
+            //
+
+            /*if(data.message.call.toLowerCase() == 'netshowip'){
+                //if(data.message.value){
+                    netShowIP(data.message.value);
+               // }
+            }*/
         }
 
-        if(data.message.call.toLowerCase() == 'poweroff'){
-            systemPoweroff();
-        }
+}
 
-        if(data.message.call.toLowerCase() == 'keyslock'){
-            procKeysLock(data.message);
-        }
+if(window.enableLocalRCM){
+    new restCommMesg("rcmSolar",(data)=>{
+        callRCM(data);
+    });
+}
 
-        //
 
-        /*if(data.message.call.toLowerCase() == 'netshowip'){
-            //if(data.message.value){
-                netShowIP(data.message.value);
-           // }
-        }*/
-    }
-
-});
 
 function procKeysLock(data){
 
@@ -2821,7 +2847,7 @@ function timeAdmin(app){
 
 function goNativeWindowTask(obj,wnd){
 
-    if(obj.style.opacity != 0.5){
+    if(obj.style.opacity == 0.6){
 
         if(wnd == window.backWnd || window.backWnd == '0'){
 
@@ -3191,3 +3217,42 @@ async function createWmodule(key,icon){
   }
 }
 
+function openGroup(dir, id_app){
+    const path = require("path");
+    xWindow({ id:id_app});
+    
+    dir = dir.replace("[~]",electron.remote.app.getPath("userData"));
+    dir = dir.replace("~",electron.remote.app.getPath("home"));
+
+    if(dir == "") return false;
+
+    let directory = dir;
+    //let fs = require('fs');
+
+    if(!fs.existsSync(directory)) 
+        {
+            directory = path.join(document.getElementById("fs_disp_title_dir").innerHTML,dir);
+            if(!fs.existsSync(directory)) 
+            {
+                directory = path.join(electron.remote.app.getPath("home"), "modulos", dir); 
+                if(!fs.existsSync(directory)) 
+                {
+                    new Modal({
+                                type: "error",
+                                title: `Error ${dir}`,
+                                message: "Group not Found"
+                            });
+                    return false;
+                }
+            }
+        }
+    if(!fs.lstatSync(directory).isDirectory()){
+        new Modal({
+                    type: "error",
+                    title: `Error ${dir}`,
+                    message: "This not a Group"
+                });
+        return false;
+    }    
+    window.fsDisp.readFS(directory);
+}

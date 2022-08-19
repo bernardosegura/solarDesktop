@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+var WebSocketClient = require('websocket').client;
+var client = new WebSocketClient();
 const pathSetting = path.join(process.env.HOME, ".config","Solar_eDEX","settings.json");
 let pathTheme = path.join(process.env.HOME, ".config","Solar_eDEX","themes");//,setting.theme + ".json")
 
@@ -14,6 +16,7 @@ if (!fs.existsSync(pathSetting)){
 }
 
 let setting = require(pathSetting);
+let port = setting.port?(setting.port - 1):2999; 
 
 pathTheme = path.join(pathTheme,setting.theme + ".json");
 
@@ -87,7 +90,16 @@ if(process.argv.length > 2){
 		console.log(msgSession);
 		if(msgSession != '')
 			console.log();
-	  	aplicaImagen.sendMessage("rcmSolar",{img:bgImage, call:"changeImage",isPriority: true, transparency:((theme.terminal.allowTransparency)?theme.terminal.allowTransparency:false)})
+	  	//aplicaImagen.sendMessage("rcmSolar",{img:bgImage, call:"changeImage",isPriority: true, transparency:((theme.terminal.allowTransparency)?theme.terminal.allowTransparency:false)})
+	 	client.connect('ws://localhost:' + port + '/',null,".xobj.rcmSolar"); //obtener archivo json para puerto
+		client.on('connectFailed', function(error) {
+		    console.log('Connect to Core: ' + error.toString());
+		    console.log();
+		});
+		client.on('connect', function(connection) {
+		    connection.sendUTF(JSON.stringify({message:{img:bgImage, call:"changeImage",isPriority: true, transparency:((theme.terminal.allowTransparency)?theme.terminal.allowTransparency:false)}}));
+		    connection.close();
+		}); 
 	  }	 
 	});
 
@@ -107,5 +119,14 @@ if(process.argv.length > 2){
 	fs.writeFileSync(pathTheme, JSON.stringify(theme, 4));
 	console.log('OK');
 	console.log();
-	aplicaImagen.sendMessage("rcmSolar",{call:"changeImage",isPriority: true})
+	//aplicaImagen.sendMessage("rcmSolar",{call:"changeImage",isPriority: true})
+	client.connect('ws://localhost:' + port + '/',null,".xobj.rcmSolar"); //obtener archivo json para puerto
+	client.on('connectFailed', function(error) {
+	    console.log('Connect to Core: ' + error.toString());
+	    console.log();
+	});
+	client.on('connect', function(connection) {
+	    connection.sendUTF(JSON.stringify({message:{call:"changeImage",isPriority: true}}));
+	    connection.close();
+	}); 
 }
