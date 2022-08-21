@@ -237,8 +237,21 @@ void abrirSVG(String svg) {
 
   final file = File(dir + 'iconext.json');
 
-  file.writeAsString(jsonEncode(obj));     
-   
+  file.writeAsString(jsonEncode(obj));
+
+  showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Save'),
+          content: Text('Successful!'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'OK'),
+              child: const Text('OK'),
+            )
+          ],
+        ),
+      );      
   // print(obj.keys.toList());
  }
 
@@ -479,7 +492,7 @@ void salir(){
               context: context,
               builder: (BuildContext context) => AlertDialog(
                 title: const Text('Warning'),
-                content: Text('*You need to log out to see the changes.'),
+                content: Text('*You need to logout to see the changes.'),
                 actions: <Widget>[
                   TextButton(
                     onPressed: (){ 

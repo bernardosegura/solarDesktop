@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-1608.22 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-2108.22 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -2204,12 +2204,34 @@ function changeTitIcnMnu(app,title,icon){
         {
             if(!window.xobjDB[app])
             {
-                new Modal({
-                    type: "warning",
-                    title: `Error X(`,
-                    message: "Application not Found"
-                }); 
-                return false;
+                app = app.toLowerCase();// se agrega para cuando se usan mayusculas y minusculas en los nombres de las apps
+
+                if(!window.xobjDB[app])
+                {
+                    new Modal({
+                        type: "warning",
+                        title: `Error X(`,
+                        message: "Application not Found"
+                    }); 
+                    return false;
+
+                }else{
+                    let icono = app;
+                    if(icono.startsWith("inpanel"))
+                        icono = icono.replace(icono.split('-')[0] + '-',"");
+
+                    icono = icono.replace(window.entorno + '-','').split('-')[0];
+                    icono = icono.toLowerCase().split('_')[0];
+                    icono = icono.toLowerCase().split(' ')[0];
+
+                    window.xobjDB[app].title = (document.getElementById(title).value.trim() != '')? document.getElementById(title).value: getTitleAppsDesktop(app + '.desktop');
+                    window.xobjDB[app].icon = (document.getElementById(icon).value.trim() != '')? document.getElementById(icon).value: icono;
+
+                    fs.writeFileSync(path.join(require("electron").remote.app.getPath("userData"), "xobjDB.json"), JSON.stringify(window.xobjDB, 4));
+                    window.fsDisp.readFS(path.join(require("electron").remote.app.getPath("home"),"modulos"));
+                    return true;
+                    
+                }
 
             }else{
                 let icono = app;
@@ -2254,11 +2276,19 @@ function loadCnfgmnu(app,title,icon)
         {
             if(!window.xobjDB[app])
             {
-                new Modal({
-                    type: "warning",
-                    title: `Error X(`,
-                    message: "Application not Found"
-                });
+                app = app.toLowerCase();
+                if(!window.xobjDB[app])// se agrega para cuando se usan mayusculas y minusculas en los nombres de las apps
+                {
+                    new Modal({
+                        type: "warning",
+                        title: `Error X(`,
+                        message: "Application not Found"
+                    });
+                }else{
+                    document.getElementById(title).value = window.xobjDB[app].title;
+                    document.getElementById(icon).value = window.xobjDB[app].icon;
+                }
+
             }else{
                 document.getElementById(title).value = window.xobjDB[app].title;
                 document.getElementById(icon).value = window.xobjDB[app].icon;

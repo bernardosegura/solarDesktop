@@ -328,7 +328,8 @@ this.cmdPath = async e =>{
 
                         if (fstat.isSymbolicLink()) {
                             e.category = "symlink";
-                            e.type = "symlink";
+                            //e.type = "symlink"; // se utilizaran los ln (enlaces) en panel principal para colocar icono,titulo a las apps de los grupos
+                             e.type = "file";
                         }
 
                         if (fstat.isFile()) {
@@ -475,7 +476,13 @@ this.cmdPath = async e =>{
                     if (e.type === "dir" || e.type.endsWith("Dir")) {
                         cmd = `window.fsDisp.readFS('${path.resolve(this.dirpath, e.name).replace(/\\/g, '\\\\')}')`; //`window.term[window.currentTerm].writelr('cd \\'${e.name.replace(/\\/g, "\\\\")}\\'')`;
                     } else if (e.type === "up") {
-                        cmd = `window.fsDisp.readFS('${path.resolve(this.dirpath, '..').replace(/\\/g, '\\\\')}')`; //`window.term[window.currentTerm].writelr('cd ..')`;
+                        // se limita a que los grupos el nuvel superior sea la carpeta de modulos
+                        const rutaOrigen = path.join(electron.remote.app.getPath("home"), "modulos");
+                        if(this.dirpath.startsWith(rutaOrigen))
+                            cmd = `window.fsDisp.readFS('${path.resolve(this.dirpath, '..').replace(/\\/g, '\\\\')}')`; //`window.term[window.currentTerm].writelr('cd ..')`;
+                        else
+                            cmd = `window.fsDisp.readFS('${rutaOrigen.replace(/\\/g, '\\\\')}')`; //`window.term[window.currentTerm].writelr('cd ..')`;
+
                     } else if (e.type === "disk" || e.type === "rom" || e.type === "usb") {
                         if (process.platform === "win32") {
                             cmd = `window.term[window.currentTerm].writelr('${e.path.replace(/\\/g, "\\\\")}')`;
@@ -491,7 +498,13 @@ this.cmdPath = async e =>{
                     if (e.type === "dir" || e.type.endsWith("Dir")) {
                         cmd = `window.fsDisp.readFS('${path.resolve(this.dirpath, e.name).replace(/\\/g, '\\\\')}')`;
                     } else if (e.type === "up") {
-                        cmd = `window.fsDisp.readFS('${path.resolve(this.dirpath, '..').replace(/\\/g, '\\\\')}')`;
+                        // se limita a que los grupos el nuvel superior sea la carpeta de modulos
+                        const rutaOrigen = path.join(electron.remote.app.getPath("home"), "modulos");
+                        if(this.dirpath.startsWith(rutaOrigen))
+                            cmd = `window.fsDisp.readFS('${path.resolve(this.dirpath, '..').replace(/\\/g, '\\\\')}')`; //`window.term[window.currentTerm].writelr('cd ..')`;
+                        else
+                            cmd = `window.fsDisp.readFS('${rutaOrigen.replace(/\\/g, '\\\\')}')`; //`window.term[window.currentTerm].writelr('cd ..')`;
+
                     } else if (e.type === "disk" || e.type === "rom" || e.type === "usb") {
                         cmd = `window.fsDisp.readFS('${e.path.replace(/\\/g, '\\\\')}')`;
                     } else {
@@ -606,13 +619,13 @@ this.cmdPath = async e =>{
                         type = "eDEX-UI keyboards folder";
                         break;
                     default:
-                        if (e.type === "dir") type = "folder";
+                        //if (e.type === "dir") type = "folder";
                         let iconName = this.fileIconsMatcher(e.name);
                         icon = this.icons[iconName];
                         if (typeof icon === "undefined") {
                             if (e.type === "file") icon = this.icons.file;
                             if (e.type === "dir") {
-                                icon = this.icons.group;//this.icons.dir;//aqui icono grupo
+                                icon = this.icons.dir; //this.icons.group; //aqui icono grupo, se quita para anexar la solucion con enlace symbolico
                             }
                             if (typeof icon === "undefined") icon = this.icons.other;
                         } else {
@@ -712,7 +725,9 @@ this.cmdPath = async e =>{
                         }
 
                         e.type = "xobj";
-                        e.category = tamanio;
+                        // se utilizaran los ln (enlaces) en panel principal para colocar icono,titulo a las apps de los grupos
+                        if(e.category != "symlink")
+                            e.category = tamanio;
                         type = "Application";
                     }
                 }/*else  //se comenta ya que este se ejecuta en el boton de salida de discos
@@ -772,9 +787,15 @@ this.cmdPath = async e =>{
                     inpanel = false;  
                     idInpanel = "";              
                 }else{
+
+                    let ocultarSymlnk = '';
+                    // se utilizaran los ln (enlaces) en panel principal para colocar icono,titulo a las apps de los grupos
+                    if(e.category === "symlink" || e.type === "dir")
+                        ocultarSymlnk = 'style="display: none"';
+
                     if(path.join(require("electron").remote.app.getPath("home"),"modulos") == this.dirpath){
                         if(e.category != "up")
-                            filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" onclick="${cmd}" title="${e.name}${tamanio}">
+                            filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="${cmd}" title="${e.name}${tamanio}">
                                         <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
                                             ${icon.svg}
                                         </svg>
@@ -784,7 +805,7 @@ this.cmdPath = async e =>{
                                         <h4>${e.lastAccessed}</h4>
                                     </div>`;            
                      }else
-                         filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" onclick="${cmd}" title="${e.name}${tamanio}">
+                         filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="${cmd}" title="${e.name}${tamanio}">
                                     <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
                                         ${icon.svg}
                                     </svg>
