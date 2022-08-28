@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-2108.22 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-2808.22 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};

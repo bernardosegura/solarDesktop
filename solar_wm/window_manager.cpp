@@ -32,7 +32,7 @@ extern "C" {
 //#include <sys/type.h>
 //#include <pwd.h>
 
-//#include <sys/wait.h>
+#include <sys/wait.h>
 //#include <unistd.h>
 
 using ::std::max;
@@ -1715,7 +1715,7 @@ void WindowManager::sendCountWindow(bool isPanel) {
 
   //static char *home = NULL;
   //static char *rcm;
-  static char rcm[10225];//[10225];//[256];
+  //static char rcm[10225];//[10225];//[256];
   const char *path = "/bin/rcmSend"; //"/.containerrcm/.wm.rcmSolar";
   const char *jIni = "{\"message\":{\"call\":\"nNativeApps\",\"number\":\"";
   const char *jFin = "\",\"window\":[";
@@ -1833,13 +1833,13 @@ if(pFile != NULL){
 
 //free(rcm);
 //////////////se implementa con rcmSend///////////  
-  memset(rcm, 0, 10225);
-  //strcpy(rcm,"rcmSend wm '");
+  /*memset(rcm, 0, 10225);
+  strcpy(rcm,"rcmSend wm '");
   //strcpy(rcm,"wm '");
-  strcpy(rcm,"'");
+  //strcpy(rcm,"'");
   strcat(rcm,json);
-  strcat(rcm,"' 2>&1");
-  //strcat(rcm,"'");
+  //strcat(rcm,"' 2>&1");
+  strcat(rcm,"'");*/
 
   //system(rcm);
   //pFile = popen(rcm, "r");
@@ -1848,14 +1848,18 @@ if(pFile != NULL){
   
   char* arg[] = {(char*)"rcmSend",(char*)"wm",json,NULL}; 
   pid_t child_pid;
+  signal(SIGCHLD, SIG_IGN); //este ya no me crea los zombies
   child_pid = fork();
   if(child_pid == 0) {
     execv(path, arg);
+    exit(0);
   }
   /*else{
     int status;
-    wait(&status);//con este era el mismo comortamiento que popen, system...
-    LOG(INFO) << "rcm: [" <<  status  << "]";
+    //wait(&status);//con este era el mismo comortamiento que popen, system... "inestabilidad en irse al panel principal"
+    //se siguen creando los zombies con waitpid con WNOHANG :)
+    waitpid(child_pid, &status, WNOHANG);
+    //LOG(INFO) << "rcm: [" <<  status  << "]";
   }*/
   //LOG(INFO) << "rcm: [" <<  rcm  << "]"; 
 
@@ -1908,7 +1912,7 @@ void WindowManager::normalizarWindows(/*Window wnd*/){
 
   int y = 0,x = 0;
   int height = 0,width = 0;
-  int tamanioTopBarra = 23;// sin borde //24; //conborde
+  int tamanioTopBarra = 0;//23;se realiza por porcentaje por tamanios de pantalla // sin borde //24; //conborde
   unsigned int monitores = 1;
   XWindowAttributes x_root_attr,attr_Xwin;  
 
@@ -1916,6 +1920,9 @@ void WindowManager::normalizarWindows(/*Window wnd*/){
 
   if(screenWidth != 0)
     monitores = x_root_attr.width/screenWidth;
+
+  //////////se genera la cantidad de pixeles por 2.13 porcentaje de tamanio
+  tamanioTopBarra = ((2.13*x_root_attr.height)/100);
    
   auto window = clients_.begin();
   while (window != clients_.end()){
