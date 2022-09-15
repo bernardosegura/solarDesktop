@@ -54,6 +54,8 @@ class WindowManager {
   Window panel[2];
   Window clientBack[2];
   Window clientFocus[4];
+  Window focoBarraTarea;
+  //bool cambiaFoco;
 
  // bool ctrl_L = false;
 
@@ -92,6 +94,7 @@ class WindowManager {
 
   //void OnEnterNotify(const XButtonEvent& e);
   void OnFocusIn(const XFocusChangeEvent& e);
+  void OnFocusOut(const XFocusChangeEvent& e);
 
   void sendCountWindow(bool isPanel);
 

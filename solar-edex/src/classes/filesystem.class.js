@@ -60,7 +60,7 @@ this.cmdPath = async e =>{
                 
                     if(!window.teclaCTRL)
                         //window.term[window.currentTerm].writelr(window.settings.fileManager + ' "'+document.getElementById("fs_disp_title_dir").innerHTML+'"');
-                        require("child_process").exec(window.settings.fileManager + ' "'+window.pathActual/*document.getElementById("fs_disp_title_dir").innerHTML*/+'"', (error, stdout, stderr) => {
+                        require("child_process").exec(window.settings.fileManager + ' "'+window.pathActual/*document.getElementById("fs_disp_title_dir").innerHTML*/+'" >/dev/null', (error, stdout, stderr) => {
                                 if (error) {
                                     new Modal({
                                         type: "warning",
@@ -457,7 +457,8 @@ this.cmdPath = async e =>{
             let inpanel = false;
             let idInpanel = '';
 
-            let iconext = require(path.join(require("electron").remote.app.getPath("userData"),"iconext.json"));
+            let iconext = JSON.parse(fs.readFileSync(path.join(require('electron').remote.app.getPath('userData'),'iconext.json'),{encoding:'utf-8'}));
+            //require(path.join(require("electron").remote.app.getPath("userData"),"iconext.json"));
             Object.assign(this.icons,iconext);
 
 

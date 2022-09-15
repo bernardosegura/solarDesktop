@@ -6,7 +6,7 @@
   "code":"initIcons = function(){
   window.wnd_appcnfgmnu.icons = [];
   icons = require('./assets/icons/file-icons.json');
-  let iconext = require(path.join(require('electron').remote.app.getPath('userData'),'iconext.json'));
+  let iconext = JSON.parse(fs.readFileSync(path.join(require('electron').remote.app.getPath('userData'),'iconext.json'),{encoding:'utf-8'}));
   Object.assign(icons,iconext);
   
   for( key in icons ){

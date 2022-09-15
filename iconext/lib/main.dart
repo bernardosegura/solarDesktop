@@ -487,7 +487,7 @@ void salir(){
           ),
         );
     else
-      if(save)
+      /*if(save)
           showDialog<String>(
               context: context,
               builder: (BuildContext context) => AlertDialog(
@@ -503,7 +503,7 @@ void salir(){
                 ],
               ),
             );
-        else  
+        else*/  
             exit(0);
 }
 

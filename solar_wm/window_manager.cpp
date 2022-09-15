@@ -101,6 +101,7 @@ void WindowManager::Run() {
   //memset(panel, 0, 2);
   //memset(clientBack, 0, 2);
   //memset(clientFocus, 0, 4);
+  //cambiaFoco = false;
 
   //   b. Set error handler.
   XSetErrorHandler(&WindowManager::OnXError);
@@ -138,6 +139,9 @@ void WindowManager::Run() {
 
   //   e. Ungrab X server.
   XUngrabServer(display_);
+
+  //ponemos por default la variable controladora de el foco en la barra de tareas
+  focoBarraTarea = 0;
 
  //pasamos el foco al panel desde el incio del administrador de ventana
   XRaiseWindow(display_, panel[0]);
@@ -182,6 +186,7 @@ void WindowManager::Run() {
         OnConfigureRequest(e.xconfigurerequest);
         break;
       case ButtonPress:
+       //LOG(INFO) << "click: "; 
         //e.xbutton.send_event = 1;
         //if(ctrl_L)
           OnButtonPress(e.xbutton);
@@ -217,6 +222,11 @@ void WindowManager::Run() {
            //OnEnterNotify(e.xcrossing);
             OnFocusIn(e.xfocus);
         break;
+      case FocusOut://EnterNotify:
+        //LOG(INFO) << "Enter notify no, es focus in window " << e.xfocus.window << " foco en " << clientFocus[1];//e.xcrossing.window;
+           //OnEnterNotify(e.xcrossing);
+            OnFocusOut(e.xfocus);
+        break;  
       default:
         break;
         //LOG(WARNING) << "Ignored event";
@@ -363,7 +373,9 @@ else
 /////////////////////////////////////////////          
       }else{
         //if(x_window_attrs.map_installed != 1){
-          clients_[w] = frame; 
+        //se cambia para agregar siempre al inicio la ventana a abrir
+          clients_.insert(clients_.begin(),{w,frame});
+          //clients_[w] = frame; 
           clientBack[0] = frame;
           clientBack[1] = w;
         //}
@@ -373,7 +385,9 @@ else
   else
   {
      //if(x_window_attrs.map_installed != 1){
-        clients_[w] = frame;
+    //se cambia para agregar siempre al inicio la ventana a abrir
+        clients_.insert(clients_.begin(),{w,frame});
+        //clients_[w] = frame;
         clientBack[0] = frame;
         clientBack[1] = w;
     //}
@@ -401,10 +415,22 @@ Mod4Mask    |    64 | Windows
 Mod5Mask    |   128 | ???
 */
   if(!was_created_before_window_manager || (wndPanel != 0 && wndPanel != w)){
+    XGrabButton(
+          display_,
+          Button1,
+          AnyModifier,
+          w,
+          false,
+          ButtonPressMask,
+          GrabModeAsync,
+          GrabModeAsync,
+          None,
+          None);
 
 ///////////////////////////////////Mover ventana y combinaciones posibles//////////////////////////////
      //   a. Move windows with ctrl + alt + left button.
-    XGrabButton(
+    //---> se pasan para cuando la ventana recibe el foco de entrada.
+   /* XGrabButton(
         display_,
         Button1,
         ControlMask | Mod1Mask,
@@ -453,7 +479,7 @@ Mod5Mask    |   128 | ???
         GrabModeAsync,
         GrabModeAsync,
         None,
-        None);
+        None);*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////Modificar ventana y combinaciones posibles//////////////////////////////    
     //   b. Resize windows with ctrl + alt + right button.
@@ -713,7 +739,7 @@ Mod5Mask    |   128 | ???
  XSelectInput(
       display_,
       w,
-      FocusChangeMask);//EnterWindowMask);*/
+      FocusChangeMask);//ButtonPressMask);//FocusChangeMask);//EnterWindowMask);*/
 
     /*XGrabButton(
         display_,
@@ -722,7 +748,7 @@ Mod5Mask    |   128 | ???
         w,
         false,
         ButtonPressMask,// | ButtonReleaseMask | ButtonMotionMask,
-        GrabModeSync,
+        GrabModeAsync,
         GrabModeAsync,
         None,
         None);*/
@@ -845,7 +871,7 @@ void WindowManager::Unframe(Window w) {
   //lo comentado es para enviar al panel,
   // pero creo que lo correto es que las ventanas intereactuen con ellas ya que el panel es aparte
     auto i = clients_.find(clientFocus[1]/*w*/);
-    if(i != clients_.end())
+    if(i != clients_.end() && w != clientFocus[1])
     {  
       /*CHECK(i != clients_.end());
       ++i;
@@ -884,22 +910,26 @@ void WindowManager::Unframe(Window w) {
             i = clients_.begin();
           }
 
+          if(i->first == clientFocus[1]){
+            ++i;
+          }
+
           // 2. Raise and set focus.
          /* XRaiseWindow(display_, i->second);
           XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);*/
 
-////////////////////////////////////////////
-      clientFocus[0] = clientFocus[2];
-      clientFocus[1] = clientFocus[3];
-      clientFocus[2] = i->second;
-      clientFocus[3] = i->first;
+    ////////////////////////////////////////////
+          clientFocus[0] = clientFocus[2];
+          clientFocus[1] = clientFocus[3];
+          clientFocus[2] = i->second;
+          clientFocus[3] = i->first;
 
-      clientBack[0] = i->second;
-      clientBack[1] = i->first;
+          clientBack[0] = i->second;
+          clientBack[1] = i->first;
 
-      XRaiseWindow(display_, i->second);
-      XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
-///////////////////////////////////////////// 
+          XRaiseWindow(display_, i->second);
+          XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
+    ///////////////////////////////////////////// 
 
         }else{
 
@@ -930,7 +960,6 @@ void WindowManager::Unframe(Window w) {
 
       XRaiseWindow(display_, panel[0]);
       XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
-
       isPanel = true;
 /////////////////////////////////////////////         
       }
@@ -949,7 +978,6 @@ void WindowManager::Unframe(Window w) {
 
       XRaiseWindow(display_, panel[0]);
       XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
-
       isPanel = true;
 ///////////////////////////////////////////// 
   }
@@ -968,36 +996,154 @@ void WindowManager::Unframe(Window w) {
 //por si una ventana obtiene el foco y esta no pone la ventanta hasta arriba.      
 void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
 
-   // LOG(INFO) << "window " << e.window << " focus in " << clientFocus[3];
+    //LOG(INFO) << "window " << e.window << " focus in ";
+  //se quita para que al precionar la barra no mande a la pantalla y si es diferente el foco del panel ejecute la accion
+    if(e.window == panel[1] && e.window != clientFocus[3]) 
+       {
+          /*auto i = clients_.find(clientBack[1]);
+          if(i != clients_.end())
+          {
+              clientFocus[0] = clientFocus[2];
+              clientFocus[1] = clientFocus[3];
+              clientFocus[2] = i->second;
+              clientFocus[3] = i->first;
+
+              XRaiseWindow(display_, clientBack[0]);
+              XSetInputFocus(display_, clientBack[1], RevertToPointerRoot, CurrentTime);
+              if(focoBarraTarea != clientBack[1])
+                sendCountWindow(false);
+            //clientBack[0] = i->second;
+            //clientBack[1] = i->first;
+              
+          }else{*/
+//if(focoBarraTarea != 0){
+//if(e.window == clientFocus[1]){ 
+            clientBack[0] = clientFocus[2];
+            clientBack[1] = clientFocus[3];
+
+            clientFocus[0] = clientFocus[2];
+            clientFocus[1] = clientFocus[3];
+            clientFocus[2] = panel[0];
+            clientFocus[3] = panel[1];
+
+            //XRaiseWindow(display_, panel[0]);
+            //dejamos solo el foco al panel para poder ejecutar la haccion de la barra y 
+            //le delegamos al panel la accion de cambio de ventana
+            XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+            //XSetInputFocus(display_, clientBack[1], RevertToPointerRoot, CurrentTime);
+            /*if(focoBarraTarea != 0)
+                sendCountWindow(true);*/
+//}              
+          //}
+          ///////////////////////////////////////////// 
+       }else{
+            auto i = clients_.find(e.window);
+            if(i != clients_.end())
+            {
+              //quitamos la toma del click
+              XUngrabButton(display_, Button1, AnyModifier, e.window);
+              //volvemos a agregar el click :) de esta manera ya recibe el foco con un cli///////////////////////////////////Mover ventana y combinaciones posibles//////////////////////////////
+               //   a. Move windows with ctrl + alt + left button.
+              XGrabButton(
+                  display_,
+                  Button1,
+                  ControlMask | Mod1Mask,
+                  e.window,
+                  false,
+                  ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
+                  GrabModeAsync,
+                  GrabModeAsync,
+                  None,
+                  None);
+
+              //   a. Move windows with ctrl + alt + left button + numLock.
+              XGrabButton(
+                  display_,
+                  Button1,
+                  ControlMask | Mod1Mask | Mod2Mask,
+                  e.window,
+                  false,
+                  ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
+                  GrabModeAsync,
+                  GrabModeAsync,
+                  None,
+                  None);
+
+              //   a. Move windows with ctrl + alt + left button + Block Mayus.
+              XGrabButton(
+                  display_,
+                  Button1,
+                  ControlMask | Mod1Mask | LockMask,
+                  e.window,
+                  false,
+                  ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
+                  GrabModeAsync,
+                  GrabModeAsync,
+                  None,
+                  None);
+
+              //   a. Move windows with ctrl + alt + left button + Block Mayus + numLock.
+              XGrabButton(
+                  display_,
+                  Button1,
+                  ControlMask | Mod1Mask | LockMask | Mod2Mask,
+                  e.window,
+                  false,
+                  ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
+                  GrabModeAsync,
+                  GrabModeAsync,
+                  None,
+                  None);
+          ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+              clientFocus[0] = clientBack[0];//clientFocus[2];
+              clientFocus[1] = clientBack[1];//clientFocus[3];
+              clientFocus[2] = i->second;
+              clientFocus[3] = i->first;
+
+              //clientBack[0] = i->second;
+              //clientBack[1] = i->first;
+
+            //if(cambiaFoco){ 
+              XRaiseWindow(display_, i->second); 
+              //XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
+
+              if(focoBarraTarea != i->first)
+                  sendCountWindow(false);
+    //}            
+     //sendCountWindow(false); //se agrega ya que al obtener el foco por otro lado no se refresca en la barra de tareas
+          
+          } 
+       }
+   /* return;
     if( e.window != clientFocus[3])
     {
        if(e.window == panel[1]) //se quita para que al precionar la barra no mande a la pantalla
        {
-              /*clientBack[0] = clients_[clientFocus[3]];
-              clientBack[1] = clientFocus[3];
+              //clientBack[0] = clients_[clientFocus[3]];
+              //clientBack[1] = clientFocus[3];
           /////////////////////////////////////////////
-                clientFocus[0] = clientFocus[2];
-                clientFocus[1] = clientFocus[3];
-                clientFocus[2] = panel[0];
-                clientFocus[3] = panel[1];*/
+              //  clientFocus[0] = clientFocus[2];
+              //  clientFocus[1] = clientFocus[3];
+              //  clientFocus[2] = panel[0];
+              //  clientFocus[3] = panel[1];* /
 
                 auto i = clients_.find(clientBack[1]);
                 if(i != clients_.end())
                 {
-                  /*XWindowAttributes attr_Xwin;
-                  XGetWindowAttributes(display_, clientBack[0], &attr_Xwin);
-                  if(attr_Xwin.x < screenWidth){*/
+                  //XWindowAttributes attr_Xwin;
+                  //XGetWindowAttributes(display_, clientBack[0], &attr_Xwin);
+                  //if(attr_Xwin.x < screenWidth){* /
                     XRaiseWindow(display_, clientBack[0]);
                     XSetInputFocus(display_, clientBack[1], RevertToPointerRoot, CurrentTime);
-                 /* }else{
-                    XRaiseWindow(display_, panel[0]);
-                    XSetInputFocus(display_, panel[0], RevertToPointerRoot, CurrentTime);
-                    sendCountWindow(true);
-                  }*/
+                 // }else{
+                 //   XRaiseWindow(display_, panel[0]);
+                 //   XSetInputFocus(display_, panel[0], RevertToPointerRoot, CurrentTime);
+                 //   sendCountWindow(true);
+                 // }* /
                 }else{
                   XRaiseWindow(display_, panel[0]);
                   XSetInputFocus(display_, panel[0], RevertToPointerRoot, CurrentTime);
-                  sendCountWindow(true);
+                  sendCountWindow(true); //se comenta para tratar de evitar los ciclados
                 }
                 //XRaiseWindow(display_, panel[0]);
                 //XSetInputFocus(display_, panel[0], RevertToPointerRoot, CurrentTime);
@@ -1019,11 +1165,11 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
 
             XRaiseWindow(display_, i->second); 
             XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
-            sendCountWindow(false); // se actualiza la lista de aplicaciones  
+            sendCountWindow(false); // se actualiza la lista de aplicaciones //se comenta para tratar de evitar los ciclados 
           }
 
        }
-    }
+    }*/
     /*if(prosccFoc){
 
         auto wFin = clients_.find(e.window);
@@ -1058,6 +1204,41 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
           }
     }
     prosccFoc = true;*/
+}
+void WindowManager::OnFocusOut(const XFocusChangeEvent& e){
+
+   //LOG(INFO) << "window " << e.window << " focus out ";
+  if(e.window != panel[1]){
+      XGrabButton(
+          display_,
+          Button1,
+          AnyModifier,
+          e.window,
+          false,
+          ButtonPressMask,
+          GrabModeAsync,
+          GrabModeAsync,
+          None,
+          None); 
+
+      auto i = clients_.find(e.window);
+      if(i != clients_.end())
+      {
+        clientBack[0] = i->second;
+        clientBack[1] = i->first;
+      } 
+  }/*else{
+    if(!cambiaFoco){ 
+      clientFocus[0] = clientFocus[2];
+      clientFocus[1] = clientFocus[3];
+      clientFocus[2] = panel[0];
+      clientFocus[3] = panel[1];
+
+      XRaiseWindow(display_, panel[0]);
+      XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime); 
+    }else
+      cambiaFoco = false;
+  }*/         
 }
 
 void WindowManager::OnCreateNotify(const XCreateWindowEvent& e) {}
@@ -1796,10 +1977,22 @@ void WindowManager::sendCountWindow(bool isPanel) {
 
   //sprintf(jMed,"%d",(int)clients_.size());
   //LOG(INFO) << "X11 " <<clients_.size();
-  if(!isPanel)   
-    sprintf(jMed,"%ld",clientBack[1]);
-  else
+  if(!isPanel){
+    /*sprintf(jMed,"%ld",clientBack[1]);
+    focoBarraTarea = clientBack[1];*/
+    if(clientFocus[3] != panel[1]){ //si no es el panel el del foco es el back por el focusout
+      sprintf(jMed,"%ld",clientFocus[3]);
+      focoBarraTarea = clientFocus[3];
+    }else{
+      sprintf(jMed,"%ld",clientBack[1]);
+      focoBarraTarea = clientBack[1];
+    }
+    
+  }   
+  else{
     sprintf(jMed,"0");
+    focoBarraTarea = 0;
+  }
  
   //json = (char *) malloc(strlen(jIni) + strlen(jMed) + strlen(jFin) + 1 + strlen(wnd_id));
   strcpy(json,jIni);
@@ -1862,7 +2055,6 @@ if(pFile != NULL){
     //LOG(INFO) << "rcm: [" <<  status  << "]";
   }*/
   //LOG(INFO) << "rcm: [" <<  rcm  << "]"; 
-
 }
 
 /*Window WindowManager::getWindow() {

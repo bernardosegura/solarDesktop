@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-2808.22 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-1209.22 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -1121,8 +1121,8 @@ function registerKeyboardShortcuts() {
         globalShortcut.register("Ctrl+Shift+C", () => {
             window.term[window.currentTerm].clipboard.copy();
         });
-        globalShortcut.register("Ctrl+Shift+V", () => {
-            window.term[window.currentTerm].clipboard.paste();
+        globalShortcut.register("Ctrl+Shift+V", (e) => {
+            window.term[window.currentTerm].clipboard.paste(); 
         });
     }
 
@@ -1215,8 +1215,21 @@ function registerKeyboardShortcuts() {
     globalShortcut.register("Control+Escape", () => { //antes "Escape" pro no funciono esc + tab en mc.
        closeModal();
     });
-
+    
+/////////////////////////////Revision.......
     globalShortcut.register("Super+Tab", () => { //registramos win + tab para evitar que nos detecte el tab en la consola principal.
+        for (var j = 1 ; j < document.querySelectorAll(".task_app").length; j++) {
+            if(document.querySelectorAll(".task_app")[j].style.opacity != 0.6){
+                const { exec } = require("child_process");
+                let wnd = document.querySelectorAll(".task_app")[j].classList.value.replace('task_app ','');
+                let cmd = `xdotool windowfocus ${wnd} sleep 0.2 key Super+Tab`;
+                                       
+                exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {});
+                document.querySelectorAll(".task_app")[j].style.opacity = 0.6;
+                document.querySelector("#id_closeXWindPanel").style.visibility = 'hidden';
+                break;
+            }
+        }
     });// lo que antes fue un problema, ahora es un beneficio.
 
 
@@ -1595,7 +1608,7 @@ function xWndExec(id,app)
                     desinstalarModulo(id,document.getElementById("file_" + id).value);
                 }else{
                    const { exec } = require("child_process");
-                   exec(app, (error, stdout, stderr) => {
+                   exec(app + ' >/dev/null', (error, stdout, stderr) => {
                         if (error) {
                         	if(error.message.length > 100 || error.message.includes('stderr'))
                         		errorLog(app,error.message);
@@ -1889,12 +1902,12 @@ function loadWM(cBorder,cBack, wndPanel)
 
             if(window['wndPanel'].wndPanel == 0){
 
-                exec("xsetroot -cursor_name left_ptr", (error, stdout, stderr) => {});
+                exec("xsetroot -cursor_name left_ptr &>/dev/null", (error, stdout, stderr) => {});
 
                 let demonio = spawn(startUp.startApp[0]);// ejecutamos el demonio de mate este debe ser primero que power manager
                 demonio.stderr.on('data',(data)=>{
                     if(!window.demonioMate){
-                       exec(startUp.startApp[1], (error, stdout, stderr) => {}); // ejecutamos el administrador de corriente sin este el boton poweroff apaga el equipo. 
+                       exec(startUp.startApp[1] + ' &>/dev/null', (error, stdout, stderr) => {}); // ejecutamos el administrador de corriente sin este el boton poweroff apaga el equipo. 
                        window.demonioMate = true;
                     }
                 });
@@ -1909,7 +1922,7 @@ function loadWM(cBorder,cBack, wndPanel)
                      exec("kill -9 $(ps ax | grep -e " + startUp.startApp[i] + " | grep -v grep | awk '{print $1}')", (error, stdout, stderr) => {
                 	// alert(stdout);
 		            //if(parseInt(stdout) == 0 ) // se valida que no se este ejecutando ya las aplicacion.
-                         exec(startUp.startApp[i], (error, stdout, stderr) => {});  
+                         exec(startUp.startApp[i] + ' &>/dev/null', (error, stdout, stderr) => {});  
                     });
                 }
 
@@ -1919,7 +1932,7 @@ function loadWM(cBorder,cBack, wndPanel)
                 let user = require(path.join(settingsDir, "user.json"));
 
                 if(user.init)
-                    exec("dconf " + user.dconf, (error, stdout, stderr) => {});
+                    exec("dconf " + user.dconf + ' &>/dev/null', (error, stdout, stderr) => {});
             }
         }else{
 
@@ -2352,7 +2365,7 @@ function xWndExecSudo(id,app,pass)
     }
     else
     {
-       const comando = `echo "${pass}" | sudo -S -k ${app}`;  
+       const comando = `echo "${pass}" | sudo -S -k ${app} >/dev/null`;  
        const { exec } = require("child_process");
        exec(comando, (error, stdout, stderr) => {
             if (error) {
@@ -2642,7 +2655,8 @@ function callRCM(data){
                     if(data.message.window.length > 0){
                         //let wndBack;
                         let icons = require("./assets/icons/file-icons.json");
-                        let iconext = require(path.join(electron.remote.app.getPath("userData"),"iconext.json"));
+                        let iconext = JSON.parse(fs.readFileSync(path.join(require('electron').remote.app.getPath('userData'),'iconext.json'),{encoding:'utf-8'})); 
+                        //require(path.join(electron.remote.app.getPath("userData"),"iconext.json"));
                         let fileIconsMatcher = require("./assets/misc/file-icons-match.js");
                         let icon = "";
                         let iconname ='';
@@ -2702,7 +2716,7 @@ function callRCM(data){
                                             </svg>                                    
                                           </div> `;*/
 
-                          xappBarr += `<div class="task_app" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window[i].id}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
+                          xappBarr += `<div class="task_app ${data.message.window[i].id}" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window[i].id}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
                                              <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
                                                 ${icon.svg}
                                             </svg>                                    
@@ -2839,7 +2853,7 @@ function errorLog(name,message,noshwomsg){
 function powerPreferences(){
     const { exec } = require("child_process");
     let app = '';
-    app = 'mate-power-preferences';
+    app = 'mate-power-preferences >/dev/null';
     exec(app, (error, stdout, stderr) => {
         if (error) {
             if(error.message.length > 100 || error.message.includes('stderr'))
@@ -2879,7 +2893,7 @@ function goNativeWindowTask(obj,wnd){
 
     if(obj.style.opacity == 0.6){
 
-        if(wnd == window.backWnd || window.backWnd == '0'){
+        //if(wnd == window.backWnd || window.backWnd == '0'){ //se comenta para tratar de evitar los ciclados aqui y en wm
 
             const { exec } = require("child_process");
             let cmd = "xdotool windowfocus " + wnd;   
@@ -2887,14 +2901,22 @@ function goNativeWindowTask(obj,wnd){
                 showTogglePanel(true);
             window.audioManager.stdin.play();
          
-            exec(cmd, (error, stdout, stderr) => {
+            exec(cmd + ' >/dev/null', (error, stdout, stderr) => {
                 if (error) {
                         errorLog("goNativeWindowTask",error.message);
                 }
 
             });
-
-        }else{
+     /////////////////////////////////////////////////////////////////////////////////////       
+        ///se agrega comportamiento para tratar de evitar los ciclados aqui y en wm   
+         for (var i = 1 ; i < document.querySelectorAll(".task_app").length; i++) {
+                if(document.querySelectorAll(".task_app")[i] != obj)
+                    document.querySelectorAll(".task_app")[i].style.opacity = 0.6;
+            }
+         obj.style.opacity = 1; 
+         document.querySelector("#id_closeXWindPanel").style.visibility = 'visible';     
+    //////////////////////////////////////////////////////////////////////////////////////
+        /*}else{ //se comenta para tratar de evitar los ciclados aqui y en wm
             const { exec } = require("child_process");
             let cmd = "xdotool windowfocus " + window.backWnd;     
             exec(cmd, (error, stdout, stderr) => {
@@ -2916,15 +2938,26 @@ function goNativeWindowTask(obj,wnd){
                 }
 
             });
-        }
-
+        }*/
     }else{
-        obj.style.opacity = 1;
-        mostrarPanel();
+        //obj.style.opacity = 1;
+    /*************************************************************************************/ 
+    //se agrega comportamiento para tratar de evitar los ciclados aqui y en wm   
+        for (var i = 1 ; i < document.querySelectorAll(".task_app").length; i++) {
+                    document.querySelectorAll(".task_app")[i].style.opacity = 0.6;
+            }
+        document.querySelector("#id_closeXWindPanel").style.visibility = 'hidden';
+    /**************************************************************************************/
+        const { exec } = require("child_process");
+        let cmd = "xdotool windowfocus " + wnd; 
+        //se agrega el foco a la pantalla anterior desde aqui y no desde wm  
+        //y al terminar continuamos con la ejecucion hacia el panel    
+        exec(cmd + ' >/dev/null', (error, stdout, stderr) => {
+          mostrarPanel();  
+        });
+        
     }
-
-    
-    
+ 
 }
 
 function goNativeWindow(wnd){
@@ -2938,7 +2971,7 @@ function goNativeWindow(wnd){
         showTogglePanel(true);
     window.audioManager.stdin.play();
  
-    exec(cmd, (error, stdout, stderr) => {
+    exec(cmd + ' >/dev/null', (error, stdout, stderr) => {
         if (error) {
             //if(error.message.length > 100 || error.message.includes('stderr'))
                 errorLog("goNativeWindow",error.message);
@@ -2957,25 +2990,59 @@ function goNativeWindow(wnd){
 function closeNativeWindow(wnd){
     const { exec } = require("child_process");
     //let cmd = "xdotool windowclose " + wnd;
-    wnd = !wnd ? "": " windowfocus " + wnd;
+    for (var j = 1 ; j < document.querySelectorAll(".task_app").length; j++) {
+            if(document.querySelectorAll(".task_app")[j].style.opacity != 0.6){
+                wnd = document.querySelectorAll(".task_app")[j].classList.value.replace('task_app ','');
+                wnd = !wnd ? "": " windowfocus " + wnd;
+                let cmd = "xdotool" + wnd + " key --clearmodifiers --delay 100 alt+F4";   
+                if(window.settings.autoClosePanel) 
+                    showTogglePanel(true);
+                window.audioManager.stdin.play();
+
+                exec(cmd + ' >/dev/null', (error, stdout, stderr) => {
+                    if (error) {
+                        //if(error.message.length > 100 || error.message.includes('stderr'))
+                            errorLog("closeNativeWindow",error.message);
+                        /*else
+                            new Modal({
+                                type: "warning",
+                                title: `Error ${"closeNativeWindow"}`,
+                                message: error.message
+                            });*/
+                    }
+                    let cmd = "xdotool windowfocus " + window['wndPanel'].wndPanel;   
+                                 
+                    exec(cmd + ' >/dev/null', (error, stdout, stderr) => {
+                        if (error) {
+                            errorLog("closeNativeWindow",error.message);
+                        }
+
+                    });
+
+                });
+                break;
+            }
+    }
+    //se mueve dentro del ciclo para pasar el id de la ventana
+    /*wnd = !wnd ? "": " windowfocus " + wnd;
     let cmd = "xdotool" + wnd + " key --clearmodifiers --delay 100 alt+F4";   
     if(window.settings.autoClosePanel) 
         showTogglePanel(true);
     window.audioManager.stdin.play();
 
-    exec(cmd, (error, stdout, stderr) => {
+    exec(cmd + ' >/dev/null', (error, stdout, stderr) => {
         if (error) {
             //if(error.message.length > 100 || error.message.includes('stderr'))
                 errorLog("closeNativeWindow",error.message);
-            /*else
+            / *else
                 new Modal({
                     type: "warning",
                     title: `Error ${"closeNativeWindow"}`,
                     message: error.message
-                });*/
+                });* /
         }
 
-    });
+    });*/
 
 }
 
@@ -3051,7 +3118,7 @@ function systemAlertBatterylow(){
     if(code)
         code.click();
 
-    exec(cmd, (error, stdout, stderr) => {});
+    exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {});
 
     window.alertLowBattery = true;
 
@@ -3137,14 +3204,15 @@ function execKeyLock(keyLock){
         case 'caps': cmd += "Caps_Lock";
                     break;
     }
-    exec(cmd, (error, stdout, stderr) => {});    
+    exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {});    
 
 }
 
 function mostrarPanel(){ //Win+Tab
     const { exec } = require("child_process");
-    let cmd = "xdotool key Super+Tab";       
-    exec(cmd, (error, stdout, stderr) => {});   
+    //let cmd = "xdotool key --delay 100 Super+Tab"; 
+    let cmd = "xdotool key Super+Tab";      
+    exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {});   
 }
 
 async function leerWebApps() {
@@ -3219,7 +3287,8 @@ async function createWmodule(key,icon){
   if (!fs.existsSync(path.join(electron.remote.app.getPath('home'), `modulos/${icon}_chrome.xobj`))){
       
       let icons = require('./assets/icons/file-icons.json');
-      let iconext = require(path.join(electron.remote.app.getPath('userData'),'iconext.json'));
+      let iconext = JSON.parse(fs.readFileSync(path.join(require('electron').remote.app.getPath('userData'),'iconext.json'),{encoding:'utf-8'}));
+      //require(path.join(electron.remote.app.getPath('userData'),'iconext.json'));
       let webApps = await leerWebApps();
       let newIcon = {};
 
