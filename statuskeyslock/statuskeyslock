@@ -16,8 +16,9 @@ if [[ $1 == '' ]]; then
             then
                 #echo "Caps Lock is off"
                 #echo "Num Lock is off"
-                rcmSolar='{"message":{"call":"keyslock", "numlock": false, "capslock": false}}' 
-                rcmSend rcmStatusKeysLock "$rcmSolar"
+                #rcmSolar='{"message":{"call":"keyslock", "numlock": false, "capslock": false}}' 
+                #rcmSend rcmStatusKeysLock "$rcmSolar"
+                sendmsgwm 0 l 0 0
                 #echo $rcmSolar > ~/.containerrcm/.rcmStatusKeysLock.rcmSolar 
                 key_lock=0
             fi    
@@ -28,8 +29,9 @@ if [[ $1 == '' ]]; then
                 then
                     #echo "Caps Lock is on"
                     #echo "Num Lock is off"
-                    rcmSolar='{"message":{"call":"keyslock", "numlock": false, "capslock": true}}'
-                    rcmSend rcmStatusKeysLock "$rcmSolar" 
+                    #rcmSolar='{"message":{"call":"keyslock", "numlock": false, "capslock": true}}'
+                    #rcmSend rcmStatusKeysLock "$rcmSolar" 
+                    sendmsgwm 0 l 0 1
                     #echo $rcmSolar > ~/.containerrcm/.rcmStatusKeysLock.rcmSolar 
                     key_lock=1
                 fi    
@@ -40,8 +42,9 @@ if [[ $1 == '' ]]; then
                     then
                         #echo "Caps Lock is off"
                         #echo "Num Lock is on"
-                        rcmSolar='{"message":{"call":"keyslock", "numlock": true, "capslock": false}}'
-                        rcmSend rcmStatusKeysLock "$rcmSolar" 
+                        #rcmSolar='{"message":{"call":"keyslock", "numlock": true, "capslock": false}}'
+                        #rcmSend rcmStatusKeysLock "$rcmSolar" 
+                        sendmsgwm 0 l 1 0
                         #echo $rcmSolar > ~/.containerrcm/.rcmStatusKeysLock.rcmSolar
                         key_lock=2
                     fi
@@ -52,8 +55,9 @@ if [[ $1 == '' ]]; then
                         then
                             #echo "Caps Lock is on"
                             #echo "Num Lock is on"
-                            rcmSolar='{"message":{"call":"keyslock", "numlock": true, "capslock": true}}' 
-                            rcmSend rcmStatusKeysLock "$rcmSolar"
+                            #rcmSolar='{"message":{"call":"keyslock", "numlock": true, "capslock": true}}' 
+                            #rcmSend rcmStatusKeysLock "$rcmSolar"
+                            sendmsgwm 0 l 1 1
                             #echo $rcmSolar > ~/.containerrcm/.rcmStatusKeysLock.rcmSolar
                             key_lock=3
                         fi

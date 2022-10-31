@@ -55,6 +55,7 @@ class WindowManager {
   Window clientBack[2];
   Window clientFocus[4];
   Window focoBarraTarea;
+  int puerto;
   //bool cambiaFoco;
 
  // bool ctrl_L = false;
@@ -96,9 +97,19 @@ class WindowManager {
   void OnFocusIn(const XFocusChangeEvent& e);
   void OnFocusOut(const XFocusChangeEvent& e);
 
-  void sendCountWindow(bool isPanel);
+  void sendCountWindow(bool isPanel, Window w = 0);
 
   void normalizarWindows(/*Window wnd*/);
+
+  void Solar_WM(const XClientMessageEvent& e);
+
+  void updateTBarExt(bool isPanel);
+
+  void setFocoWindow(void);
+
+  void rcmSend(const std::string& message);
+
+  //void sendWindowFocus(Window w);
 
   //static Window getWindow();
 
@@ -138,6 +149,10 @@ class WindowManager {
   const Atom WM_PROTOCOLS;
   const Atom WM_DELETE_WINDOW;
   bool wndFull;
+  bool wSobrePanel;
+  //bool wCloseApp;
+  bool wUpdateTBar;
+  //bool setWinPanel;
 };
 
 #endif

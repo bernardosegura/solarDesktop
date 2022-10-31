@@ -17,71 +17,62 @@
  *   Update from solar-wm by Bernardo Segura                                 *
  *                                                                           *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+//g++ sendmsgwm.cpp -o sendmsgwm -lX11
 
 #include <cstdlib>
-#include <glog/logging.h>
-#include "window_manager.hpp"
-
-/*#include <fstream>
-#include <jsoncpp/json/json.h>*/ 
-
-using ::std::unique_ptr;
-char cDef[1];
+#include <cstdio>
+extern "C" {
+#include <X11/Xutil.h>
+}
 
 int main(int argc, char** argv) {
-  //::google::InitGoogleLogging(argv[0]);
+  char *display_name;
+  Status estado;
 
-  unique_ptr<WindowManager> window_manager = WindowManager::Create();
-  if (!window_manager) {
-    LOG(ERROR) << "Failed to initialize window manager.";
-    return EXIT_FAILURE;
+  if(argc < 3)
+  {
+    printf("Error --> %s window [msg (c,a... is char)] (null is default,[0 not update taskbar], [1 not update taskbar (default)])\n",argv[0]);
+    return 1;
   }
 
-cDef[0] = '0';
-char sPuerto[] = {'2','9','9','9'};  
+  display_name = XDisplayName(NULL);
 
-if(argc == 1)
-{
-	argv[1] = cDef;
-	argv[2] = sPuerto;
-  argv[3] = cDef;
-  argv[4] = cDef;
-  argv[5] = cDef;
-}
+  Display* display = XOpenDisplay(display_name);
 
-if(argc == 2)
-{
-	argv[2] = sPuerto;
-  argv[3] = cDef;
-  argv[4] = cDef;
-  argv[5] = cDef;
-}
+  if(display == NULL){
+    printf("Error to open display: %s\n",display_name );
+    return 1;
+  }
+    
+  
+  XEvent evt;
+  evt.xclient.type = ClientMessage;
+  evt.xclient.serial = 0;
+  evt.xclient.send_event = true;
+  evt.xclient.message_type = XInternAtom(display,"SOLAR_WM",false);;
+  evt.xclient.format = 32;
+  evt.xclient.window = atoi(argv[1]);
+  evt.xclient.data.b[0] = argv[2][0];
+  evt.xclient.data.b[1] = '1';
+  evt.xclient.data.b[2] = '0';
+  
+  if(argc > 3) 
+    evt.xclient.data.b[1] = argv[3][0];
+  if(argc > 4) 
+    evt.xclient.data.b[2] = argv[4][0];
 
-if(argc == 3)
-{
-  argv[3] = cDef;
-  argv[4] = cDef;
-  argv[5] = cDef;
-}
+  estado = XSendEvent(display,
+    DefaultRootWindow(display),//se puede madar la misma ventana se decide mandar a root
+    true,//si no se propaga el mensaje no es cachado por wm
+    (SubstructureRedirectMask | SubstructureNotifyMask),//si no se agregan las mascaras que procesa wm es ignorado por el mismo
+    &evt);
 
-if(argc == 4)
-{
-  argv[4] = cDef;
-  argv[5] = cDef;
-}
+  if(estado)
+    XFlush(display);
+    
+  XCloseDisplay(display);
 
-if(argc == 5)
-{
-  argv[5] = cDef;
-}
+  printf("%d\n",estado);
 
-window_manager->screenWidth = std::stol(argv[1]);
-window_manager->puerto = std::stol(argv[2]);
-window_manager->BORDER_COLOR = std::stol(argv[3]);
-window_manager->BG_COLOR = std::stol(argv[4]);
-window_manager->wndPanel = std::stol(argv[5]);
-
-  window_manager->Run();
-
-  return EXIT_SUCCESS;
+  return 0;
 }

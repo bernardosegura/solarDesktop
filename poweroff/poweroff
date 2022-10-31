@@ -2,7 +2,8 @@
 echo "PowerOff v0.1 - Tools Solar"
 
 rcmSolar='{"message":{"call":"PowerOff"}}'	
-rcmSend rcmPowerOff $rcmSolar ; xdotool key Super+Tab
+#rcmSend rcmPowerOff $rcmSolar ; sendmsgwm 0 p >/dev/null #xdotool key Super+Tab
+sendmsgwm 0 o >/dev/null #xdotool key Super+Tab
 #echo $rcmSolar > ~/.containerrcm/.rcmPowerOff.rcmSolar
 #xdotool key Super+Tab
 echo ""

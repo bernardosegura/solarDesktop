@@ -796,7 +796,7 @@ this.cmdPath = async e =>{
 
                     if(path.join(require("electron").remote.app.getPath("home"),"modulos") == this.dirpath){
                         if(e.category != "up")
-                            filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="${cmd}" title="${e.name}${tamanio}">
+                            filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="${cmd}" title="${e.name}${/*tamanio*/""}">
                                         <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
                                             ${icon.svg}
                                         </svg>
@@ -806,7 +806,7 @@ this.cmdPath = async e =>{
                                         <h4>${e.lastAccessed}</h4>
                                     </div>`;            
                      }else
-                         filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="${cmd}" title="${e.name}${tamanio}">
+                         filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="${cmd}" title="${e.name}${/*tamanio*/""}">
                                     <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
                                         ${icon.svg}
                                     </svg>

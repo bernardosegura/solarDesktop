@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-1209.22 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-2710.22 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -12,6 +12,7 @@ window.alertLowBattery = false;
 window.backWnd = '0';
 window.enableLocalRCM = false;
 //window.settings.port
+//window.tTimeMsg = 0;
 
 window.eval = global.eval = function () {
     throw new Error("eval() is disabled for security reasons.");
@@ -554,7 +555,8 @@ async function initUI() {
 
     //////////////////////////////////////////////////////////////////////////////////////
     let icons = require("./assets/icons/file-icons.json").closeWin;
-    document.querySelector("#id_closeXWindPanel").innerHTML = `<svg viewBox="0 0 ${icons.width} ${icons.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
+    //document.querySelector("#id_closeXWindPanel").innerHTML 
+    document.getElementById("id_closeXWindPanel").innerHTML = `<svg viewBox="0 0 ${icons.width} ${icons.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
                                             ${icons.svg}
                                         </svg>`;
     /////////////////////////////////////////////////////////////////////////////////////
@@ -1053,15 +1055,15 @@ window.openShortcutsHelp = () => {
                     <!--tr>
                         <td>Ctrl + Shift + I</td>
                         <td>Open Chromium Dev Tools (for debugging purposes).</td>
-                    </tr>
-                    <tr>
-                        <td>F5</td>
-                        <td>Update Panel File's.</td>
                     </tr-->
                     <tr>
+                        <td>F5</td>
+                        <td>Update Panel Applications.</td>
+                    </tr>
+                    <!--tr>
                         <td>Alt + W</td>
                         <td>Toggle Show Right Panel</td>
-                    </tr>
+                    </tr-->
                     <tr>
                         <td>Alt + F4</td>
                         <td>Close XWindow</td>
@@ -1179,9 +1181,9 @@ function registerKeyboardShortcuts() {
     });
 
     // Toggle list view in fsDisp
-    globalShortcut.register("Control+Shift+L", () => {
+    /*globalShortcut.register("Control+Shift+L", () => {
         window.fsDisp.toggleListview();
-    });
+    });*/
 
     // Hide on-screen keyboard visual feedback (#394)
     globalShortcut.register("Alt+Shift+P", () => {
@@ -1218,7 +1220,8 @@ function registerKeyboardShortcuts() {
     
 /////////////////////////////Revision.......
     globalShortcut.register("Super+Tab", () => { //registramos win + tab para evitar que nos detecte el tab en la consola principal.
-        for (var j = 1 ; j < document.querySelectorAll(".task_app").length; j++) {
+        //con la mejora al wm ya no es necesario este proceso.
+        /*for (var j = 1 ; j < document.querySelectorAll(".task_app").length; j++) {
             if(document.querySelectorAll(".task_app")[j].style.opacity != 0.6){
                 const { exec } = require("child_process");
                 let wnd = document.querySelectorAll(".task_app")[j].classList.value.replace('task_app ','');
@@ -1229,7 +1232,7 @@ function registerKeyboardShortcuts() {
                 document.querySelector("#id_closeXWindPanel").style.visibility = 'hidden';
                 break;
             }
-        }
+        }*/
     });// lo que antes fue un problema, ahora es un beneficio.
 
 
@@ -1876,7 +1879,7 @@ function createXln(appDesk)
 
 function loadWM(cBorder,cBack, wndPanel)
 {
-    const { exec,spawn, execSync } = require("child_process");
+    const { exec,spawn/*, execSync */} = require("child_process");
     var onError = 0;
     let wm = 'pwd';
     //exec(wm, (e, sout, serr) => {
@@ -1889,10 +1892,10 @@ function loadWM(cBorder,cBack, wndPanel)
         window['wndPanel'].cBorder = cBorder;
         window['wndPanel'].cBack = cBack;
         window['wndPanel'].wndPanel = 0;
-        hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,parseInt(cBorder,16),parseInt(cBack,16)]);
+        hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16)]);
     }    
     else
-       hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,parseInt(cBorder,16),parseInt(cBack,16),wndPanel]); 
+       hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16),wndPanel]); 
 
 
     hWm.stderr.on('data', (data)=>{
@@ -2643,13 +2646,26 @@ function callRCM(data){
 
             if(data.message.call.toLowerCase() == 'nnativeapps'){
                 if(!data.message.number) data.message.number = 0;
+/*////////////////////////////////////////////////////////////////////////
+                let time = data.message.number.split("-");
+                data.message.number = time[0];
+                time=(!time[1])?0:time[1];
+                if(time > 0){
+                    if(window.tTimeMsg > time)
+                        return;
+                    else
+                        window.tTimeMsg = time;
+                }
+                
+////////////////////////////////////////////////////////////////////////*/
                 if(data.message.window){
                     if(window.settings.autoClosePanel)
                         showTogglePanel(true);
                     //let xapp = '';
                     let xappBarr = '';
                     window.backWnd = '0';
-                    document.querySelector("#id_closeXWindPanel").style.visibility = 'hidden';
+                    //document.querySelector("#id_closeXWindPanel")
+                    document.getElementById("id_closeXWindPanel").style.visibility = 'hidden';
                     if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
                         document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = data.message.window.length;
                     if(data.message.window.length > 0){
@@ -2671,7 +2687,8 @@ function callRCM(data){
                                 wndBackOpaco = ''; //' opacity: 0.6';
                                 //wndBackBorder = ' border: 1px solid';
                                 window.backWnd = data.message.number;
-                                document.querySelector("#id_closeXWindPanel").style.visibility = 'visible';
+                                //document.querySelector("#id_closeXWindPanel")
+                                document.getElementById("id_closeXWindPanel").style.visibility = 'visible';
                                 //showCloseWindow = true;
                             }
                             else{
@@ -2716,7 +2733,7 @@ function callRCM(data){
                                             </svg>                                    
                                           </div> `;*/
 
-                          xappBarr += `<div class="task_app ${data.message.window[i].id}" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window[i].id}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
+                          xappBarr += `<div class="task_app" id="${data.message.window[i].id}" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window[i].id}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
                                              <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
                                                 ${icon.svg}
                                             </svg>                                    
@@ -2749,6 +2766,86 @@ function callRCM(data){
                         document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = "0";
                 }
             }
+            
+            /*if(data.message.call.toLowerCase() == 'wfocusbar'){
+               if(document.getElementById(data.message.window.id)){
+                    if(document.getElementById(data.message.window.id).style.opacity == 0.6)
+                        for (var i = 0 ; i < document.querySelectorAll("#id_task_panel div").length; i++){
+                            if(document.querySelectorAll("#id_task_panel div")[i].id == data.message.window.id){
+                                document.querySelectorAll("#id_task_panel div")[i].style.opacity = 1; 
+                                document.querySelector("#id_closeXWindPanel").style.visibility = 'visible';
+                            }else{
+                              document.querySelectorAll("#id_task_panel div")[i].style.opacity = 0.6;  
+                            }
+                        }
+               }else{
+                    let icons = require("./assets/icons/file-icons.json");
+                    let iconext = JSON.parse(fs.readFileSync(path.join(require('electron').remote.app.getPath('userData'),'iconext.json'),{encoding:'utf-8'})); 
+                    let fileIconsMatcher = require("./assets/misc/file-icons-match.js");
+                    let icon = "";
+                    let iconname ='';
+                    let wndBackOpaco = '';
+                    Object.assign(icons,iconext);
+
+                    data.message.window.class = data.message.window.class.toLowerCase();
+                    icon = icons[data.message.window.class];
+                    if (typeof icon === "undefined") {
+                        iconName = fileIconsMatcher(data.message.window.class);
+                        icon = icons[iconName];
+                        if (typeof icon === "undefined") {
+                            let classNameApp = data.message.window.class.replace('-',' ').replace('_',' ');
+                            classNameApp = classNameApp.split(' ');
+                            for(let x=0; x < classNameApp.length; x++){
+                                icon = icons[classNameApp[x]];
+                                if (typeof icon === "undefined") {
+                                    iconName = fileIconsMatcher(classNameApp[x]);
+                                    icon = icons[iconName];
+                                    if (typeof icon === "undefined") {
+                                        if (x == (classNameApp.length - 1)) {
+                                            icon = icons["x11-window"]; //.appXwnd;
+                                        }
+                                    }else
+                                        break;
+                                }else
+                                    break;
+                            }
+
+                        }
+                    }
+
+                    xappBarr = decodeURIComponent(escape(`<div class="task_app ${data.message.window.id}" id="${data.message.window.id}" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window.id}')" title="${((data.message.window.name != '')?data.message.window.name:"xWindow - Untitled")}">
+                                 <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
+                                    ${icon.svg}
+                                </svg>                                    
+                              </div> `)); 
+                    
+                    if(document.querySelector("#id_task_panel"))
+                        document.querySelector("#id_task_panel").innerHTML = xappBarr + document.querySelector("#id_task_panel").innerHTML;        
+
+                    document.querySelector("#id_closeXWindPanel").style.visibility = 'visible';
+
+                    if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
+                        document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = document.querySelectorAll("#id_task_panel div").length;  
+               } 
+            }
+
+            if(data.message.call.toLowerCase() == 'wclosebar'){
+                if(document.getElementById(data.message.window.id)){
+                    if(document.getElementById(data.message.window.id).style.opacity == 1){
+                        document.getElementById("id_closeXWindPanel").style.visibility = 'hidden';
+                    }
+                    document.getElementById(data.message.window.id).remove();
+                    if(document.querySelector("#mod_sysinfo > div:nth-child(3) > h2"))
+                        document.querySelector("#mod_sysinfo > div:nth-child(3) > h2").innerHTML = document.querySelectorAll("#id_task_panel div").length;
+                }
+            }
+
+            if(data.message.call.toLowerCase() == 'showpanel'){
+                for (var i = 0 ; i < document.querySelectorAll("#id_task_panel div").length; i++){
+                    document.querySelectorAll("#id_task_panel div")[i].style.opacity = 0.6;  
+                }
+                document.getElementById("id_closeXWindPanel").style.visibility = 'hidden';
+            }*/
 
             if(data.message.call.toLowerCase() == 'poweroff'){
                 systemPoweroff();
@@ -2896,7 +2993,8 @@ function goNativeWindowTask(obj,wnd){
         //if(wnd == window.backWnd || window.backWnd == '0'){ //se comenta para tratar de evitar los ciclados aqui y en wm
 
             const { exec } = require("child_process");
-            let cmd = "xdotool windowfocus " + wnd;   
+            //con la mejora al wm ya no es necesario este proceso.
+            let cmd = `sendmsgwm ${wnd} f 0`; //"xdotool windowfocus " + wnd;   
             if(window.settings.autoClosePanel)
                 showTogglePanel(true);
             window.audioManager.stdin.play();
@@ -2909,12 +3007,17 @@ function goNativeWindowTask(obj,wnd){
             });
      /////////////////////////////////////////////////////////////////////////////////////       
         ///se agrega comportamiento para tratar de evitar los ciclados aqui y en wm   
-         for (var i = 1 ; i < document.querySelectorAll(".task_app").length; i++) {
+         /*for (var i = 1 ; i < document.querySelectorAll(".task_app").length; i++) {
                 if(document.querySelectorAll(".task_app")[i] != obj)
                     document.querySelectorAll(".task_app")[i].style.opacity = 0.6;
+            }*/
+            for (var i = 0; i < document.querySelectorAll("#id_task_panel div").length; i++) {
+                if(document.querySelectorAll("#id_task_panel div")[i].id != obj.id)
+                    document.querySelectorAll("#id_task_panel div")[i].style.opacity = 0.6;
             }
          obj.style.opacity = 1; 
-         document.querySelector("#id_closeXWindPanel").style.visibility = 'visible';     
+         document.getElementById("id_closeXWindPanel").style.visibility = 'visible';
+         //document.querySelector("#id_closeXWindPanel").style.visibility = 'visible';     
     //////////////////////////////////////////////////////////////////////////////////////
         /*}else{ //se comenta para tratar de evitar los ciclados aqui y en wm
             const { exec } = require("child_process");
@@ -2943,18 +3046,20 @@ function goNativeWindowTask(obj,wnd){
         //obj.style.opacity = 1;
     /*************************************************************************************/ 
     //se agrega comportamiento para tratar de evitar los ciclados aqui y en wm   
-        for (var i = 1 ; i < document.querySelectorAll(".task_app").length; i++) {
-                    document.querySelectorAll(".task_app")[i].style.opacity = 0.6;
+        for (var i = 0; i < document.querySelectorAll("#id_task_panel div").length; i++) {
+                    document.querySelectorAll("#id_task_panel div")[i].style.opacity = 0.6;
             }
-        document.querySelector("#id_closeXWindPanel").style.visibility = 'hidden';
+        document.getElementById("id_closeXWindPanel").style.visibility = 'hidden';  
+        //document.querySelector("#id_closeXWindPanel").style.visibility = 'hidden';
     /**************************************************************************************/
-        const { exec } = require("child_process");
+        //con la mejora al wm ya no es necesario este proceso.
+        /*const { exec } = require("child_process");
         let cmd = "xdotool windowfocus " + wnd; 
         //se agrega el foco a la pantalla anterior desde aqui y no desde wm  
         //y al terminar continuamos con la ejecucion hacia el panel    
-        exec(cmd + ' >/dev/null', (error, stdout, stderr) => {
-          mostrarPanel();  
-        });
+        exec(cmd + ' >/dev/null', (error, stdout, stderr) => {*/
+          mostrarPanel(wnd);  
+        //});
         
     }
  
@@ -2966,7 +3071,8 @@ function goNativeWindow(wnd){
     let urlDefault = dir.join(process.env.HOME,".containerrcm");
     fs.writeFileSync(dir.join(urlDefault,".rcmSolar.wm"), wnd);*/
     const { exec } = require("child_process");
-    let cmd = "xdotool windowfocus " + wnd;   
+    //con la mejora al wm ya no es necesario este proceso.
+    let cmd = `sendmsgwm ${wnd} f 0`;//"xdotool windowfocus " + wnd;   
     if(window.settings.autoClosePanel)
         showTogglePanel(true);
     window.audioManager.stdin.play();
@@ -2990,11 +3096,13 @@ function goNativeWindow(wnd){
 function closeNativeWindow(wnd){
     const { exec } = require("child_process");
     //let cmd = "xdotool windowclose " + wnd;
-    for (var j = 1 ; j < document.querySelectorAll(".task_app").length; j++) {
-            if(document.querySelectorAll(".task_app")[j].style.opacity != 0.6){
-                wnd = document.querySelectorAll(".task_app")[j].classList.value.replace('task_app ','');
-                wnd = !wnd ? "": " windowfocus " + wnd;
-                let cmd = "xdotool" + wnd + " key --clearmodifiers --delay 100 alt+F4";   
+    for (var j = 0; j < document.querySelectorAll("#id_task_panel div").length; j++) {
+            if(document.querySelectorAll("#id_task_panel div")[j].style.opacity != 0.6){
+                //wnd = document.querySelectorAll(".task_app")[j].classList.value.replace('task_app ','');
+                wnd = document.querySelectorAll("#id_task_panel div")[j].id;
+                //con la mejora al wm ya no es necesario este proceso.
+                //wnd = !wnd ? "": " windowfocus " + wnd;
+                let cmd = `sendmsgwm ${wnd} c`;//"xdotool" + wnd + " key --clearmodifiers --delay 100 alt+F4";   
                 if(window.settings.autoClosePanel) 
                     showTogglePanel(true);
                 window.audioManager.stdin.play();
@@ -3010,14 +3118,15 @@ function closeNativeWindow(wnd){
                                 message: error.message
                             });*/
                     }
-                    let cmd = "xdotool windowfocus " + window['wndPanel'].wndPanel;   
+                    //con la mejora al wm ya no es necesario este proceso.
+                    /*let cmd = "xdotool windowfocus " + window['wndPanel'].wndPanel;   
                                  
                     exec(cmd + ' >/dev/null', (error, stdout, stderr) => {
                         if (error) {
                             errorLog("closeNativeWindow",error.message);
                         }
 
-                    });
+                    });*/
 
                 });
                 break;
@@ -3077,7 +3186,8 @@ function systemAlertBatterylow(){
      return false;
 
     const { exec } = require("child_process");
-    let cmd = "xdotool key Super+Tab";
+    //con la mejora al wm ya no es necesario este proceso.
+    let cmd = `sendmsgwm 0 p`;//"xdotool key Super+Tab";
     recClient = document.body.getBoundingClientRect();
 
   let wnd = {
@@ -3208,10 +3318,13 @@ function execKeyLock(keyLock){
 
 }
 
-function mostrarPanel(){ //Win+Tab
+function mostrarPanel(opcion){ //Win+Tab
     const { exec } = require("child_process");
+    wnd = !opcion ? 0:opcion;
+    opcion = !opcion ? 1:0;
     //let cmd = "xdotool key --delay 100 Super+Tab"; 
-    let cmd = "xdotool key Super+Tab";      
+    //con la mejora al wm ya no es necesario este proceso.
+    let cmd = `sendmsgwm ${wnd} p ${opcion}`;//"xdotool key Super+Tab";      
     exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {});   
 }
 

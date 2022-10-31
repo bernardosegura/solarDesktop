@@ -34,6 +34,9 @@ extern "C" {
 
 #include <sys/wait.h>
 //#include <unistd.h>
+#include "easywsclient.hpp"
+#include <assert.h>
+#include "easywsclient.cpp"
 
 using ::std::max;
 using ::std::mutex;
@@ -90,6 +93,10 @@ void WindowManager::Run() {
     }
   }
   wndFull =  false;//activamos pantalla completa por default
+  wSobrePanel = false;
+  //wCloseApp = false;
+  wUpdateTBar = true;
+
   /*panel[0] = 0;
   panel[1] = 0;
   clientBack[0] = 0;
@@ -217,21 +224,389 @@ void WindowManager::Run() {
       case KeyRelease:
         OnKeyRelease(e.xkey);
         break;
-      case FocusIn://EnterNotify:
+      case FocusIn://Enter Focus:
         //LOG(INFO) << "Enter notify no, es focus in window " << e.xfocus.window << " foco en " << clientFocus[1];//e.xcrossing.window;
            //OnEnterNotify(e.xcrossing);
+             // LOG(INFO) << e.xfocus.window;
+
             OnFocusIn(e.xfocus);
         break;
-      case FocusOut://EnterNotify:
+      case FocusOut://Out Focus:
         //LOG(INFO) << "Enter notify no, es focus in window " << e.xfocus.window << " foco en " << clientFocus[1];//e.xcrossing.window;
            //OnEnterNotify(e.xcrossing);
             OnFocusOut(e.xfocus);
-        break;  
+        break; 
+
+      case ClientMessage://Client Message:
+
+            if(e.xclient.message_type == XInternAtom(display_,"SOLAR_WM",false)){      
+
+              Solar_WM(e.xclient);
+              //LOG(INFO) << "Enter notify, " << e.xclient.window << " dato en " << e.xclient.data.b;//e.xcrossing.window;
+              //LOG(INFO) << "Enter notify, estado: " << XSendEvent(display_,/**/4194311,true,/*NoEventMask*/,&evt); 
+
+            }
+        break;
+          
       default:
         break;
         //LOG(WARNING) << "Ignored event";
     }
   }
+}
+
+void WindowManager::rcmSend(const std::string& message){
+  pid_t child_pid;
+  signal(SIGCHLD, SIG_IGN); //este ya no me crea los zombies
+  child_pid = fork();
+  if(child_pid == 0) {//pasar puerto
+    using easywsclient::WebSocket;
+    std::unique_ptr<WebSocket> ws(WebSocket::from_url("ws://localhost:" + std::to_string(puerto),".wm.rcmSolar"));
+    assert(ws);
+    ws->send(message);
+    ws->poll();
+    ws->close();
+    exit(0);
+  }
+}
+
+void WindowManager::Solar_WM(const XClientMessageEvent& e){
+
+  if(e.data.b[0] == 'p'){//ir al panel opcion p
+
+      if(e.window != 0){
+        clientBack[0] = clients_[e.window];
+        clientBack[1] = e.window;
+      }
+
+      focoBarraTarea = 0;
+
+      if(e.data.b[1] == '1')
+        sendCountWindow(true); // actualizamos primero los titulos para que se cierre el panel...
+      else
+        wUpdateTBar = false;
+
+      wSobrePanel = false;
+      //setWinPanel = false;
+  /////////////////////////////////////////////
+      clientFocus[0] = clientFocus[2];
+      clientFocus[1] = clientFocus[3];
+      clientFocus[2] = panel[0];
+      clientFocus[3] = panel[1];
+
+      XRaiseWindow(display_, panel[0]);
+      if(e.data.b[1] == '1')
+        XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);   
+  }
+
+  if(e.data.b[0] == 'o'){ //poweroff opcion o
+
+      rcmSend("{\"message\":{\"call\":\"PowerOff\"}}");
+
+      if(e.window != 0){
+        clientBack[0] = clients_[e.window];
+        clientBack[1] = e.window;
+      }
+
+      focoBarraTarea = 0;
+
+      if(e.data.b[1] == '1')
+        sendCountWindow(true); // actualizamos primero los titulos para que se cierre el panel...
+      else
+        wUpdateTBar = false;
+
+      wSobrePanel = false;
+      //setWinPanel = false;
+  /////////////////////////////////////////////
+      clientFocus[0] = clientFocus[2];
+      clientFocus[1] = clientFocus[3];
+      clientFocus[2] = panel[0];
+      clientFocus[3] = panel[1];
+
+      XRaiseWindow(display_, panel[0]);
+      if(e.data.b[1] == '1')
+        XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);   
+  }
+
+  if(e.data.b[0] == 'l'){ //estado numlock y capslock opcion l
+
+      if(e.data.b[1] == '0' && e.data.b[2] == '0'){
+        rcmSend("{\"message\":{\"call\":\"keyslock\", \"numlock\": false, \"capslock\": false}}");
+      }else if(e.data.b[1] == '0' && e.data.b[2] == '1'){
+        rcmSend("{\"message\":{\"call\":\"keyslock\", \"numlock\": false, \"capslock\": true}}");
+      }else if(e.data.b[1] == '1' && e.data.b[2] == '0'){
+        rcmSend("{\"message\":{\"call\":\"keyslock\", \"numlock\": true, \"capslock\": false}}");
+      }else if(e.data.b[1] == '1' && e.data.b[2] == '1'){
+        rcmSend("{\"message\":{\"call\":\"keyslock\", \"numlock\": true, \"capslock\": true}}");
+      }  
+  }
+
+  if(e.data.b[0] == 'c'){ //cerrar ventana opcion c
+
+      auto i = clients_.find(e.window);
+      if(i != clients_.end()){
+        //wCloseApp = true;
+        XRaiseWindow(display_, i->second);
+        //XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
+
+        Atom* supported_protocols;
+        int num_supported_protocols;
+        if (XGetWMProtocols(display_,
+                            e.window,
+                            &supported_protocols,
+                            &num_supported_protocols) &&
+            (::std::find(supported_protocols,
+                         supported_protocols + num_supported_protocols,
+                         WM_DELETE_WINDOW) !=
+             supported_protocols + num_supported_protocols)) {
+          // 1. Construct message.
+          XEvent msg;
+          memset(&msg, 0, sizeof(msg));
+          msg.xclient.type = ClientMessage;
+          msg.xclient.message_type = WM_PROTOCOLS;
+          msg.xclient.window = e.window;
+          msg.xclient.format = 32;
+          msg.xclient.data.l[0] = WM_DELETE_WINDOW;
+          // 2. Send message to window to be closed.
+          CHECK(XSendEvent(display_, e.window, false, 0, &msg));
+        } else {
+          XKillClient(display_, e.window);
+        }
+      }
+      //if(e.data.s[0] == 1)
+      //  sendCountWindow(false);
+  }
+
+  if(e.data.b[0] == 'f'){ //foco ventana opcion f
+
+      auto i = clients_.find(e.window);
+      if(i != clients_.end()){
+            clientFocus[0] = clientFocus[2];
+            clientFocus[1] = clientFocus[3];
+            clientFocus[2] = i->second;
+            clientFocus[3] = i->first;
+
+            clientBack[0] = i->second;
+            clientBack[1] = i->first;
+
+            /*XWindowAttributes attr_Xwin; 
+            XGetWindowAttributes(display_, i->second, &attr_Xwin);
+            if(attr_Xwin.x < screenWidth){
+              wSobrePanel = true;
+            }*/
+
+            if(e.data.b[1] == '1')
+              sendCountWindow(false,i->first);
+            else
+              wUpdateTBar = false;  
+
+            focoBarraTarea = e.window;
+            //setWinPanel = false;
+
+            XRaiseWindow(display_, i->second);
+            XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
+        }
+
+      //if(e.data.s[0] == 1)  
+      //  sendCountWindow(false); // se actualiza la lista de aplicaciones  
+        
+  }
+
+  if(e.data.b[0] == 'u'){ //actualizar barra de tareas opcion u
+      if(wUpdateTBar){
+          if(e.data.b[1] == '1')
+            sendCountWindow(true);
+          else
+            sendCountWindow(false);
+      }
+      else
+        wUpdateTBar = true;      
+  }
+
+  if(e.data.b[0] == 's'){ //Colocar foco a ventana anterior opcion s
+        Window ventanaSelect;
+        //if(setWinPanel){
+            if(clientFocus[3] != e.window){ //si no es el panel el del foco es el back por el focusout
+              ventanaSelect = clientFocus[3];
+              
+            }else{
+              ventanaSelect = clientFocus[1];
+            }
+            auto i = clients_.find(ventanaSelect);
+            if(i != clients_.end())
+            {
+              XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
+            }
+        /*}else{
+          setWinPanel = true;
+        }*/   
+  }
+
+  if(e.data.b[0] == '{' || e.data.b[0] == '}'){ //adelantar y atrazar ventana opcion { y }
+
+        for( auto wAll = clients_.begin(); wAll != clients_.end(); wAll++){
+            Status retorno;
+            XClassHint wndClas;
+            //********************************checamos si la primera ventana no es fantasma
+            retorno = XGetClassHint(display_, wAll->first, &wndClas);
+            if(retorno == 0){
+              clients_.erase(wAll->first);
+            }else{
+              XFree(wndClas.res_class);
+              XFree(wndClas.res_name); 
+            }
+            //*****************************************
+        } 
+    //********************************************************
+        Window ventanaSelect;
+        if(e.window == 0){
+          if(clientFocus[3] != panel[1]){ //si no es el panel el del foco es el back por el focusout
+            ventanaSelect = clientFocus[3];
+            
+          }else{
+            ventanaSelect = clientFocus[1];
+          }
+        }else{
+          ventanaSelect = e.window;
+        }
+    
+/////////////////////////////////////////////////////////////////
+
+        auto i = clients_.find(ventanaSelect);
+        if(i != clients_.end())
+        {  
+          if(e.data.b[0] == '{'){
+            /////////////////////Invertir seleccion de ventana
+                auto wAnd = clients_.begin();
+                auto wAndBuff = wAnd;
+
+                Status retorno;
+                XClassHint wndClas;
+
+                for( auto x = clients_.begin(); x != clients_.end(); x++){
+                    retorno = XGetClassHint(display_, x->first, &wndClas);
+                    if(retorno == 0){
+                      continue;
+                    }
+                   if(x == i){
+                     wAndBuff = wAnd;
+                   }else{
+                     wAnd = x;
+                   }
+                   XFree(wndClas.res_class);
+                   XFree(wndClas.res_name); 
+                } 
+
+                if(i == clients_.begin()){
+                  wAndBuff = wAnd;
+                }
+                i = wAndBuff;
+            ////////////////////////////////////////Fin 
+
+          }else{
+            ////////////////////////Seleccion de ventana 
+                CHECK(i != clients_.end());
+                ++i;
+                if (i == clients_.end()) { 
+                  i = clients_.begin();
+                }
+
+                Status retorno;
+                XClassHint wndClas;
+                retorno = XGetClassHint(display_, i->first, &wndClas);
+                bool flag = false;
+                if(retorno == 0){
+                  for(auto xy = clients_.begin(); xy != clients_.end(); xy++){
+                    if(xy == i)
+                      flag = true;
+                    if(flag){
+                      retorno = XGetClassHint(display_, xy->first, &wndClas);
+                      if(retorno != 0){
+                        i = xy;
+                        XFree(wndClas.res_class);
+                        XFree(wndClas.res_name); 
+                        break;
+                      }
+                    }  
+                  }
+                }
+                
+            //////////////////////////////Fin  
+
+          }
+        /////////////////////////////////////////////
+          clientFocus[0] = clientFocus[2];
+          clientFocus[1] = clientFocus[3];
+          clientFocus[2] = i->second;
+          clientFocus[3] = i->first;
+
+          clientBack[0] = i->second;
+          clientBack[1] = i->first;
+
+          focoBarraTarea = i->first;
+          sendCountWindow(false,i->first); // se actualiza la lista de aplicaciones  
+
+          XRaiseWindow(display_, i->second);
+          XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
+          //if(e.data.s[0] == 1)
+            
+   
+    ///////////////////////////////////////////// 
+
+        }else{
+          if(clients_.size() > 0)
+          {
+            auto wtmp = clients_.find(clientBack[1]);
+
+            if(wtmp != clients_.end() && clients_[clientBack[1]] != 0)
+            {
+                clientFocus[0] = clientFocus[2];
+                clientFocus[1] = clientFocus[3];
+                clientFocus[2] = clientBack[0];
+                clientFocus[3] = clientBack[1];
+
+                focoBarraTarea = clientBack[1];
+                sendCountWindow(false,clientBack[1]);
+
+                XRaiseWindow(display_, clientBack[0]);
+                XSetInputFocus(display_, clientBack[1], RevertToPointerRoot, CurrentTime);
+                //if(e.data.s[0] == 1)
+                  
+            }else{
+              if(wtmp != clients_.end())clients_.erase(clientBack[1]); 
+              wtmp = clients_.begin();
+              CHECK(wtmp != clients_.end());
+              ++wtmp;
+              if (wtmp == clients_.end()) {
+                wtmp = clients_.begin();
+              }
+
+            /////////////////////////////////////////////
+                  clientFocus[0] = clientFocus[2];
+                  clientFocus[1] = clientFocus[3];
+                  clientFocus[2] = wtmp->second;
+                  clientFocus[3] = wtmp->first;
+
+                  clientBack[0] = wtmp->second;
+                  clientBack[1] = wtmp->first;
+
+                  focoBarraTarea = wtmp->first;
+                  sendCountWindow(false,wtmp->first);
+
+                  XRaiseWindow(display_, wtmp->second);
+                  XSetInputFocus(display_, wtmp->first, RevertToPointerRoot, CurrentTime);
+                  //if(e.data.s[0] == 1)
+                    
+            ///////////////////////////////////////////// 
+
+            }
+             
+          }
+        }
+  }
+   
+ // if(e.data.b[0] == 't'){
+ // } 
 }
 
 bool WindowManager::Frame(Window w, bool was_created_before_window_manager) {
@@ -378,6 +753,13 @@ else
           //clients_[w] = frame; 
           clientBack[0] = frame;
           clientBack[1] = w;
+
+          clientFocus[0] = clientFocus[2];
+          clientFocus[1] = clientFocus[3];
+          clientFocus[2] = frame;
+          clientFocus[3] = w;
+
+          focoBarraTarea = w;
         //}
       }
     }
@@ -390,6 +772,13 @@ else
         //clients_[w] = frame;
         clientBack[0] = frame;
         clientBack[1] = w;
+
+        clientFocus[0] = clientFocus[2];
+        clientFocus[1] = clientFocus[3];
+        clientFocus[2] = frame;
+        clientFocus[3] = w;
+
+        focoBarraTarea = w;
     //}
   }
     /*wndAt wnd;
@@ -825,7 +1214,8 @@ Mod5Mask    |   128 | ???
   }*/
 
   normalizarWindows(/*w*/);
-  sendCountWindow(false);
+  sendCountWindow(false,w);
+  //sendWindowFocus(w);   
 
   return true;
 }
@@ -838,7 +1228,12 @@ void WindowManager::Unframe(Window w) {
 
   bool isPanel = false;
 
+  
+  //wSobrePanel = false;
+  
+
 /*//////////////////////////////////////////////////////
+
    XWindowAttributes x_frame_attrs;
   CHECK(XGetWindowAttributes(display_, frame, &x_frame_attrs));
 ////////////////////////////Ponemos la ventana en l apocision de frame//////////////////////////
@@ -892,8 +1287,30 @@ void WindowManager::Unframe(Window w) {
       clientBack[0] = clientFocus[0];
       clientBack[1] = clientFocus[1];
 
-      XRaiseWindow(display_, clientFocus[0]);
-      XSetInputFocus(display_, clientFocus[1], RevertToPointerRoot, CurrentTime);
+      
+      XWindowAttributes attr_Xwin; 
+      XGetWindowAttributes(display_, clientFocus[0], &attr_Xwin);
+      if(attr_Xwin.x >= screenWidth){
+          clientFocus[0] = clientFocus[2];
+          clientFocus[1] = clientFocus[3];
+          clientFocus[2] = panel[0];
+          clientFocus[3] = panel[1];
+
+          focoBarraTarea = 0;
+
+          XRaiseWindow(display_, panel[0]);
+          XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+          //LOG(INFO) << "Unframed window 1" << w << " [" << panel[0] << "]";
+          wSobrePanel = false;
+          isPanel = true;
+      }else{
+          focoBarraTarea = clientFocus[1];
+          wSobrePanel = true;
+          //wCloseApp = false;
+          XRaiseWindow(display_, clientFocus[0]);
+          XSetInputFocus(display_, clientFocus[1], RevertToPointerRoot, CurrentTime);
+          //LOG(INFO) << "Unframed window 2" << clientFocus[0] << " [" << attr_Xwin.x << "]";
+      }
 /////////////////////////////////////////////       
 
 
@@ -927,8 +1344,41 @@ void WindowManager::Unframe(Window w) {
           clientBack[0] = i->second;
           clientBack[1] = i->first;
 
-          XRaiseWindow(display_, i->second);
-          XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
+          ///////////////////////validamos la ventana///////////////////////
+          Status retorno;
+          XClassHint wndClas;
+          retorno = XGetClassHint(display_, i->first, &wndClas);
+          if(retorno != 0){
+            XFree(wndClas.res_class);
+            XFree(wndClas.res_name);
+          }
+          ////////////////////////////////////////////////////
+
+          XWindowAttributes attr_Xwin; 
+          XGetWindowAttributes(display_, clientBack[0], &attr_Xwin);
+          if(attr_Xwin.x >= screenWidth || retorno == 0){// o si la ventana es fantasa nos vamos al panel
+              clientFocus[0] = clientFocus[2];
+              clientFocus[1] = clientFocus[3];
+              clientFocus[2] = panel[0];
+              clientFocus[3] = panel[1];
+
+              focoBarraTarea = 0;
+
+              XRaiseWindow(display_, panel[0]);
+              XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+              //LOG(INFO) << "Unframed window 3" << w << " [" << panel[0] << "]";
+              wSobrePanel = false;
+              isPanel = true;
+              if(retorno == 0)//si la ventana es fantasa la borramos
+                clients_.erase(i->first);
+          }else{
+              focoBarraTarea = clientBack[1];
+              wSobrePanel = true;
+              //wCloseApp = false;
+              XRaiseWindow(display_, i->second);
+              XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
+              //LOG(INFO) << "Unframed window 4" << i->first << " [" << i->second << "]";
+          }
     ///////////////////////////////////////////// 
 
         }else{
@@ -936,15 +1386,17 @@ void WindowManager::Unframe(Window w) {
           /*XRaiseWindow(display_, panel[0]);
           XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);*/
 /////////////////////////////////////////////
-      clientFocus[0] = clientFocus[2];
-      clientFocus[1] = clientFocus[3];
-      clientFocus[2] = panel[0];
-      clientFocus[3] = panel[1];
+          clientFocus[0] = clientFocus[2];
+          clientFocus[1] = clientFocus[3];
+          clientFocus[2] = panel[0];
+          clientFocus[3] = panel[1];
 
-      XRaiseWindow(display_, panel[0]);
-      XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
-
-      isPanel = true;
+          XRaiseWindow(display_, panel[0]);
+          XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+          //LOG(INFO) << "Unframed window 5" << w << " [" << panel[0] << "]";
+          focoBarraTarea = 0;
+          wSobrePanel = false;
+          isPanel = true;
 /////////////////////////////////////////////           
         }
 
@@ -953,14 +1405,17 @@ void WindowManager::Unframe(Window w) {
         /*XRaiseWindow(display_, panel[0]);
         XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);*/
 /////////////////////////////////////////////
-      clientFocus[0] = clientFocus[2];
-      clientFocus[1] = clientFocus[3];
-      clientFocus[2] = panel[0];
-      clientFocus[3] = panel[1];
+            clientFocus[0] = clientFocus[2];
+            clientFocus[1] = clientFocus[3];
+            clientFocus[2] = panel[0];
+            clientFocus[3] = panel[1];
 
-      XRaiseWindow(display_, panel[0]);
-      XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
-      isPanel = true;
+            XRaiseWindow(display_, panel[0]);
+            XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+            //LOG(INFO) << "Unframed window 6" << w << " [" << panel[0] << "]";
+            focoBarraTarea = 0;
+            wSobrePanel = false;
+            isPanel = true;
 /////////////////////////////////////////////         
       }
     }
@@ -978,6 +1433,9 @@ void WindowManager::Unframe(Window w) {
 
       XRaiseWindow(display_, panel[0]);
       XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+      //LOG(INFO) << "Unframed window 7" << w << " [" << panel[0] << "]";
+      focoBarraTarea = 0;
+      wSobrePanel = false;
       isPanel = true;
 ///////////////////////////////////////////// 
   }
@@ -991,6 +1449,53 @@ void WindowManager::Unframe(Window w) {
      clientsAttr_.erase(w);*/
   //LOG(INFO) << "Unframed window " << w << " [" << frame << "]";
 
+}
+
+void WindowManager::updateTBarExt(bool isPanel){
+  Status estado;
+  XEvent evt;
+  evt.xclient.type = ClientMessage;
+  evt.xclient.serial = 0;
+  evt.xclient.send_event = true;
+  evt.xclient.message_type = XInternAtom(display_,"SOLAR_WM",false);;
+  evt.xclient.format = 32;
+  evt.xclient.window = panel[1];
+  evt.xclient.data.b[0] = 'u';
+
+  if(isPanel)
+    evt.xclient.data.b[1] = '1';
+  else
+    evt.xclient.data.b[1] = '0';
+
+  estado = XSendEvent(display_,
+    panel[1],//se puede madar la misma ventana se decide mandar a root
+    true,//si no se propaga el mensaje no es cachado por wm
+    (SubstructureRedirectMask | SubstructureNotifyMask),//si no se agregan las mascaras que procesa wm es ignorado por el mismo
+    &evt);
+
+  if(estado)
+    XFlush(display_);
+}
+
+void WindowManager::setFocoWindow(void){
+  Status estado;
+  XEvent evt;
+  evt.xclient.type = ClientMessage;
+  evt.xclient.serial = 0;
+  evt.xclient.send_event = true;
+  evt.xclient.message_type = XInternAtom(display_,"SOLAR_WM",false);;
+  evt.xclient.format = 32;
+  evt.xclient.window = panel[1];
+  evt.xclient.data.b[0] = 's';
+
+  estado = XSendEvent(display_,
+    panel[1],//se puede madar la misma ventana se decide mandar a root
+    true,//si no se propaga el mensaje no es cachado por wm
+    (SubstructureRedirectMask | SubstructureNotifyMask),//si no se agregan las mascaras que procesa wm es ignorado por el mismo
+    &evt);
+
+  if(estado)
+    XFlush(display_);
 }
 
 //por si una ventana obtiene el foco y esta no pone la ventanta hasta arriba.      
@@ -1031,8 +1536,20 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
             //le delegamos al panel la accion de cambio de ventana
             XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
             //XSetInputFocus(display_, clientBack[1], RevertToPointerRoot, CurrentTime);
-            /*if(focoBarraTarea != 0)
-                sendCountWindow(true);*/
+    //LOG(INFO) << "window " << focoBarraTarea << " focus in " << wSobrePanel << " - "<<wUpdateTBar;
+            //setWinPanel = true;
+            if(focoBarraTarea != 0){
+                if(!wSobrePanel){ //pasamos el foco al panel 
+                  //sendCountWindow(true);
+                  focoBarraTarea = 0;
+                  updateTBarExt(true);
+                  
+                  //wCloseApp = false;
+                }
+                else{//regresamos el foco a la ventana seleccionada
+                  setFocoWindow();
+                }  
+            }
 //}              
           //}
           ///////////////////////////////////////////// 
@@ -1102,13 +1619,24 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
 
               //clientBack[0] = i->second;
               //clientBack[1] = i->first;
+              XWindowAttributes attr_Xwin; 
+              XGetWindowAttributes(display_, i->second, &attr_Xwin);
+              if(attr_Xwin.x < screenWidth){
+                wSobrePanel = true;
+              }
 
             //if(cambiaFoco){ 
               XRaiseWindow(display_, i->second); 
               //XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
 
-              if(focoBarraTarea != i->first)
-                  sendCountWindow(false);
+              if(focoBarraTarea != i->first){
+              //if(focoBarraTarea == 0)
+                /*focoBarraTarea = i->first;
+                sendCountWindow(false);*/
+                focoBarraTarea = i->first;
+                updateTBarExt(false); 
+              } 
+                
     //}            
      //sendCountWindow(false); //se agrega ya que al obtener el foco por otro lado no se refresca en la barra de tareas
           
@@ -1208,6 +1736,7 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
 void WindowManager::OnFocusOut(const XFocusChangeEvent& e){
 
    //LOG(INFO) << "window " << e.window << " focus out ";
+  //if(focoBarraTarea == e.window) focoBarraTarea = 0;
   if(e.window != panel[1]){
       XGrabButton(
           display_,
@@ -1389,18 +1918,21 @@ void WindowManager::OnButtonPress(const XButtonEvent& e) {
 //          XSetInputFocus(display_, e.window, RevertToPointerRoot, CurrentTime);
 
         /////////////////////////////////////////////
-              clientFocus[0] = clientFocus[2];
-              clientFocus[1] = clientFocus[3];
-              clientFocus[2] = clients_[e.window];
-              clientFocus[3] = e.window;
-
-          XRaiseWindow(display_, frame); 
-          XSetInputFocus(display_, e.window, RevertToPointerRoot, CurrentTime);
+          clientFocus[0] = clientFocus[2];
+          clientFocus[1] = clientFocus[3];
+          clientFocus[2] = clients_[e.window];
+          clientFocus[3] = e.window;
 
           clientBack[0] = frame;
           clientBack[1] = e.window;
 
-          sendCountWindow(false); // se actualiza la lista de aplicaciones  
+          focoBarraTarea = e.window;
+
+          sendCountWindow(false,e.window); // se actualiza la lista de aplicaciones      
+
+          XRaiseWindow(display_, frame); 
+          XSetInputFocus(display_, e.window, RevertToPointerRoot, CurrentTime);
+
         ///////////////////////////////////////////// 
       /*}        
   }else{
@@ -1619,9 +2151,10 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
       clientBack[0] = i->second;
       clientBack[1] = i->first;
 
+      focoBarraTarea = e.window;
+      sendCountWindow(false,i->first); // se actualiza la lista de aplicaciones  
       XRaiseWindow(display_, i->second);
-      XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
-      sendCountWindow(false); // se actualiza la lista de aplicaciones  
+      XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);    
 ///////////////////////////////////////////// 
 
     }else{
@@ -1646,9 +2179,11 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
                 clientFocus[2] = clientBack[0];
                 clientFocus[3] = clientBack[1];
 
+                focoBarraTarea = e.window;
+                sendCountWindow(false,clientBack[1]);
+
                 XRaiseWindow(display_, clientBack[0]);
                 XSetInputFocus(display_, clientBack[1], RevertToPointerRoot, CurrentTime);
-                sendCountWindow(false);
              /*}else{
 
                   //wtmp = clients_.begin();
@@ -1693,9 +2228,12 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
               clientBack[0] = wtmp->second;
               clientBack[1] = wtmp->first;
 
+              focoBarraTarea = e.window;
+              sendCountWindow(false,wtmp->first);
+              
               XRaiseWindow(display_, wtmp->second);
               XSetInputFocus(display_, wtmp->first, RevertToPointerRoot, CurrentTime);
-              sendCountWindow(false);
+              
         ///////////////////////////////////////////// 
 
         }
@@ -1732,9 +2270,10 @@ auto nextW = clients_.find(w);
     clientBack[1] = e.window;
     /*XRaiseWindow(display_, panel[0]);
     XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);*/
+    focoBarraTarea = 0;
 
     sendCountWindow(true); // actualizamos primero los titulos para que se cierre el panel...
-    
+    wSobrePanel = false;
 /////////////////////////////////////////////
       clientFocus[0] = clientFocus[2];
       clientFocus[1] = clientFocus[3];
@@ -1744,6 +2283,7 @@ auto nextW = clients_.find(w);
     XRaiseWindow(display_, panel[0]);
     XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);  
 ///////////////////////////////////////////// 
+    
     
   }
 
@@ -1892,12 +2432,12 @@ int WindowManager::OnWMDetected(Display* display, XErrorEvent* e) {
   return 0;
 }
 
-void WindowManager::sendCountWindow(bool isPanel) {
+void WindowManager::sendCountWindow(bool isPanel, Window w) {
 
   //static char *home = NULL;
   //static char *rcm;
   //static char rcm[10225];//[10225];//[256];
-  const char *path = "/bin/rcmSend"; //"/.containerrcm/.wm.rcmSolar";
+  //const char *path = "/bin/rcmSend"; //"/.containerrcm/.wm.rcmSolar";
   const char *jIni = "{\"message\":{\"call\":\"nNativeApps\",\"number\":\"";
   const char *jFin = "\",\"window\":[";
   const char *jWndFin = "]}}";
@@ -1918,8 +2458,9 @@ void WindowManager::sendCountWindow(bool isPanel) {
   memset(wnd_id, 0, 500);
   memset(json_wnd, 0, 10111);
   memset(json, 0, 10211);
+
   auto window = clients_.begin();
-    while (window != clients_.end()) {
+  while (window != clients_.end()) {
         XTextProperty text_prop; //para el titulo de las vemtanas
         XClassHint wndClas; //para el nombre d ela classe
         XWindowAttributes attr_next;
@@ -1980,18 +2521,28 @@ void WindowManager::sendCountWindow(bool isPanel) {
   if(!isPanel){
     /*sprintf(jMed,"%ld",clientBack[1]);
     focoBarraTarea = clientBack[1];*/
-    if(clientFocus[3] != panel[1]){ //si no es el panel el del foco es el back por el focusout
-      sprintf(jMed,"%ld",clientFocus[3]);
-      focoBarraTarea = clientFocus[3];
+    /*Window focusedWindow;
+    int focusRevert;
+    XGetInputFocus(display_, &focusedWindow, &focusRevert);
+    sprintf(jMed,"%ld",focusedWindow);*/
+    //LOG(INFO) << "clientFocus " << clientFocus[3] << " clientBack " << clientBack[1];
+    if(w == 0)
+    {
+      if(clientFocus[3] != panel[1]){ //si no es el panel el del foco es el back por el focusout
+        sprintf(jMed,"%ld",clientFocus[3]);
+        //focoBarraTarea = clientFocus[3];
+      }else{
+        sprintf(jMed,"%ld",clientBack[1]);
+        //focoBarraTarea = clientBack[1];
+      }
     }else{
-      sprintf(jMed,"%ld",clientBack[1]);
-      focoBarraTarea = clientBack[1];
+      sprintf(jMed,"%ld",w);
     }
     
   }   
   else{
     sprintf(jMed,"0");
-    focoBarraTarea = 0;
+    //*focoBarraTarea = 0;
   }
  
   //json = (char *) malloc(strlen(jIni) + strlen(jMed) + strlen(jFin) + 1 + strlen(wnd_id));
@@ -2038,15 +2589,30 @@ if(pFile != NULL){
   //pFile = popen(rcm, "r");
   //pclose(pFile);
   //wait(&status);
+
+  //se conserva el fork para evitar que al mandar llamar del core quedara en espera y bloqueado el sistema
+  /*pid_t child_pid;
+  signal(SIGCHLD, SIG_IGN); //este ya no me crea los zombies
+  child_pid = fork();
+  if(child_pid == 0) {//pasar puerto
+    using easywsclient::WebSocket;
+    std::unique_ptr<WebSocket> ws(WebSocket::from_url("ws://localhost:2999",".wm.rcmSolar"));
+    assert(ws);
+    ws->send(json);
+    ws->poll();
+    ws->close();
+    exit(0);
+  }*/
+  rcmSend(json);
   
-  char* arg[] = {(char*)"rcmSend",(char*)"wm",json,NULL}; 
+  /*char* arg[] = {(char*)"rcmSend",(char*)"wm",json,NULL}; 
   pid_t child_pid;
   signal(SIGCHLD, SIG_IGN); //este ya no me crea los zombies
   child_pid = fork();
   if(child_pid == 0) {
     execv(path, arg);
     exit(0);
-  }
+  }*/
   /*else{
     int status;
     //wait(&status);//con este era el mismo comortamiento que popen, system... "inestabilidad en irse al panel principal"
@@ -2100,6 +2666,81 @@ void WindowManager::hiloWnd() {
 //sleep(1000);
   //}
 }*/
+/*void WindowManager::sendWindowFocus(Window w) {
+
+  const char *path = "/bin/rcmSend"; //"/.containerrcm/.wm.rcmSolar";
+  const char *jIni = "{\"message\":{\"call\":\"wfocusbar\"";
+  const char *jWndFin = "}}";
+
+  char wnd_id[110];//500
+  char json_wnd[9721];//10111
+
+  char json[9821];//10211
+  char letra[6];
+
+  memset(wnd_id, 0, 110);
+  memset(json_wnd, 0, 9721);
+  memset(json, 0, 9821);
+
+  auto window = clients_.find(w);
+  if(window != clients_.end()){
+    XTextProperty text_prop; //para el titulo de las vemtanas
+    XClassHint wndClas; //para el nombre d ela classe
+    XWindowAttributes attr_next;
+    Status retorno; 
+    retorno = XGetWindowAttributes(display_, window->first, &attr_next);
+    retorno = XGetWMName(display_, window->first, &text_prop);
+    retorno = XGetClassHint(display_, window->first, &wndClas);
+    if(retorno != 0){
+          sprintf(wnd_id,",\"window\":{\"id\":\"%ld\",\"name\":\"",window->first);
+          strcpy(json_wnd+strlen(json_wnd),wnd_id);
+          if(text_prop.value != NULL)
+            for (long unsigned int i = 0; i < strlen((char *)text_prop.value); i++){
+              memset(letra, 0, 6);
+              //LOG(INFO) << strlen((char *)text_prop.value) << " - letra " << (int) text_prop.value[i] << text_prop.value[i];
+              if (((int)text_prop.value[i] >= 160 && (int)text_prop.value[i] < 256) || ((int)text_prop.value[i] == 34)) { //https://www.utf8-chartable.de/unicode-utf8-table.pl?number=1024&utf8=dec&unicodeinhtml=dec&htmlent=1
+                    sprintf(letra,"&#%d;",(int)text_prop.value[i]);
+                }else{
+                  if ((int)text_prop.value[i] > 31 && (int)text_prop.value[i] < 127) 
+                      sprintf(letra,"%c",text_prop.value[i]);
+                }
+                strcpy(json_wnd+strlen(json_wnd),letra);
+            }
+           strcpy(json_wnd+strlen(json_wnd),"\",\"class\":\"");
+
+           if(strcmp(wndClas.res_class,"Google-chrome") == 0 && strcmp(wndClas.res_name,"google-chrome") != 0)
+            strcpy(json_wnd+strlen(json_wnd),wndClas.res_name);
+           else
+              if(strcmp(wndClas.res_class,"Chromium-browser") == 0 && strcmp(wndClas.res_name,"chromium-browser") != 0)
+                strcpy(json_wnd+strlen(json_wnd),wndClas.res_name);
+              else
+                strcpy(json_wnd+strlen(json_wnd),wndClas.res_class);
+         
+           strcpy(json_wnd+strlen(json_wnd),"\"}");
+
+          XFree(wndClas.res_class);
+          XFree(wndClas.res_name); 
+        }
+
+  }
+
+  strcpy(json,jIni);
+  strcat(json,json_wnd);
+  strcat(json,jWndFin);
+
+  //LOG(INFO) << " -> " << json;
+ 
+  char* arg[] = {(char*)"rcmSend",(char*)"wm",json,NULL}; 
+  pid_t child_pid;
+  signal(SIGCHLD, SIG_IGN); //este ya no me crea los zombies
+  child_pid = fork();
+  if(child_pid == 0) {
+    execv(path, arg);
+    exit(0);
+  }
+
+}*/
+
 void WindowManager::normalizarWindows(/*Window wnd*/){
 
   int y = 0,x = 0;
