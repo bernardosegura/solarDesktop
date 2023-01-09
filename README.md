@@ -3,7 +3,7 @@
 Es un entorno de escritorio para Linux, con temática geek, el cual es un __Fork__ del proyecto [eDEX-UI](https://github.com/GitSquared/edex-ui).
 <br>[v4.0.0-0601.23-beta](https://github.com/bernardosegura/solarDesktop/releases/tag/4.0.0-0601.23-beta)
 #
-<p align="justify"> Actualmente este entorno reutiliza componentes del entorno de escritorio mate, así que para tener una experiencia más agradable y compatible es necesario tener instalado este escritorio como un tema alternativo, sin embargo no es obligatorio para su funcionamiento. En un futuro puede ser adaptable a otros entornos de escritorio y poder reutilizar módulos que ya controlan ciertos aspectos del equipo o en su defecto crear estos componentes para que quede de manera autónoma.</p>
+<p align="justify">Actualmente este entorno reutiliza componentes del entorno de escritorio mate, así que para tener una experiencia más automática es necesario tener instalado este escritorio como un tema alternativo, sin embargo no es obligatorio para su funcionamiento. La reutilización de elementos de otro sistema de escritorio se tendría que realizar de manera manual. Posiblemente en un futuro se integren estas aplicaciones directamente en este entorno.</p>
 
 # 
 ## Sistema Operativo
