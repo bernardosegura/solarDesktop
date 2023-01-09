@@ -1,7 +1,7 @@
 {
   "name": "solar-edex",
   "productName": "Solar-eDEX",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "description": "A science fiction desktop running everywhere. Awesome.",
   "keywords": [
     "desktop",
@@ -71,7 +71,8 @@
     "node-abi": "2.8.0",
     "node-json-minify": "1.0.0",
     "uglify-es": "3.3.9",
-    "websocket": "^1.0.34"
+    "websocket": "^1.0.34",
+    "ini": "^3.0.0"
   },
   "optionalDependencies": {
     "cson-parser": "4.0.2"

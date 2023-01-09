@@ -206,16 +206,26 @@ class Sysinfo {
                         //indicator.innerHTML = "CHARGED";
                         document.getElementById(window.idBattery).setAttribute("title", "Battery: Charged - " + bat.percent+"%");
                         document.getElementById(window.idBattery + '_energy').setAttribute("width", ((window.maxBattery*bat.percent)/100));
+                        document.getElementById("txt_porcentajeBat").style.right = '0.6vh';
+                        document.getElementById("txt_porcentajeBat").style.display = (window.settings.porcentajeBat)?'block':'none';
+                        document.getElementById("txt_porcentajeBat").innerHTML = "<b>" + bat.percent+"%</b>";
+                        document.getElementById("txt_porcentajeBat").setAttribute("title", "Battery: Charged - " + bat.percent+"%");
                     }
                     else
                     {
                         //porcentCharge.setAttribute("title","Charging - " + bat.percent+"%");
                         //indicator.innerHTML = "CHARGE";
-                        if(bat.percent > window.batAlert)
-                             document.getElementById(window.idBattery).classList.remove("parpadea");
-
+                        if(bat.percent > window.batAlert){
+                            document.getElementById(window.idBattery).classList.remove("parpadea");
+                            document.getElementById("txt_porcentajeBat").classList.remove("parpadea");
+                        }
+                             
                         document.getElementById(window.idBattery).setAttribute("title", "Battery: Charging - " + bat.percent+"%");
                         document.getElementById(window.idBattery + '_energy').setAttribute("width", ((window.maxBattery*bat.percent)/100));
+                        document.getElementById("txt_porcentajeBat").style.right = '0.6vh';
+                        document.getElementById("txt_porcentajeBat").style.display = (window.settings.porcentajeBat)?'block':'none';
+                        document.getElementById("txt_porcentajeBat").innerHTML = "<b>" + bat.percent+"%</b>";
+                        document.getElementById("txt_porcentajeBat").setAttribute("title", "Battery: Charging - " + bat.percent+"%");
                     }
                     //this.timeremainingConected = bat.timeremaining;
                     this.batteryFlag = true;
@@ -226,6 +236,9 @@ class Sysinfo {
                     document.getElementById(window.idBattery).setAttribute("style", "opacity: 0.5;");
                     document.getElementById(window.idBattery).setAttribute("title", "");
                     document.getElementById(window.idBattery + '_energy').setAttribute("width", 0);
+                    document.getElementById("txt_porcentajeBat").setAttribute("title", "");
+                    document.getElementById("txt_porcentajeBat").innerHTML = "";
+                    document.getElementById("txt_porcentajeBat").style.display = 'none';
 
 
                 } else {
@@ -264,6 +277,10 @@ class Sysinfo {
                         
                         document.getElementById(window.idBattery).setAttribute("title", "Battery: Charged - 100%");
                         document.getElementById(window.idBattery + '_energy').setAttribute("width", window.maxBattery);
+                        document.getElementById("txt_porcentajeBat").style.right = '1vh';
+                        document.getElementById("txt_porcentajeBat").style.display = (window.settings.porcentajeBat)?'block':'none';
+                        document.getElementById("txt_porcentajeBat").innerHTML = "<b>100%</b>";
+                        document.getElementById("txt_porcentajeBat").setAttribute("title", "Battery: Charged - 100%");
                     }
                     else
                     {
@@ -272,6 +289,7 @@ class Sysinfo {
 
                             //indicator.setAttribute("class","parpadea");
                             document.getElementById(window.idBattery).classList.add("parpadea");
+                            document.getElementById("txt_porcentajeBat").classList.add("parpadea");
 
                             if(window.lowBateryFlag == 0 && bat.percent == window.batPlayAlert)
                              {
@@ -294,13 +312,17 @@ class Sysinfo {
                         else{
                             //indicator.setAttribute("class","");
                             document.getElementById(window.idBattery).classList.remove("parpadea");
+                            document.getElementById("txt_porcentajeBat").classList.remove("parpadea");
                         }
 
                         //porcentCharge.setAttribute("title","");
                         //indicator.innerHTML = bat.percent+"%";
                         document.getElementById(window.idBattery).setAttribute("title", "Battery: " + bat.percent+"%");
                         document.getElementById(window.idBattery + '_energy').setAttribute("width", ((window.maxBattery*bat.percent)/100));
-
+                        document.getElementById("txt_porcentajeBat").style.right = '0.6vh';
+                        document.getElementById("txt_porcentajeBat").style.display = (window.settings.porcentajeBat)?'block':'none';
+                        document.getElementById("txt_porcentajeBat").innerHTML = "<b>" + bat.percent + "%</b>";
+                        document.getElementById("txt_porcentajeBat").setAttribute("title", "Battery: " + bat.percent+"%");
 
                        /* if(window.conectedBateryFlag == 1)
                          {

@@ -20,3 +20,7 @@ solar_wm/solar_wm
 
 #ejecutable del rcmSend
 rcmSend/rcmSend
+
+#lockscreen
+lockscreen/slock-1.5/*.o
+lockscreen/slock-1.5/slock

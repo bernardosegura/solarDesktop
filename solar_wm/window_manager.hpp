@@ -30,7 +30,14 @@ extern "C" {
 #include <unordered_map>
 #include "util.hpp"
 
-#define KEY_PowerOff 124
+#define Mute '0'
+#define VolumeUp '1'
+#define VolumeDown '2'
+#define BrightnessUp '3'
+#define BrightnessDown '4'
+#define PrintScreen '5'
+
+//#define KEY_PowerOff 124
 
 // Implementation of a window manager for an X screen.
 class WindowManager {
@@ -56,6 +63,7 @@ class WindowManager {
   Window clientFocus[4];
   Window focoBarraTarea;
   int puerto;
+  Window demonSetBV;
   //bool cambiaFoco;
 
  // bool ctrl_L = false;

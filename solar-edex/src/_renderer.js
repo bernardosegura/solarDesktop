@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-2710.22 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-0601.23 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -11,6 +11,7 @@ window.batteryNone = '';
 window.alertLowBattery = false;
 window.backWnd = '0';
 window.enableLocalRCM = false;
+window.wCtlBVS = 0;
 //window.settings.port
 //window.tTimeMsg = 0;
 
@@ -659,7 +660,20 @@ window.focusShellTab = (number, cmd="") => {
 // Settings editor
 window.openSettings = async () => {
     // Build lists of available keyboards, themes, monitors
-    let keyboards, themes, monitors; //, ifaces;
+    let keyboards, themes, monitors,nativeTheme,nativeIcon,keyboard_layout,List_keyboard_layout; //, ifaces;
+    
+    if (fs.existsSync(path.join(settingsDir, "kblayout.json"))) {
+        List_keyboard_layout = JSON.parse(fs.readFileSync(path.join(settingsDir, "kblayout.json"),{encoding:"utf-8"}));
+        for(var key in List_keyboard_layout){
+            if (key !== window.settings.keyboard_layout){
+                keyboard_layout += `<option value="${key}">${List_keyboard_layout[key]}</option>`;
+            }
+        }
+    }else{
+        List_keyboard_layout = {};
+        List_keyboard_layout[window.settings.keyboard_layout] = "";
+    }
+
     fs.readdirSync(keyboardsDir).forEach(kb => {
         if (!kb.endsWith(".json")) return;
         kb = kb.replace(".json", "");
@@ -672,6 +686,16 @@ window.openSettings = async () => {
         if (th === window.settings.theme) return;
         themes += `<option>${th}</option>`;
     });
+    if(window.settings.nativeGUI == "gtk3"){
+        fs.readdirSync("/usr/share/themes/").forEach(nth => {
+            if (nth === window.settings.nativeTheme) return;
+            nativeTheme += `<option>${nth}</option>`;
+        });
+        fs.readdirSync("/usr/share/icons/").forEach(ith => {
+            if (ith === window.settings.nativeIcon) return;
+            nativeIcon += `<option>${ith}</option>`;
+        });
+    }
     for (let i = 0; i < electron.remote.screen.getAllDisplays().length; i++) {
         if (i !== window.settings.monitor) monitors += `<option>${i}</option>`;
     }
@@ -704,6 +728,11 @@ window.openSettings = async () => {
                         <th>Value</th>
                     </tr>
                     <tr>
+                        <td>keyboard shortcuts</td>
+                        <td>List available keyboard shortcuts</td>
+                        <td>Ctrl + Shift + K</td>
+                    </tr>
+                    <!--tr>
                         <td>shell</td>
                         <td>The program to run as a terminal emulator</td>
                         <td><input type="text" id="settingsEditor-shell" value="${window.settings.shell}"></td>
@@ -712,14 +741,22 @@ window.openSettings = async () => {
                         <td>cwd</td>
                         <td>Working Directory to start in</td>
                         <td><input type="text" id="settingsEditor-cwd" value="${window.settings.cwd}"></td>
-                    </tr>
+                    </tr-->
                     <tr style="display:none">
                         <td>env</td>
                         <td>Custom shell environment override</td>
                         <td><input type="text" id="settingsEditor-env" value="${window.settings.env}"></td>
                     </tr>
                     <tr>
-                        <td>keyboard</td>
+                        <td>keyboard layout</td>
+                        <td>keyboard layout code</td>
+                        <td><select id="settingsEditor-keyboard_layout" onchange="setKeyboardLayout(this.value);">
+                            <option value="${window.settings.keyboard_layout}">${List_keyboard_layout[window.settings.keyboard_layout]}</option>
+                            ${keyboard_layout}
+                        </select></td>
+                    </tr>
+                    <!--tr>
+                        <td>on screen keyboard</td>
                         <td>On-screen keyboard layout code</td>
                         <td><select id="settingsEditor-keyboard">
                             <option>${window.settings.keyboard}</option>
@@ -727,11 +764,42 @@ window.openSettings = async () => {
                         </select></td>
                     </tr>
                     <tr>
+                        <td>enableKeyboar</td>
+                        <td>Enable keyboard on screen</td>
+                        <td><select id="settingsEditor-enableKeyboar">
+                            <option>${window.settings.enableKeyboar}</option>
+                            <option>${!window.settings.enableKeyboar}</option>
+                        </select></td>
+                    </tr-->
+                    <tr>
                         <td>theme</td>
                         <td>Name of the theme to load</td>
                         <td><select id="settingsEditor-theme">
                             <option>${window.settings.theme}</option>
                             ${themes}
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>native theme</td>
+                        <td>Name of the native theme to load</td>
+                        <td><select id="settingsEditor-native-theme">
+                            <option>${window.settings.nativeTheme}</option>
+                            ${nativeTheme}
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>native icon</td>
+                        <td>Name of the native icon to load</td>
+                        <td><select id="settingsEditor-native-icon">
+                            <option>${window.settings.nativeIcon}</option>
+                            ${nativeIcon}
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>native GUI</td>
+                        <td>Name of the native GUI to load</td>
+                        <td><select id="settingsEditor-native-gui">
+                            <option>${window.settings.nativeGUI}</option>
                         </select></td>
                     </tr>
                     <tr>
@@ -747,14 +815,14 @@ window.openSettings = async () => {
                             <option>${!window.settings.audio}</option>
                         </select></td>
                     </tr>
-                    <tr>
+                    <!--tr>
                         <td>disableFeedbackAudio</td>
                         <td>Disable recurring feedback sound FX (input/output, mostly)</td>
                         <td><select id="settingsEditor-disableFeedbackAudio">
                             <option>${window.settings.disableFeedbackAudio}</option>
                             <option>${!window.settings.disableFeedbackAudio}</option>
                         </select></td>
-                    </tr>
+                    </tr-->
                     <tr>
                         <td>port</td>
                         <td>Local port to use for UI-shell connection</td>
@@ -813,7 +881,7 @@ window.openSettings = async () => {
                             <option>${!window.settings.excludeThreadsFromToplist}</option>
                         </select></td>
                     </tr>
-                    <tr>
+                    <!--tr>
                         <td>hideDotfiles</td>
                         <td>Hide files and directories starting with a dot in file display</td>
                         <td><select id="settingsEditor-hideDotfiles">
@@ -828,7 +896,7 @@ window.openSettings = async () => {
                             <option>${window.settings.fsListView}</option>
                             <option>${!window.settings.fsListView}</option>
                         </select></td>
-                    </tr>
+                    </tr-->
                     <!--tr>
                         <td>experimentalGlobeFeatures</td>
                         <td>Toggle experimental features for the network globe</td>
@@ -845,11 +913,11 @@ window.openSettings = async () => {
                             <option>${/*!window.settings.experimentalFeatures*/ ""}</option>
                         </select></td>
                     </tr-->
-                    <tr>
+                    <!--tr>
                         <td>fileManager</td>
                         <td>Name file manager to open the directory</td>
                         <td><input type="text" id="settingsEditor-fileManager" value="${(!window.settings.fileManager)?"":window.settings.fileManager}"></td>
-                    </tr>
+                    </tr-->
                     <!--tr>
                         <td>enabledPing</td>
                         <td>Send ping to host</td>
@@ -858,14 +926,6 @@ window.openSettings = async () => {
                             <option>${/*!window.settings.enablePing*/""}</option>
                         </select></td>
                     </tr-->
-                    <tr>
-                        <td>enableKeyboar</td>
-                        <td>Enable keyboard on screen</td>
-                        <td><select id="settingsEditor-enableKeyboar">
-                            <option>${window.settings.enableKeyboar}</option>
-                            <option>${!window.settings.enableKeyboar}</option>
-                        </select></td>
-                    </tr>
                     <!--tr>
                         <td>sudoGUI</td>
                         <td>GUI for sudo</td>
@@ -887,14 +947,14 @@ window.openSettings = async () => {
                             <option>${!window.settings.showclocktopbar}</option>
                         </select></td>
                     </tr>
-                    <tr>
+                    <!--tr>
                         <td>autoClosePanel</td>
                         <td>Automatic closing right panel, with XWindow opening and closing event</td>
                         <td><select id="settingsEditor-autoClosePanel">
                             <option>${window.settings.autoClosePanel}</option>
                             <option>${!window.settings.autoClosePanel}</option>
                         </select></td>
-                    </tr>
+                    </tr-->
                     <tr>
                         <td>numLock</td>
                         <td>Hide num lock indicator</td>
@@ -911,15 +971,34 @@ window.openSettings = async () => {
                             <option>${!window.settings.capslock}</option>
                         </select></td>
                     </tr>
+                    <tr>
+                        <td>ctrl + alt + del</td>
+                        <td>Execute file to Ctrl+Alt+Del keys pressed</td>
+                        <td><input type="text" id="settingsEditor-ctrlaltdel" value="${(!window.settings.appctlaltdel)?"":window.settings.appctlaltdel}"></td>
+                    </tr>
+                    <tr>
+                        <td>calculator</td>
+                        <td>Execute file to Calculator key pressed</td>
+                        <td><input type="text" id="settingsEditor-appcalc" value="${(!window.settings.appcalc)?"":window.settings.appcalc}"></td>
+                    </tr>
+                    <tr>
+                        <td>percentage battery</td>
+                        <td>Show percentage of battery in panel</td>
+                        <td><select id="settingsEditor-porcentajeBat" onchange="setPorcentajeBat();">
+                            <option>${window.settings.porcentajeBat}</option>
+                            <option>${!window.settings.porcentajeBat}</option>
+                        </select></td>
+                    </tr>
                 </table>
                 <h6 id="settingsEditorStatus">Loaded values from memory</h6>
                 <br>`,
         buttons: [
-            {label: "Open in External Editor", action:`electron.shell.openExternal('file://${settingsFile}')`},
-            {label: "Save to Disk", action: "window.writeSettingsFile()"},
+            //{label: "Edit Open in External Editor", action:`electron.shell.openExternal('file://${settingsFile}')`},
+            {label: "Edit Keyboard Layout Code", action:`electron.shell.openExternal('file://${path.join(settingsDir, "kblayout.json")}')`},
+            {label: "Save to Disk", action: "window.writeSettingsFile()"}
             //{label: "Reload UI", action: "window.location.reload(true);"},
             //{label: "Restart Solar", action: "electron.remote.app.relaunch();electron.remote.app.quit();"}
-            {label: "Exit Solar", action: "electron.remote.app.quit();"}
+            //{label: "Exit Solar", action: "electron.remote.app.quit();"}
         ]
     }, () => { 
         if(document.querySelectorAll(".appXwnd").length == 0 /*&& document.querySelectorAll("#settingsEditor").length == 0*/){
@@ -931,7 +1010,19 @@ window.openSettings = async () => {
         }
       
     });
+    mostrarPanel();
 };
+
+function setPorcentajeBat(){
+    window.settings.porcentajeBat = (!window.settings.porcentajeBat);
+    document.getElementById("txt_porcentajeBat").style.display = (window.settings.porcentajeBat)?'block':'none';
+
+}
+
+function setKeyboardLayout(layout){
+   execAppKeyboard(`setxkbmap ${layout}`);
+   window.settings.keyboard_layout = layout;
+}
 
 function showclocktopbar(){
     window.settings.showclocktopbar = (!window.settings.showclocktopbar);
@@ -962,14 +1053,19 @@ function setcapsock(){
 
 window.writeSettingsFile = () => {
     window.settings = {
-        shell: document.getElementById("settingsEditor-shell").value,
-        cwd: document.getElementById("settingsEditor-cwd").value,
+        shell: window.settings.shell, //document.getElementById("settingsEditor-shell").value,
+        cwd: electron.remote.app.getPath("home"),//document.getElementById("settingsEditor-cwd").value,
         env: document.getElementById("settingsEditor-env").value,
-        keyboard: document.getElementById("settingsEditor-keyboard").value,
+        keyboard_layout: window.settings.keyboard_layout,
+        keyboard: "en-US",//document.getElementById("settingsEditor-keyboard").value,
+        enableKeyboar: false,//(document.getElementById("settingsEditor-enableKeyboar").value === "true"),
         theme: document.getElementById("settingsEditor-theme").value,
+        nativeTheme: document.getElementById("settingsEditor-native-theme").value,
+        nativeIcon: document.getElementById("settingsEditor-native-icon").value,
+        nativeGUI: document.getElementById("settingsEditor-native-gui").value,
         termFontSize: Number(document.getElementById("settingsEditor-termFontSize").value),
         audio: (document.getElementById("settingsEditor-audio").value === "true"),
-        disableFeedbackAudio: (document.getElementById("settingsEditor-disableFeedbackAudio").value === "true"),
+        disableFeedbackAudio: window.settings.disableFeedbackAudio,//(document.getElementById("settingsEditor-disableFeedbackAudio").value === "true"),
         //pingAddr: document.getElementById("settingsEditor-pingAddr").value,
         port: Number(document.getElementById("settingsEditor-port").value),
         monitor: Number(document.getElementById("settingsEditor-monitor").value),
@@ -978,21 +1074,23 @@ window.writeSettingsFile = () => {
         //iface: document.getElementById("settingsEditor-iface").value,
         //allowWindowed: (document.getElementById("settingsEditor-allowWindowed").value === "true"),
         excludeThreadsFromToplist: (document.getElementById("settingsEditor-excludeThreadsFromToplist").value === "true"),
-        hideDotfiles: (document.getElementById("settingsEditor-hideDotfiles").value === "true"),
-        fsListView: (document.getElementById("settingsEditor-fsListView").value === "true"),
+        hideDotfiles: true,//(document.getElementById("settingsEditor-hideDotfiles").value === "true"),
+        //fsListView: (document.getElementById("settingsEditor-fsListView").value === "true"),
         //experimentalGlobeFeatures: (document.getElementById("settingsEditor-experimentalGlobeFeatures").value === "true"),
         //experimentalFeatures: (document.getElementById("settingsEditor-experimentalFeatures").value === "true"),
-        fileManager:document.getElementById("settingsEditor-fileManager").value,
+        //fileManager:document.getElementById("settingsEditor-fileManager").value,
         //enablePing:(document.getElementById("settingsEditor-enablePing").value === "true"),
-        enableKeyboar:(document.getElementById("settingsEditor-enableKeyboar").value === "true"),
         //sudoGUI:document.getElementById("settingsEditor-sudoGUI").value,
         //showIP: true,//netShowIP(), *revisar con el ocultamiento
         showPanel: window.settings.showPanel,
         ampm: window.settings.ampm,
-        autoClosePanel: (document.getElementById("settingsEditor-autoClosePanel").value === "true"),
+        //autoClosePanel: (document.getElementById("settingsEditor-autoClosePanel").value === "true"),
         capslock: (document.getElementById("settingsEditor-capslock").value === "true"),
         numlock: (document.getElementById("settingsEditor-numlock").value === "true"),
-        showclocktopbar: (document.getElementById("settingsEditor-showclocktopbar").value === "true")
+        showclocktopbar: (document.getElementById("settingsEditor-showclocktopbar").value === "true"),
+        appctlaltdel:document.getElementById("settingsEditor-ctrlaltdel").value,
+        appcalc:document.getElementById("settingsEditor-appcalc").value,
+        porcentajeBat: window.settings.porcentajeBat
     };
 
     Object.keys(window.settings).forEach(key => {
@@ -1003,6 +1101,26 @@ window.writeSettingsFile = () => {
 
     fs.writeFileSync(settingsFile, JSON.stringify(window.settings, "", 4));
     document.getElementById("settingsEditorStatus").innerText = "New values written to settings.json file at "+new Date().toTimeString();
+
+    if(window.settings.nativeGUI == "gtk3"){
+        let rutSett = path.join(electron.remote.app.getPath("appData"), "gtk-3.0/settings.ini");
+        if(fs.existsSync(rutSett)) {
+            let ini = require('ini');
+            let save = false;
+            let config = ini.parse(fs.readFileSync(rutSett,'utf8'));
+            
+            if(config["Settings"]["gtk-theme-name"] != window.settings.nativeTheme){
+                config["Settings"]["gtk-theme-name"] = window.settings.nativeTheme;
+                save = true;
+            }
+            if(config["Settings"]["gtk-icon-theme-name"] != window.settings.nativeIcon){
+                config["Settings"]["gtk-icon-theme-name"] = window.settings.nativeIcon;
+                save = true;
+            }
+            if(save)
+                fs.writeFileSync(rutSett, ini.stringify(config));
+        }
+    }
 };
 
 // Display available keyboard shortcuts
@@ -1040,10 +1158,10 @@ window.openShortcutsHelp = () => {
                         <td>Ctrl + Shift + S</td>
                         <td>Open the settings editor.</td>
                     </tr>
-                    <tr>
+                    <!--tr>
                         <td>Ctrl + Shift + K</td>
                         <td>List available keyboard shortcuts.</td>
-                    </tr>
+                    </tr-->
                     <tr>
                         <td>Ctrl + Shift + H</td>
                         <td>Toggle show hidden module.</td>
@@ -1079,6 +1197,10 @@ window.openShortcutsHelp = () => {
                     <tr>
                         <td>Win + Tab</td>
                         <td>Toggle Main Panel</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl + Alt + S</td>
+                        <td>System Suspend</td>
                     </tr>
                     <tr>
                         <td><button onClick='electron.shell.openExternal("file://${require('path').join(require('electron').remote.app.getPath("userData"), "kinit.json")}")' style='position: relative; left: 0px; top: 0px;'>Open kinit</button></td>
@@ -1885,6 +2007,7 @@ function loadWM(cBorder,cBack, wndPanel)
     //exec(wm, (e, sout, serr) => {
         wm = /*`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${sout} ` +*/ path.join(electron.remote.app.getPath("userData"), "wm");// + ` ${parseInt(cBorder,16)} ${parseInt(cBack,16)}`;
     let hWm = '';
+    let systemdInhibit = "systemd-inhibit";
     window.wm = true;
 
     if(!wndPanel){
@@ -1892,10 +2015,12 @@ function loadWM(cBorder,cBack, wndPanel)
         window['wndPanel'].cBorder = cBorder;
         window['wndPanel'].cBack = cBack;
         window['wndPanel'].wndPanel = 0;
-        hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16)]);
+        //hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16)]);
+        hWm = spawn(systemdInhibit,["--what=handle-power-key","--mode=block","--why='wm handles this event'",wm,electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16)]);
     }    
     else
-       hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16),wndPanel]); 
+       hWm = spawn(systemdInhibit,["--what=handle-power-key","--mode=block","--why='wm handles this event'",wm,electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16),wndPanel]); 
+       //hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16),wndPanel]); 
 
 
     hWm.stderr.on('data', (data)=>{
@@ -1905,37 +2030,42 @@ function loadWM(cBorder,cBack, wndPanel)
 
             if(window['wndPanel'].wndPanel == 0){
 
-                exec("xsetroot -cursor_name left_ptr &>/dev/null", (error, stdout, stderr) => {});
+                let startInit = ["xsetroot -cursor_name left_ptr",`ctlbvs ${cBorder} ${cBack}`,"statuskeyslock",`setxkbmap ${window.settings.keyboard_layout}`];
 
-                let demonio = spawn(startUp.startApp[0]);// ejecutamos el demonio de mate este debe ser primero que power manager
+                let startApp = startInit.concat(startUp.startApp);
+
+                //exec("xsetroot -cursor_name left_ptr &>/dev/null", (error, stdout, stderr) => {});
+
+                /*let demonio = spawn(startUp.startApp[0]);// ejecutamos el demonio de mate este debe ser primero que power manager
                 demonio.stderr.on('data',(data)=>{
                     if(!window.demonioMate){
                        exec(startUp.startApp[1] + ' &>/dev/null', (error, stdout, stderr) => {}); // ejecutamos el administrador de corriente sin este el boton poweroff apaga el equipo. 
                        window.demonioMate = true;
                     }
-                });
+                });*/
 
-                for(let i=2; i < startUp.startApp.length; i++)
+                for(let i=0; i < startApp.length; i++)
+                //for(let i=2; i < startUp.startApp.length; i++)
                 { //primero cerramos la aplicacion si esta en ejecucion y posteriormente ejecutamos de nuevo.
                     //exec("kill -9 $(ps aux | grep " + startUp.startApp[i] + " | awk '{print $2}')", (error, stdout, stderr) => {
                     //exec("ps aux | grep " + startUp.startApp[i] + " | wc -l", (error, stdout, stderr) => {   
                     //exec("ps aux | grep " + startUp.startApp[i], (error, stdout, stderr) => {  
 
                    //exec('ps ax | grep -e "sh -c ' + startUp.startApp[i] + '" | grep -v grep | wc -l', (error, stdout, stderr) => {
-                     exec("kill -9 $(ps ax | grep -e " + startUp.startApp[i] + " | grep -v grep | awk '{print $1}')", (error, stdout, stderr) => {
+                     exec("kill -9 $(ps ax | grep -e \"" + startApp[i] + "\" | grep -v grep | awk '{print $1}')", (error, stdout, stderr) => {
                 	// alert(stdout);
 		            //if(parseInt(stdout) == 0 ) // se valida que no se este ejecutando ya las aplicacion.
-                         exec(startUp.startApp[i] + ' &>/dev/null', (error, stdout, stderr) => {});  
+                         exec(startApp[i] + ' &>/dev/null', (error, stdout, stderr) => {});  
                     });
                 }
 
                 window['wndPanel'].wndPanel = data.toString('utf8').split("<--wndPanel-->")[1];
 
                 //User init theme and more
-                let user = require(path.join(settingsDir, "user.json"));
+                /*let user = require(path.join(settingsDir, "user.json"));
 
                 if(user.init)
-                    exec("dconf " + user.dconf + ' &>/dev/null', (error, stdout, stderr) => {});
+                    exec("dconf " + user.dconf + ' &>/dev/null', (error, stdout, stderr) => {});*/
             }
         }else{
 
@@ -2677,17 +2807,46 @@ function callRCM(data){
                         let icon = "";
                         let iconname ='';
                         let wndBackOpaco = '';
+                        let bkgColor = '';
                         //let wndBackBorder = '';
                         //let showCloseWindow = false;
                         Object.assign(icons,iconext);
 
                         for (let i = 0; i < data.message.window.length; i++) {
+                            if(!data.message.window[i].mm){
+                                bkgColor = `rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})`;
+                            }
+                            else
+                                if(data.message.window[i].mm == 1){
+                                    bkgColor = `rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})`;
+                                }
+
+                                else{
+                                    bkgColor = `rgb(${255-window.theme.r}, ${255-window.theme.g}, ${255-window.theme.b})`;
+                                }
+
                             if(data.message.number == data.message.window[i].id /*&& data.message.window.length > 1*/){
                                // wndBack = 'style="opacity: 0.5"';
                                 wndBackOpaco = ''; //' opacity: 0.6';
                                 //wndBackBorder = ' border: 1px solid';
                                 window.backWnd = data.message.number;
                                 //document.querySelector("#id_closeXWindPanel")
+
+                                /*if(!data.message.window[i].mm){
+                                    document.querySelector("#id_closeXWindPanel svg").setAttribute('fill',`rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})`);
+                                    //document.querySelector("#id_closeXWindPanel").setAttribute('title',"Close Window");
+                                }
+                                else
+                                    if(data.message.window[i].mm == 1){
+                                        document.querySelector("#id_closeXWindPanel svg").setAttribute('fill',`rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})`);
+                                        //document.querySelector("#id_closeXWindPanel").setAttribute('title',"Close Window");
+                                    }
+
+                                    else{
+                                        document.querySelector("#id_closeXWindPanel svg").setAttribute('fill',`rgb(${255-window.theme.r}, ${255-window.theme.g}, ${255-window.theme.b})`);
+                                        //document.querySelector("#id_closeXWindPanel").setAttribute('title',"Close Other Window");
+                                    }*/
+                                document.querySelector("#id_closeXWindPanel svg").setAttribute('fill',`${bkgColor}`);
                                 document.getElementById("id_closeXWindPanel").style.visibility = 'visible';
                                 //showCloseWindow = true;
                             }
@@ -2733,11 +2892,16 @@ function callRCM(data){
                                             </svg>                                    
                                           </div> `;*/
 
-                          xappBarr += `<div class="task_app" id="${data.message.window[i].id}" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window[i].id}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
+                          /*xappBarr += `<div class="task_app" id="${data.message.window[i].id}" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window[i].id}','${data.message.window[i].mm}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
                                              <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})" style="width: 100%; height: 100%;">
                                                 ${icon.svg}
                                             </svg>                                    
-                                          </div> `;                
+                                          </div> `; */  
+                            xappBarr += `<div class="task_app" id="${data.message.window[i].id}" style="left: -0.5vh; cursor: pointer;${wndBackOpaco}" onclick="goNativeWindowTask(this,'${data.message.window[i].id}','${data.message.window[i].mm}')" title="${((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")}">
+                                             <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${bkgColor}" style="width: 100%; height: 100%;">
+                                                ${icon.svg}
+                                            </svg>                                    
+                                          </div> `;                           
                             
 
                            //xapp += '<h1 '/*+wndBack*/+'>'+iconname+'[ <b onclick="closeNativeWindow('+data.message.window[i].id+')" title="Close Window">X</b> ] <b onclick="goNativeWindow('+data.message.window[i].id+')" title="Go Window">'+((data.message.window[i].name != '')?data.message.window[i].name:"xWindow - Untitled")+'</b></h1>';
@@ -2853,6 +3017,24 @@ function callRCM(data){
 
             if(data.message.call.toLowerCase() == 'keyslock'){
                 procKeysLock(data.message);
+            }
+
+            if(data.message.call.toLowerCase() == 'ctlbvs'){
+                if(data.message.window){
+                    window.wCtlBVS = data.message.window;//para incorporar cambio de thema dinamico
+                }
+            }
+
+            if(data.message.call.toLowerCase() == 'ctl+alt+del'){
+                execAppKeyboard(window.settings.appctlaltdel);
+            }
+
+            if(data.message.call.toLowerCase() == 'calculator'){
+                execAppKeyboard(window.settings.appcalc);
+            }
+
+            if(data.message.call.toLowerCase() == 'suspend'){
+                execAppKeyboard("systemctl suspend");
             }
 
             //
@@ -2986,7 +3168,7 @@ function timeAdmin(app){
     //});
 }
 
-function goNativeWindowTask(obj,wnd){
+function goNativeWindowTask(obj,wnd,mm){
 
     if(obj.style.opacity == 0.6){
 
@@ -3016,7 +3198,16 @@ function goNativeWindowTask(obj,wnd){
                     document.querySelectorAll("#id_task_panel div")[i].style.opacity = 0.6;
             }
          obj.style.opacity = 1; 
-         document.getElementById("id_closeXWindPanel").style.visibility = 'visible';
+         
+        if(mm == 1 || mm == 'undefined'){
+            document.querySelector("#id_closeXWindPanel svg").setAttribute('fill',`rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})`);
+            //document.querySelector("#id_closeXWindPanel").setAttribute('title',"Close Window");
+        }
+        else{
+            document.querySelector("#id_closeXWindPanel svg").setAttribute('fill',`rgb(${255-window.theme.r}, ${255-window.theme.g}, ${255-window.theme.b})`);
+            //document.querySelector("#id_closeXWindPanel").setAttribute('title',"Close Other Window");
+        }
+        document.getElementById("id_closeXWindPanel").style.visibility = 'visible';
          //document.querySelector("#id_closeXWindPanel").style.visibility = 'visible';     
     //////////////////////////////////////////////////////////////////////////////////////
         /*}else{ //se comenta para tratar de evitar los ciclados aqui y en wm
@@ -3306,16 +3497,23 @@ function desinstalarModuloKeyup(id,elemento, ev){
 function execKeyLock(keyLock){
     
     const { exec } = require("child_process");
-    let cmd = "xdotool key ";   
+    let cmd = "sendmsgwm keyCode ";//"xdotool key ";  
+    //let opty = document.getElementById(keyLock + '-lock').style.opacity; 
 
     switch(keyLock){
-        case 'num': cmd += "Num_Lock";
+        case 'num': cmd += '1';//"Num_Lock";
                     break;
-        case 'caps': cmd += "Caps_Lock";
+        case 'caps': cmd += 'A';//"Caps_Lock";
                     break;
     }
-    exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {});    
-
+    exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {});
+/*/---------------------------------------------------------------------    
+    if(document.getElementById(keyLock + '-lock').style.opacity == opty){
+        document.getElementById(keyLock + '-lock').style.opacity = 1;
+    }else{
+        document.getElementById(keyLock + '-lock').style.opacity = 0.5;
+    }   
+*/
 }
 
 function mostrarPanel(opcion){ //Win+Tab
@@ -3467,4 +3665,10 @@ function openGroup(dir, id_app){
         return false;
     }    
     window.fsDisp.readFS(directory);
+}
+
+function execAppKeyboard(app){   
+    const { exec } = require("child_process");
+    let cmd = app;//"change for setting ";  
+    exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {});
 }

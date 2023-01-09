@@ -267,6 +267,14 @@ div.appXwnd table:not(#xWnd_contenido) td:first-child {
   -webkit-animation-iteration-count: infinite;
 }
 
+.icono_panel.parpadea > svg {
+    fill: rgb(calc(255 - var(--color_r)), calc(255 - var(--color_g)), calc(255 - var(--color_b)));
+}
+
+#txt_porcentajeBat.icono_panel.parpadea {
+    color: rgb(calc(255 - var(--color_r)), calc(255 - var(--color_g)), calc(255 - var(--color_b)));
+}
+
 @-moz-keyframes parpadeo{  
   0% { opacity: 1.0; }
   50% { opacity: 0.0; }

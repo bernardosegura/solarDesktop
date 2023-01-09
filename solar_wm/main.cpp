@@ -77,7 +77,7 @@ if(argc == 5)
 
 window_manager->screenWidth = std::stol(argv[1]);
 window_manager->puerto = std::stol(argv[2]);
-window_manager->BORDER_COLOR = std::stol(argv[3]);
+window_manager->BORDER_COLOR = std::stol(argv[3]);//std::stol(argv[3],nullptr,16);
 window_manager->BG_COLOR = std::stol(argv[4]);
 window_manager->wndPanel = std::stol(argv[5]);
 

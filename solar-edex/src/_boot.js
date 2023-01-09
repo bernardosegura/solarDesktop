@@ -129,11 +129,17 @@ try {
 }
 // Create default settings file
 if (!fs.existsSync(settingsFile)) {
+    let gtk3 = (fs.existsSync("/etc/gtk-3.0"))?"gtk3":"";
     fs.writeFileSync(settingsFile, JSON.stringify({
-        shell: (process.platform === "win32") ? "powershell.exe" : "bash",
+        shell: /*(process.platform === "win32") ? "powershell.exe" :*/ "bash",
         cwd: /*path.join(*/electron.app.getPath("home")/*,"modulos")*/,
+        keyboard_layout: "us",
         keyboard: "en-US",
+        enableKeyboar: false,
         theme: "espacial",
+        nativeTheme: ((fs.existsSync("/usr/share/themes/Adwaita-dark"))?"Adwaita-dark":""),
+        nativeIcon: ((fs.existsSync("/usr/share/icons/mate"))?"mate":""),
+        nativeGUI: gtk3,
         termFontSize: 15,
         audio: true,
         disableFeedbackAudio: false,
@@ -149,15 +155,35 @@ if (!fs.existsSync(settingsFile)) {
         //experimentalFeatures: false,
         fileManager: "",
         //enablePing: false,
-        enableKeyboar: false,
         //sudoGUI: "",
         //showIP: true
         showPanel: false,
         autoClosePanel: false,
-        capslock: false,
-        numlock: false,
-        showclocktopbar: false
+        capslock: true,
+        numlock: true,
+        showclocktopbar: false,
+        appctlaltdel:((entorno == "mate")?"mate-system-monitor":""),
+        appcalc:((entorno == "mate")?"mate-calc":""),
+        porcentajeBat: false
     }, 4));
+
+    if(gtk3 != ""){
+            try {
+                fs.mkdirSync(path.join(electron.app.getPath("appData"), "gtk-3.0"));
+                signale.info(`Created gtk 3 config dir at ${path.join(electron.app.getPath("appData"), "gtk-3.0")}`);
+            } catch(e) {
+                signale.info(`Base gtk 3 config dir is ${path.join(electron.app.getPath("appData"), "gtk-3.0")}`);
+            }
+            if (!fs.existsSync(path.join(electron.app.getPath("appData"), "gtk-3.0/settings.ini"))) {
+                let ini = require('ini');
+                let config = {};
+                config["Settings"] = {};
+                config["Settings"]["gtk-theme-name"] = "Adwaita-dark";
+                config["Settings"]["gtk-icon-theme-name"] = "mate";
+                config["Settings"]["gtk-font-name"] = "DejaVu Sans 11";
+                fs.writeFileSync(path.join(electron.app.getPath("appData"), "gtk-3.0/settings.ini"), ini.stringify(config));
+            }
+        }
 }
 
 
@@ -168,23 +194,24 @@ if (!fs.existsSync(registerKeys)) {
 
 // Create default startUp file
 //////////////////////////////////////////////////////////////////////////
-if(entorno != '')
+/*if(entorno != '')
 {
   switch(entorno)
   {
      case "mate": 
         if (!fs.existsSync(startUp)) {
             //fs.writeFileSync(startUp, JSON.stringify({startApp:["mate-settings-daemon","mate-power-manager","mbexev","statuskeyslock"]}, 4));
-            fs.writeFileSync(startUp, JSON.stringify({startApp:["mate-settings-daemon","mate-power-manager","statuskeyslock"]}, 4));
+            //fs.writeFileSync(startUp, JSON.stringify({startApp:["mate-settings-daemon","mate-power-manager","statuskeyslock"]}, 4));
+            fs.writeFileSync(startUp, JSON.stringify({startApp:[]}, 4));
         }break;
   }
 }
 else
-{
+{*/
     if (!fs.existsSync(startUp)) {
         fs.writeFileSync(startUp, JSON.stringify({startApp:[]}, 4));
     }
-}
+//}
 /////////////////////////////////////////////////////////////////////////
 
 //carpeta modulos
@@ -192,7 +219,7 @@ try {
     fs.mkdirSync(path.join(electron.app.getPath("home"), "modulos"));
     signale.info(`Created modulos dir at ${path.join(electron.app.getPath("home"), "modulos")}`);
     if(entorno == "mate"){
-        require("username")().then(async user => {
+       /* require("username")().then(async user => {
 
             //const { exec } = require("child_process");
             let cmd = 'load / < ' + path.join(electron.app.getPath("userData"), "user");
@@ -201,7 +228,7 @@ try {
             //para completar el cambio de cursor se tiene que colocar el tema del cursor aqui /home/solar/live-Solar/mnt/usr/share/icons/default         
             fs.writeFileSync(path.join(electron.app.getPath("userData"), "user.json"), JSON.stringify({dconf:cmd, init: true}, 4));
             fs.writeFileSync(path.join(electron.app.getPath("userData"), "user"), fs.readFileSync(path.join(__dirname, "apps","mate","user.dconf")));
-
+*/
 
             //fs.writeFileSync(path.join(electron.app.getPath("userData").replace("Solar_eDEX","dconf"), "user"), fs.readFileSync(path.join(__dirname, "apps","mate","user")));
            //lo saque por que al iniciar esto tardaba en ejecutar y al crear el xobjDB no existian.
@@ -222,8 +249,7 @@ try {
             let which = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
             if(parseInt(which) != 0)
                 fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","install-debian.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","install-debian.xobj"), {encoding:"utf-8"}));
-            */
-        });
+        });*/
         
         fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","aplicaciones.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","aplicaciones.xobj"), {encoding:"utf-8"}));
         fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","home.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","home.xobj"), {encoding:"utf-8"}));
@@ -240,12 +266,14 @@ try {
         fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","eom.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","eom.xobj"), {encoding:"utf-8"}));
         
         let which = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
-        if(parseInt(which) != 0)
+        if(parseInt(which) != 0)//{
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","install-debian.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","install-debian.xobj"), {encoding:"utf-8"}));
+            //require("child_process").execSync('echo -e "live\nlive" | sudo passwd user');
+        //}
     }
 } catch(e) {
     signale.info(`Base modulos dir is ${path.join(electron.app.getPath("home"), "modulos")}`);     
-    fs.writeFileSync(path.join(electron.app.getPath("userData"), "user.json"), JSON.stringify({dconf:'', init: false}, 4));
+    //fs.writeFileSync(path.join(electron.app.getPath("userData"), "user.json"), JSON.stringify({dconf:'', init: false}, 4));
 }
 
 if (!fs.existsSync(path.join(electron.app.getPath("home"), "modulos/run.xobj"))) {
@@ -268,7 +296,9 @@ if (!fs.existsSync(path.join(electron.app.getPath("home"), "modulos/iconext.xobj
     fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos/iconext.xobj"), fs.readFileSync(path.join(__dirname, "apps/iconext.xobj"), {encoding:"utf-8"}));
 }
 
-
+if (!fs.existsSync(path.join(electron.app.getPath("userData"), "kblayout.json"))) {
+    fs.writeFileSync(path.join(electron.app.getPath("userData"), "kblayout.json"), fs.readFileSync(path.join(__dirname, "apps/kblayout.json"), {encoding:"utf-8"}));
+}
 
 //////////////////////////////TOoLSSSS///////////////////////////////////////////////
 let pathStacer = path.join(electron.app.getPath("home"), "modulos","stacer.xobj");     

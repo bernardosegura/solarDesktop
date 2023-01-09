@@ -395,11 +395,16 @@ this.cmdPath = async e =>{
             }); 
 
             this.cwd.splice(2, 0, {
+                name: "Settings",
+                type: "Settings"
+            });
+
+            this.cwd.splice(3, 0, {
                 name: "Num Lock",
                 type: "num-lock"
             }); 
 
-            this.cwd.splice(3, 0, {
+            this.cwd.splice(4, 0, {
                 name: "Caps Lock",
                 type: "caps-lock"
             }); 
@@ -543,6 +548,10 @@ this.cmdPath = async e =>{
                     cmd = `powerPreferences()`;
                 }
 
+                if (e.type === "Settings") {
+                    cmd = `window.openSettings()`;
+                }
+
                 let icon = "";
                 let type = "";
                 switch(e.type) {
@@ -557,7 +566,13 @@ this.cmdPath = async e =>{
                         type = "--";
                         e.category = "Indicator";
                         inpanel = true;
-                        break;    
+                        break; 
+                    case "Settings":
+                        icon = this.icons.config;
+                        type = "--";
+                        e.category = "Settings";
+                        inpanel = true;
+                        break;       
                     case "num-lock":
                         icon = this.icons["num-lock"];
                         type = "--";
@@ -754,6 +769,7 @@ this.cmdPath = async e =>{
                     if(e.type == 'Battery')
                        window.maxBattery = icon.max;
 
+
                    if(idInpanel == 'num-lock'){
                         none = 'style="<-keys->"';
 
@@ -765,7 +781,7 @@ this.cmdPath = async e =>{
                             modKeys += 'opacity: 0.5;'; 
                    }
 
-                   if(idInpanel == 'caps-lock'){
+                   if(idInpanel == 'caps-lock'){ 
                         none = 'style="<-keys->"';
 
                         if(window.settings.capslock)
@@ -784,6 +800,11 @@ this.cmdPath = async e =>{
                                             ${(e.type == 'Battery')?icon.plug.replace("<--id_plug-->",window.idBattery + '_plug') + icon.energy.replace("<--id_energy-->",window.idBattery + '_energy'):""}
                                         </svg>                                    
                                       </div>`;
+
+                    if(e.type == 'Battery'){
+                        fileMainPanel += `<div id="txt_porcentajeBat" class="icono_panel" onclick="${cmd}" style="top: 0vh; right: 0.6vh; margin: 0.2vh; ${(window.settings.porcentajeBat)?"display:block;":"display:none;"}"></div>`;
+                    }
+
                     appsinPanel++;  
                     inpanel = false;  
                     idInpanel = "";              

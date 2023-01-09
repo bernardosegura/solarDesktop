@@ -38,6 +38,10 @@ extern "C" {
 #include <assert.h>
 #include "easywsclient.cpp"
 
+#include <X11/Xatom.h>
+
+#include <X11/XF86keysym.h>
+
 using ::std::max;
 using ::std::mutex;
 using ::std::string;
@@ -97,6 +101,8 @@ void WindowManager::Run() {
   //wCloseApp = false;
   wUpdateTBar = true;
 
+  demonSetBV = 0;
+
   /*panel[0] = 0;
   panel[1] = 0;
   clientBack[0] = 0;
@@ -134,12 +140,39 @@ void WindowManager::Run() {
 //  LOG(INFO) << "num_top_level_windows: " << num_top_level_windows << " -- " << (num_top_level_windows/2);
   //     ii. Frame each top-level window.
   if(wndPanel == 0)
-    for (unsigned int i = num_top_level_windows - 1; i < num_top_level_windows; ++i) {
+    for (unsigned int i = num_top_level_windows - 1; i < num_top_level_windows; ++i){
       Frame(top_level_windows[i], true);
     }
   else
-    for (unsigned int i = 0; i < num_top_level_windows; ++i) {
-      Frame(top_level_windows[i], true);
+    for (unsigned int i = 0; i < num_top_level_windows; ++i){
+      if(demonSetBV == 0){
+        /////////////////////////////////para no maximizar ni normalizar los splash/////////////////////////////////////
+        Atom WM_WINDOW_TYPE = XInternAtom(display_,"_NET_WM_WINDOW_TYPE",false);
+        Atom type;
+        int format;
+        unsigned long nitems, after;
+        unsigned char *data = 0;
+
+        XGetWindowProperty(display_, top_level_windows[i], WM_WINDOW_TYPE, 0, 65536,false, XA_ATOM, &type, &format,&nitems, &after, &data);
+        
+        if(data){
+          if(*(Atom*)data == (XInternAtom(display_,"_NET_WM_WINDOW_TYPE_SPLASH_BV", false))){
+            demonSetBV = top_level_windows[i];
+            std::string message = "{\"message\":{\"call\":\"ctlBVS\", \"window\": " + std::to_string(demonSetBV) + "}}";
+            rcmSend(message);
+            continue;
+          }else{
+            Frame(top_level_windows[i], true);
+          }
+          XFree(data);  
+        }//////////////////////////////////////////////////////////////////////
+        else{
+          Frame(top_level_windows[i], true);
+        }
+      }else{
+        Frame(top_level_windows[i], true);
+      }
+      //Frame(top_level_windows[i], true);
     }
   //     iii. Free top-level window array.
   XFree(top_level_windows);
@@ -158,7 +191,6 @@ void WindowManager::Run() {
   /*XInitThreads();
   std::thread t(hiloWnd);
   t.join();*/
-
   // 2. Main event loop.
   for (;;) {
     // 1. Get next event.
@@ -170,27 +202,35 @@ void WindowManager::Run() {
     switch (e.type) {
       case CreateNotify:
         OnCreateNotify(e.xcreatewindow);
+        XSync(display_, 0);
         break;
       case DestroyNotify:
         OnDestroyNotify(e.xdestroywindow);
+        XSync(display_, 0);
         break;
       case ReparentNotify:
         OnReparentNotify(e.xreparent);
+        XSync(display_, 0);
         break;
       case MapNotify:
         OnMapNotify(e.xmap);
+        XSync(display_, 0);
         break;
       case UnmapNotify:
         OnUnmapNotify(e.xunmap);
+        XSync(display_, 0);
         break;
       case ConfigureNotify:
         OnConfigureNotify(e.xconfigure);
+        XSync(display_, 0);
         break;
       case MapRequest:
         OnMapRequest(e.xmaprequest);
+        XSync(display_, 0);
         break;
       case ConfigureRequest:
         OnConfigureRequest(e.xconfigurerequest);
+        XSync(display_, 0);
         break;
       case ButtonPress:
        //LOG(INFO) << "click: "; 
@@ -203,26 +243,30 @@ void WindowManager::Run() {
           XAllowEvents(display_, ReplayPointer, e.xbutton.time);
           XSync(display_, 0); 
         }*/
-        //XSendEvent(display_,e.xbutton.window,true,ButtonPressMask,&e);        
+        //XSendEvent(display_,e.xbutton.window,true,ButtonPressMask,&e);  
+        XSync(display_, 0);      
         break;
       case ButtonRelease:
         //e.xbutton.send_event = 1;
         OnButtonRelease(e.xbutton);
         //XSendEvent(display_,e.xbutton.window,true,ButtonReleaseMask,&e);
         //XAllowEvents(display_, ReplayPointer, e.xbutton.time);
-        //XSync(display_, 0);
+        XSync(display_, 0);
         break;
       case MotionNotify:
         // Skip any already pending motion events.
         while (XCheckTypedWindowEvent(
             display_, e.xmotion.window, MotionNotify, &e)) {}
         OnMotionNotify(e.xmotion);
+        XSync(display_, 0);
         break;
       case KeyPress:
         OnKeyPress(e.xkey);
+        XSync(display_, 0);
         break;
       case KeyRelease:
         OnKeyRelease(e.xkey);
+        XSync(display_, 0);
         break;
       case FocusIn://Enter Focus:
         //LOG(INFO) << "Enter notify no, es focus in window " << e.xfocus.window << " foco en " << clientFocus[1];//e.xcrossing.window;
@@ -230,11 +274,13 @@ void WindowManager::Run() {
              // LOG(INFO) << e.xfocus.window;
 
             OnFocusIn(e.xfocus);
+            XSync(display_, 0);
         break;
       case FocusOut://Out Focus:
         //LOG(INFO) << "Enter notify no, es focus in window " << e.xfocus.window << " foco en " << clientFocus[1];//e.xcrossing.window;
            //OnEnterNotify(e.xcrossing);
             OnFocusOut(e.xfocus);
+            XSync(display_, 0);
         break; 
 
       case ClientMessage://Client Message:
@@ -246,6 +292,7 @@ void WindowManager::Run() {
               //LOG(INFO) << "Enter notify, estado: " << XSendEvent(display_,/**/4194311,true,/*NoEventMask*/,&evt); 
 
             }
+            XSync(display_, 0);
         break;
           
       default:
@@ -294,9 +341,21 @@ void WindowManager::Solar_WM(const XClientMessageEvent& e){
       clientFocus[2] = panel[0];
       clientFocus[3] = panel[1];
 
+      if(demonSetBV != 0)
+        XUnmapWindow(display_,demonSetBV);
+
       XRaiseWindow(display_, panel[0]);
-      if(e.data.b[1] == '1')
-        XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);   
+      if(e.data.b[1] == '1' || e.window != 0)// se agrega || e.window != 0 para dar foco al cerrar ventana desde barra...
+        XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime); 
+      /*else{
+        unsigned int monitores = 1;
+        XWindowAttributes x_root_attr;  
+        XGetWindowAttributes(display_, root_, &x_root_attr);
+        if(screenWidth != 0)
+          monitores = x_root_attr.width/screenWidth;
+        if(monitores == 1)
+          XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime); 
+      } */
   }
 
   if(e.data.b[0] == 'o'){ //poweroff opcion o
@@ -323,6 +382,9 @@ void WindowManager::Solar_WM(const XClientMessageEvent& e){
       clientFocus[2] = panel[0];
       clientFocus[3] = panel[1];
 
+      if(demonSetBV != 0)
+          XUnmapWindow(display_,demonSetBV);
+
       XRaiseWindow(display_, panel[0]);
       if(e.data.b[1] == '1')
         XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);   
@@ -345,6 +407,9 @@ void WindowManager::Solar_WM(const XClientMessageEvent& e){
 
       auto i = clients_.find(e.window);
       if(i != clients_.end()){
+
+        if(demonSetBV != 0)
+            XUnmapWindow(display_,demonSetBV);
         //wCloseApp = true;
         XRaiseWindow(display_, i->second);
         //XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
@@ -402,6 +467,8 @@ void WindowManager::Solar_WM(const XClientMessageEvent& e){
 
             focoBarraTarea = e.window;
             //setWinPanel = false;
+            if(demonSetBV != 0)
+                XUnmapWindow(display_,demonSetBV);
 
             XRaiseWindow(display_, i->second);
             XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
@@ -422,6 +489,7 @@ void WindowManager::Solar_WM(const XClientMessageEvent& e){
       else
         wUpdateTBar = true;      
   }
+ 
 
   if(e.data.b[0] == 's'){ //Colocar foco a ventana anterior opcion s
         Window ventanaSelect;
@@ -440,6 +508,12 @@ void WindowManager::Solar_WM(const XClientMessageEvent& e){
         /*}else{
           setWinPanel = true;
         }*/   
+  }
+
+  if(e.data.b[0] == '*'){ //actualizar ctlbv
+       demonSetBV = e.window;
+       std::string message = "{\"message\":{\"call\":\"ctlBVS\", \"window\": " + std::to_string(demonSetBV) + "}}";
+       rcmSend(message);
   }
 
   if(e.data.b[0] == '{' || e.data.b[0] == '}'){ //adelantar y atrazar ventana opcion { y }
@@ -545,6 +619,8 @@ void WindowManager::Solar_WM(const XClientMessageEvent& e){
 
           focoBarraTarea = i->first;
           sendCountWindow(false,i->first); // se actualiza la lista de aplicaciones  
+          if(demonSetBV != 0)
+            XUnmapWindow(display_,demonSetBV);
 
           XRaiseWindow(display_, i->second);
           XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
@@ -567,6 +643,9 @@ void WindowManager::Solar_WM(const XClientMessageEvent& e){
 
                 focoBarraTarea = clientBack[1];
                 sendCountWindow(false,clientBack[1]);
+
+                if(demonSetBV != 0)
+                    XUnmapWindow(display_,demonSetBV);
 
                 XRaiseWindow(display_, clientBack[0]);
                 XSetInputFocus(display_, clientBack[1], RevertToPointerRoot, CurrentTime);
@@ -592,6 +671,9 @@ void WindowManager::Solar_WM(const XClientMessageEvent& e){
 
                   focoBarraTarea = wtmp->first;
                   sendCountWindow(false,wtmp->first);
+
+                  if(demonSetBV != 0)
+                    XUnmapWindow(display_,demonSetBV);
 
                   XRaiseWindow(display_, wtmp->second);
                   XSetInputFocus(display_, wtmp->first, RevertToPointerRoot, CurrentTime);
@@ -625,7 +707,7 @@ bool WindowManager::Frame(Window w, bool was_created_before_window_manager) {
   //CHECK(!clients_.count(w));
   // Se cambia por que el check bota la aplicacion  si no se cumple la condicion
   //es mas quenada para no repintar un frame si ya le pusimos uno a la ventana.
-    if(clients_.count(w))return false;
+  if(clients_.count(w))return false;
 
   // 1. Retrieve attributes of window to frame.
   XWindowAttributes x_window_attrs, x_root_attr;
@@ -644,16 +726,6 @@ bool WindowManager::Frame(Window w, bool was_created_before_window_manager) {
   CHECK(XGetWindowAttributes(display_, root_, &x_root_attr));
   /*XGetWindowAttributes(display_, w, &x_window_attrs);
   XGetWindowAttributes(display_, root_, &x_root_attr);*/
-
-if(was_created_before_window_manager && (wndPanel == 0 || wndPanel == w)){
-  BORDER_COLOR_S = 0;//xff0000;
-  BG_COLOR_S = 0;
-  if(wndPanel == w){
-    x_window_attrs.x = 0;
-    x_window_attrs.y = 0;
-  }
-} 
-
 
   // 2. If window was created before window manager started, we should frame
   // it only if it is visible and doesn't set override_redirect.
@@ -679,15 +751,35 @@ if(was_created_before_window_manager && (wndPanel == 0 || wndPanel == w)){
 
 //LOG(INFO) << "Atributos wnd " << x_window_attrs.x << ","<< x_window_attrs.y<< ","<< x_window_attrs.width<< ","<< x_window_attrs.height;
 //LOG(INFO) << "Atributos override_redirect " << x_window_attrs.override_redirect;
-
   if(screenWidth != 0)
     monitores = x_root_attr.width/screenWidth;
 
-if(monitores > 1)
-      width = screenWidth;
-else
+  if(monitores > 1){
+    int mouse_root_x, mouse_root_y,win_x, win_y;
+    unsigned int mask_return;
+    Window window_returned;
+
+    XQueryPointer(display_, root_, &window_returned,
+        &window_returned, &mouse_root_x, &mouse_root_y, &win_x, &win_y,
+        &mask_return);
+
+    if(mouse_root_x >= screenWidth && x_window_attrs.x < screenWidth){
+          x_window_attrs.x = x_window_attrs.x + screenWidth;
+      }
+
+    width = screenWidth;
+  }else
       width = x_root_attr.width;
 
+
+  if(was_created_before_window_manager && (wndPanel == 0 || wndPanel == w)){
+    BORDER_COLOR_S = 0;//xff0000;
+    BG_COLOR_S = 0;
+    //if(wndPanel == w){
+    x_window_attrs.x = 0;
+    x_window_attrs.y = 0;
+    //}
+  } 
 
   // 3. Create frame.
   const Window frame = XCreateSimpleWindow(
@@ -1112,14 +1204,141 @@ Mod5Mask    |   128 | ???
       GrabModeAsync,
       GrabModeAsync);
 
-  /*XGrabKey(
+  XGrabKey(
       display_,
-      KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
-      None,//AnyModifier
+      XKeysymToKeycode(display_, XF86XK_PowerOff),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+      AnyModifier,//none
       w,
       false,
       GrabModeAsync,
-      GrabModeAsync);*/
+      GrabModeAsync);
+    XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XF86XK_MonBrightnessUp),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+      AnyModifier,//none
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XF86XK_MonBrightnessDown),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+      AnyModifier,//none
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XF86XK_AudioRaiseVolume),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+      AnyModifier,//none
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XF86XK_AudioLowerVolume),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+      AnyModifier,//none
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XF86XK_AudioMute),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+      AnyModifier,//none
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_Delete),
+      ControlMask | Mod1Mask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_Delete),
+     ControlMask | Mod1Mask | Mod2Mask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_Delete),
+      ControlMask | Mod1Mask | LockMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_Delete),
+      ControlMask | Mod1Mask | Mod2Mask | LockMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_Print),
+      AnyModifier,//none
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+   XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XF86XK_Calculator),
+      AnyModifier,//none
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+    //   d. Switch windows with Ctrl + alt + s (suspend) 
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_S),
+      Mod1Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_S),
+      Mod1Mask | Mod2Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_S),
+      Mod1Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_S),
+      Mod1Mask | Mod2Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1261,6 +1480,8 @@ void WindowManager::Unframe(Window w) {
   XDestroyWindow(display_, frame);
   // 5. Drop reference to frame handle.
 
+if(demonSetBV != 0)
+     XUnmapWindow(display_,demonSetBV);
 /***********Cambiar de Ventana**********************/
   if(clients_.size() > 1 /* && clientBack[1] != w*/ && w == clientFocus[3]){ //se agrega que la pantalla que se cierra es la del foco, 
   //lo comentado es para enviar al panel,
@@ -1458,7 +1679,7 @@ void WindowManager::updateTBarExt(bool isPanel){
   evt.xclient.serial = 0;
   evt.xclient.send_event = true;
   evt.xclient.message_type = XInternAtom(display_,"SOLAR_WM",false);;
-  evt.xclient.format = 32;
+  evt.xclient.format = 8;
   evt.xclient.window = panel[1];
   evt.xclient.data.b[0] = 'u';
 
@@ -1484,7 +1705,7 @@ void WindowManager::setFocoWindow(void){
   evt.xclient.serial = 0;
   evt.xclient.send_event = true;
   evt.xclient.message_type = XInternAtom(display_,"SOLAR_WM",false);;
-  evt.xclient.format = 32;
+  evt.xclient.format = 8;
   evt.xclient.window = panel[1];
   evt.xclient.data.b[0] = 's';
 
@@ -1501,7 +1722,6 @@ void WindowManager::setFocoWindow(void){
 //por si una ventana obtiene el foco y esta no pone la ventanta hasta arriba.      
 void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
 
-    //LOG(INFO) << "window " << e.window << " focus in ";
   //se quita para que al precionar la barra no mande a la pantalla y si es diferente el foco del panel ejecute la accion
     if(e.window == panel[1] && e.window != clientFocus[3]) 
        {
@@ -1612,6 +1832,13 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
                   None,
                   None);
           ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+              if(e.window != clientFocus[3]){
+                if(demonSetBV != 0)
+                    XUnmapWindow(display_,demonSetBV);
+                XRaiseWindow(display_, i->second);
+              }
+                  
+
               clientFocus[0] = clientBack[0];//clientFocus[2];
               clientFocus[1] = clientBack[1];//clientFocus[3];
               clientFocus[2] = i->second;
@@ -1626,7 +1853,7 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
               }
 
             //if(cambiaFoco){ 
-              XRaiseWindow(display_, i->second); 
+              //XRaiseWindow(display_, i->second); 
               //XSetInputFocus(display_, i->first, RevertToPointerRoot, CurrentTime);
 
               if(focoBarraTarea != i->first){
@@ -1735,8 +1962,9 @@ void WindowManager::OnFocusIn(const XFocusChangeEvent& e){
 }
 void WindowManager::OnFocusOut(const XFocusChangeEvent& e){
 
-   //LOG(INFO) << "window " << e.window << " focus out ";
   //if(focoBarraTarea == e.window) focoBarraTarea = 0;
+  /*if(demonSetBV != 0)
+     XUnmapWindow(display_,demonSetBV);*/
   if(e.window != panel[1]){
       XGrabButton(
           display_,
@@ -1807,7 +2035,26 @@ void WindowManager::OnUnmapNotify(const XUnmapEvent& e) {
 
 void WindowManager::OnConfigureNotify(const XConfigureEvent& e) {}
 
-void WindowManager::OnMapRequest(const XMapRequestEvent& e) {  
+void WindowManager::OnMapRequest(const XMapRequestEvent& e) { 
+/////////////////////////////////para no maximizar ni normalizar los splash/////////////////////////////////////
+  Atom WM_WINDOW_TYPE = XInternAtom(display_,"_NET_WM_WINDOW_TYPE",false);
+  Atom type;
+  int format;
+  unsigned long nitems, after;
+  unsigned char *data = 0;
+
+  XGetWindowProperty(display_, e.window, WM_WINDOW_TYPE, 0, 65536,false, XA_ATOM, &type, &format,&nitems, &after, &data);
+  
+  if(data){
+    if(*(Atom*)data == (XInternAtom(display_,"_NET_WM_WINDOW_TYPE_SPLASH", false)) || *(Atom*)data == (XInternAtom(display_,"_NET_WM_WINDOW_TYPE_SPLASH_BV", false))){
+      XFree(data);
+      XMapWindow(display_, e.window);
+      return;
+    }
+    XFree(data);  
+  }
+  //////////////////////////////////////////////////////////////////////
+
   // 1. Frame or re-frame window.
   if(!Frame(e.window, false)) return;
   // 2. Actually map window.
@@ -1928,7 +2175,10 @@ void WindowManager::OnButtonPress(const XButtonEvent& e) {
 
           focoBarraTarea = e.window;
 
-          sendCountWindow(false,e.window); // se actualiza la lista de aplicaciones      
+          sendCountWindow(false,e.window); // se actualiza la lista de aplicaciones  
+
+          if(demonSetBV != 0)
+              XUnmapWindow(display_,demonSetBV);    
 
           XRaiseWindow(display_, frame); 
           XSetInputFocus(display_, e.window, RevertToPointerRoot, CurrentTime);
@@ -1961,9 +2211,10 @@ void WindowManager::OnButtonRelease(const XButtonEvent& e) {
 
       if(screenWidth != 0)
         focusMonitorRelease = (e.x_root/screenWidth) + 1;
-      if(focusMonitor != focusMonitorRelease)
+      if(focusMonitor != focusMonitorRelease){
         normalizarWindows();
-
+        sendCountWindow(false, e.window);
+      } 
     }
 }
 
@@ -2016,9 +2267,155 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
   
   //LOG(INFO) << "key  " << e.keycode; // mate-power-manager tiene agarrada la tecla.
   //se controla el poweroff ya que si se cierra sesion ya no lo toma el gnome.
-  /*if(e.keycode == KEY_PowerOff){
-    system("poweroff >/dev/null");
+  //if(e.keycode == KEY_PowerOff){
+    //system("poweroff >/dev/null");
+    /*Window frame = XCreateSimpleWindow(
+      display_,
+      root_,
+      0,
+      0,
+      640,
+      480,
+      0,
+      BORDER_COLOR,
+      BG_COLOR);
+    XClearWindow(display_, frame);
+    XMapWindow(display_, frame);
+
+    GC myGC = XCreateGC(display_, frame, 0, 0);
+    XSetForeground(display_, myGC, BORDER_COLOR);
+    XSetBackground(display_, myGC, BG_COLOR);
+
+    XDrawString(display_, frame, myGC, 0, 0, "hola mundo", strlen("hola mundo")); 
+
+    //sleep(2);
+    //XFreeGC(display_, myGC);
+    //XDestroyWindow(display_, frame);*/
+
+    //LOG(INFO) << "key  " << e.keycode;
+    /*LOG(INFO) << "setBV  " << demonSetBV;
   }*/
+  if(e.keycode == XKeysymToKeycode(display_, XF86XK_MonBrightnessUp)){
+    XEvent evt;
+    evt.xclient.type = ClientMessage;
+    evt.xclient.serial = 0;
+    evt.xclient.send_event = true;
+    evt.xclient.message_type = XInternAtom(display_,"DISPLAY_BRIGHTNESS_VOLUME_SCREEN",false);;
+    evt.xclient.format = 8;
+    evt.xclient.window = demonSetBV;
+    evt.xclient.data.b[0] = BrightnessUp;
+
+    XSendEvent(display_,demonSetBV,false,ExposureMask,&evt);
+    XFlush(display_);
+    return;
+  }
+
+  if(e.keycode == XKeysymToKeycode(display_, XF86XK_MonBrightnessDown)){ 
+    XEvent evt;
+    evt.xclient.type = ClientMessage;
+    evt.xclient.serial = 0;
+    evt.xclient.send_event = true;
+    evt.xclient.message_type = XInternAtom(display_,"DISPLAY_BRIGHTNESS_VOLUME_SCREEN",false);;
+    evt.xclient.format = 8;
+    evt.xclient.window = demonSetBV;
+    evt.xclient.data.b[0] = BrightnessDown;
+
+    XSendEvent(display_,demonSetBV,false,ExposureMask,&evt);
+    XFlush(display_);
+    return;
+  }
+
+  if(e.keycode == XKeysymToKeycode(display_, XF86XK_AudioRaiseVolume)){ 
+    XEvent evt;
+    evt.xclient.type = ClientMessage;
+    evt.xclient.serial = 0;
+    evt.xclient.send_event = true;
+    evt.xclient.message_type = XInternAtom(display_,"DISPLAY_BRIGHTNESS_VOLUME_SCREEN",false);;
+    evt.xclient.format = 8;
+    evt.xclient.window = demonSetBV;
+    evt.xclient.data.b[0] = VolumeUp;
+
+    XSendEvent(display_,demonSetBV,false,ExposureMask,&evt);
+    XFlush(display_);
+    return;
+  }
+
+  if(e.keycode == XKeysymToKeycode(display_, XF86XK_AudioLowerVolume)){ 
+    XEvent evt;
+    evt.xclient.type = ClientMessage;
+    evt.xclient.serial = 0;
+    evt.xclient.send_event = true;
+    evt.xclient.message_type = XInternAtom(display_,"DISPLAY_BRIGHTNESS_VOLUME_SCREEN",false);;
+    evt.xclient.format = 8;
+    evt.xclient.window = demonSetBV;
+    evt.xclient.data.b[0] = VolumeDown;
+
+    XSendEvent(display_,demonSetBV,false,ExposureMask,&evt);
+    XFlush(display_);
+    return;
+  }
+
+  if(e.keycode == XKeysymToKeycode(display_, XF86XK_AudioMute)){ 
+    XEvent evt;
+    evt.xclient.type = ClientMessage;
+    evt.xclient.serial = 0;
+    evt.xclient.send_event = true;
+    evt.xclient.message_type = XInternAtom(display_,"DISPLAY_BRIGHTNESS_VOLUME_SCREEN",false);;
+    evt.xclient.format = 8;
+    evt.xclient.window = demonSetBV;
+    evt.xclient.data.b[0] = Mute;
+
+    XSendEvent(display_,demonSetBV,false,ExposureMask,&evt);
+    XFlush(display_);
+    return;
+  }
+  if(e.keycode == XKeysymToKeycode(display_, XK_Print)){ 
+    XEvent evt;
+    evt.xclient.type = ClientMessage;
+    evt.xclient.serial = 0;
+    evt.xclient.send_event = true;
+    evt.xclient.message_type = XInternAtom(display_,"DISPLAY_BRIGHTNESS_VOLUME_SCREEN",false);;
+    evt.xclient.format = 8;
+    evt.xclient.window = demonSetBV;
+    evt.xclient.data.b[0] = PrintScreen;
+
+    XSendEvent(display_,demonSetBV,false,ExposureMask,&evt);
+    XFlush(display_);
+    //LOG(INFO) << "key  " << e.keycode;
+    return;
+  }
+  
+  if(demonSetBV != 0)
+     XUnmapWindow(display_,demonSetBV);
+
+  if(e.keycode == XKeysymToKeycode(display_, XF86XK_PowerOff)){
+    rcmSend("{\"message\":{\"call\":\"PowerOff\"}}");
+
+    focoBarraTarea = 0;
+    sendCountWindow(true); // actualizamos primero los titulos para que se cierre el panel...
+    wSobrePanel = false;
+  /////////////////////////////////////////////
+    clientFocus[0] = clientFocus[2];
+    clientFocus[1] = clientFocus[3];
+    clientFocus[2] = panel[0];
+    clientFocus[3] = panel[1];
+
+    XRaiseWindow(display_, panel[0]);
+    XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
+  } 
+
+  if(e.keycode == XKeysymToKeycode(display_, XK_Delete)){
+    rcmSend("{\"message\":{\"call\":\"Ctl+Alt+Del\"}}");
+  }
+
+  if(e.keycode == XKeysymToKeycode(display_,   XF86XK_Calculator)){
+    rcmSend("{\"message\":{\"call\":\"Calculator\"}}");
+    //LOG(INFO) << "key  " << e.keycode;
+  }
+
+  if(e.keycode == XKeysymToKeycode(display_, XK_S)){
+    rcmSend("{\"message\":{\"call\":\"Suspend\"}}");
+  }
 
   if ((e.state & Mod1Mask) &&
       (e.keycode == XKeysymToKeycode(display_, XK_F4))) {
@@ -2455,9 +2852,9 @@ void WindowManager::sendCountWindow(bool isPanel, Window w) {
   //sprintf(coma,"");
   memset(coma, 0, 2);
   memset(jMed, 0, 12);
-  memset(wnd_id, 0, 500);
-  memset(json_wnd, 0, 10111);
-  memset(json, 0, 10211);
+  memset(wnd_id, 0, 508);
+  memset(json_wnd, 0, 10119);
+  memset(json, 0, 10219);
 
   auto window = clients_.begin();
   while (window != clients_.end()) {
@@ -2465,15 +2862,18 @@ void WindowManager::sendCountWindow(bool isPanel, Window w) {
         XClassHint wndClas; //para el nombre d ela classe
         XWindowAttributes attr_next;
         Status retorno; 
-        retorno = XGetWindowAttributes(display_, window->first, &attr_next);
-        //LOG(INFO) << "XGetWindowAttributes " <<retorno;
+        bool mm = true;
+        retorno = XGetWindowAttributes(display_, window->second, &attr_next);
+        if(attr_next.x >= screenWidth)
+          mm = false;
+        //LOG(INFO) << "XGetWindowAttributes " <<mm;
         retorno = XGetWMName(display_, window->first, &text_prop);
         //LOG(INFO) << "XGetWMName " <<retorno;
         retorno = XGetClassHint(display_, window->first, &wndClas);
         //LOG(INFO) << "XGetClassHint " <<retorno << " -- " << clients_.size(); ///////////////////////validar status de funciones de arriba//////////////////////////////////////////////
         //LOG(INFO) << "XGetClassHint " <<BadWindow; //3
         if(/*attr_next.map_installed != 1 ||*/ retorno != 0){
-          sprintf(wnd_id,"%s{\"id\":\"%ld\",\"name\":\"",coma,window->first);
+          sprintf(wnd_id,"%s{\"id\":\"%ld\",\"mm\":\"%d\",\"name\":\"",coma,window->first,mm);
           strcpy(json_wnd+strlen(json_wnd),wnd_id);
           if(text_prop.value != NULL)
             for (long unsigned int i = 0; i < strlen((char *)text_prop.value); i++){
