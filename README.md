@@ -17,6 +17,8 @@ $ npm start
 # si se cuenta con una instancia ya ejecutándose
 $ npm start dev 
 ```
+* __Nota:__ esto solo es para el panel principal, para cada uno de los módulos, estos deben de compilarse de forma independiente.
+
 __Construcción__ en solar-edex
 ```bash
 $ npm run build
@@ -27,7 +29,7 @@ El entorno cuenta con 2 tipo de aplicaciones.
 1. __Binarias (X Window)__
 2. __Nativas del Entorno (modulos xobj)__
 
-<p align="justify"> Las <b>Binarias</b> son las nativas gráficas del sistema operativo las cuales son ejecutadas fuera de el entorno y se indica en la parte izquierda la etiqueta <b>X11</b> las aplicaciones gráficas en ejecución, al dar click se activa el panel lateral derecho y muestra las aplicaciones en ejecución, así como también usando la combinación de teclas <i>Alt+W</i>. Se accede a ellas dando click en el panel lateral derecho en la aplicación o con <i>Alt+Tab</i> para avanzar entre ellas a la Derecha y <i>Ctrl+Alt+Tab</i> para avanzar entre ellas a la Izquierda. La combinación <i>Win+Tab</i> regresa a la pantalla principal (el entorno).
+<p align="justify"> Las <b>Binarias</b> son las nativas gráficas del sistema operativo las cuales son ejecutadas fuera de el entorno y se indica en la parte izquierda con la etiqueta <b>X11</b> las aplicaciones gráficas en ejecución, en la parte superior se coloca el icono de estas aplicaciones para facilitar su acceso como si de una barra de tareas se tratara. Se accede a ellas dando click en el icono de la aplicación o con <i>Alt+Tab</i> para avanzar entre ellas a la Derecha y <i>Ctrl+Alt+Tab</i> para avanzar entre ellas a la Izquierda. La combinación <i>Win+Tab</i> regresa a la pantalla principal (el entorno).
 Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es en terminal, pueden ser ejecutadas directamente en el entorno ya que se cuenta con 5 terminales tty para su utilización simultánea.</p>
 
 <p align="justify"> Las <b>Nativas del Entorno</b> son módulos los cuales se encuentran en la parte inferior y estos pueden ser pequeñas aplicaciones en javascript o accesos directos a diferentes aplicaciones tanto internas como externas del entorno. Estas son alojadas en el directorio <i>modulos</i> en la carpeta <i>home</i> del usuario que está ejecutando el entorno.</p>
