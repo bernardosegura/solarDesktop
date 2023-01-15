@@ -1976,6 +1976,8 @@ function matchIcon(filename,retorno) {
     if (/visual-code$/i.test(filename)){ return "visualcode"; }
     if (/vcode$/i.test(filename)) { return "visualcode"; }
     if (/chromium-browser[^]*$/i.test(filename)){ return "chromium"; }
+    if (/qalculate/i.test(filename)) { return "calc"; }
+    if (/time-admin[^]*$/i.test(filename)){ return "timeadmin"; }
 
     if(retorno){ return ""; }
 }

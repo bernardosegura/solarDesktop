@@ -781,6 +781,7 @@ void selectAction(int option,Display *display, Window win,ctlObj *ctl,XColor col
         if(ctl->backlight->active){
             porc += porcentaje;
             ctl->backlight->value = ((porc*ctl->backlight->max_value)/100);
+            XMapRaised(display, win);
         }
         if(ctl->backlight->value > ctl->backlight->max_value)
             ctl->backlight->value = ctl->backlight->max_value;
@@ -793,6 +794,7 @@ void selectAction(int option,Display *display, Window win,ctlObj *ctl,XColor col
         if(ctl->backlight->active){
             porc -= porcentaje;
             ctl->backlight->value = ((porc*ctl->backlight->max_value)/100);
+            XMapRaised(display, win);
         }
         if(porc < 0)
             porc = ctl->backlight->value = 0;
@@ -807,6 +809,7 @@ void selectAction(int option,Display *display, Window win,ctlObj *ctl,XColor col
         if(ctl->volume->active){
             porc += porcentaje;
             ctl->volume->value = ((porc*ctl->volume->max_value)/100);
+            XMapRaised(display, win);
         }
         if(ctl->volume->value > ctl->volume->max_value)
             ctl->volume->value = ctl->volume->max_value;
@@ -822,6 +825,7 @@ void selectAction(int option,Display *display, Window win,ctlObj *ctl,XColor col
         if(ctl->volume->active){
             porc -= porcentaje;
             ctl->volume->value = ((porc*ctl->volume->max_value)/100);
+            XMapRaised(display, win);
         }
         if(porc < 0)
             porc = ctl->volume->value = 0;
@@ -836,8 +840,10 @@ void selectAction(int option,Display *display, Window win,ctlObj *ctl,XColor col
     if(option == Mute){
         unsigned char porc = ((ctl->volume->value*100)/ctl->volume->max_value);
 
-        if(ctl->volume->active)
+        if(ctl->volume->active){
             ctl->mute = !ctl->mute;
+            XMapRaised(display, win);
+        }
         drawVolumen(display,win,220,90,color,70,45,porc*2,ctl->mute);
         
         if(ctl->volume->active)
@@ -846,11 +852,12 @@ void selectAction(int option,Display *display, Window win,ctlObj *ctl,XColor col
 
     if(option == PrintScreen){
         //char* arg[] =  {(char *)"-sel",(char *)"clip",(char *)"-i",(char *)"-t",(char *)ctl->ScreenShot->XA_image_png.c_str(),(char *)"<",(char *)ctl->ScreenShot->fileScreenshot};
-        drawScreenShot(display, win,220, 90,color,ctl->ScreenShot->bgcolor, 110, 40,200);
+        //drawScreenShot(display, win,220, 90,color,ctl->ScreenShot->bgcolor, 110, 40,200);
         if(ctl->ScreenShot->active){
             ctl->ScreenShot->size_screenshot = getScreenShot(display,ctl->ScreenShot->fileScreenshot);
-
-           /* pid_t child_pid;
+            
+            XMapRaised(display, win);
+            /* pid_t child_pid;
             signal(SIGCHLD, SIG_IGN); //este ya no me crea los zombies
             child_pid = fork();
             if(child_pid == 0) {
@@ -861,7 +868,7 @@ void selectAction(int option,Display *display, Window win,ctlObj *ctl,XColor col
             /* Claim ownership of the clipboard. */
             XSetSelectionOwner(display,XInternAtom(display, "CLIPBOARD", false), win, CurrentTime);
         }
-
+        drawScreenShot(display, win,220, 90,color,ctl->ScreenShot->bgcolor, 110, 40,200);
     }
 }
 
@@ -1199,7 +1206,7 @@ int main(int arc, char** arv)
                         movWindow(display,win,w_win); //lo movi primero
                         ctlBVS.ScreenShot->active = ctlBVS.volume->active = ctlBVS.backlight->active = strTime = true;
                         option = e.xclient.data.b[0];
-                        XMapRaised(display, e.xclient.window);
+                        //XMapRaised(display, e.xclient.window);
                         selectAction(option,display,win,&ctlBVS,color);
                         //selectActionVolume(option,display,win,ctlBVS.volume,color);
                         //}  

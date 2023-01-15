@@ -4,6 +4,8 @@ var appExpress = require('express')();
 var serverApp = require('http').Server(appExpress);
 const WebSocketServer = require("websocket").server;
 
+var isLive = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
+
 const wsServer = new WebSocketServer({
     httpServer: serverApp,
     autoAcceptConnections: false
@@ -129,7 +131,14 @@ try {
 }
 // Create default settings file
 if (!fs.existsSync(settingsFile)) {
-    let gtk3 = (fs.existsSync("/etc/gtk-3.0"))?"gtk3":"";
+    let gtk3 = (isLive)?"gtk3":((fs.existsSync("/etc/gtk-3.0"))?"gtk3":"");
+    let calc = (isLive)?"qalculate":((fs.existsSync("/bin/mate-calc"))?"mate-calc":"");
+    let sysmon = (isLive)?"system-monitor":((fs.existsSync("/bin/mate-system-monitor"))?"mate-system-monitor":"");
+    if(!isLive){
+        calc = (fs.existsSync("/bin/qalculate"))?"qalculate":calc;
+        sysmon = (fs.existsSync("/bin/system-monitor"))?"system-monitor":sysmon;
+    }
+    
     fs.writeFileSync(settingsFile, JSON.stringify({
         shell: /*(process.platform === "win32") ? "powershell.exe" :*/ "bash",
         cwd: /*path.join(*/electron.app.getPath("home")/*,"modulos")*/,
@@ -137,8 +146,8 @@ if (!fs.existsSync(settingsFile)) {
         keyboard: "en-US",
         enableKeyboar: false,
         theme: "espacial",
-        nativeTheme: ((fs.existsSync("/usr/share/themes/Adwaita-dark"))?"Adwaita-dark":""),
-        nativeIcon: ((fs.existsSync("/usr/share/icons/mate"))?"mate":""),
+        nativeTheme: (isLive)?"Adwaita-dark":((fs.existsSync("/usr/share/themes/Adwaita-dark"))?"Adwaita-dark":""),
+        nativeIcon: (isLive)?"mate":((fs.existsSync("/usr/share/icons/mate"))?"mate":""),
         nativeGUI: gtk3,
         termFontSize: 15,
         audio: true,
@@ -162,8 +171,8 @@ if (!fs.existsSync(settingsFile)) {
         capslock: true,
         numlock: true,
         showclocktopbar: false,
-        appctlaltdel:((entorno == "mate")?"mate-system-monitor":""),
-        appcalc:((entorno == "mate")?"mate-calc":""),
+        appctlaltdel:sysmon,
+        appcalc:calc,
         porcentajeBat: false
     }, 4));
 
@@ -218,7 +227,9 @@ else
 try {
     fs.mkdirSync(path.join(electron.app.getPath("home"), "modulos"));
     signale.info(`Created modulos dir at ${path.join(electron.app.getPath("home"), "modulos")}`);
-    if(entorno == "mate"){
+    let calc = (isLive)?"qalculate":((fs.existsSync("/bin/mate-calc"))?"mate-calc":"");
+    calc = (isLive)?isLive:((fs.existsSync("/bin/qalculate"))?"qalculate":calc);
+    //if(entorno == "mate"){
        /* require("username")().then(async user => {
 
             //const { exec } = require("child_process");
@@ -250,27 +261,49 @@ try {
             if(parseInt(which) != 0)
                 fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","install-debian.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","install-debian.xobj"), {encoding:"utf-8"}));
         });*/
+        if(entorno == "mate"){
+          fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","aplicaciones.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","aplicaciones.xobj"), {encoding:"utf-8"}));
+          fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","home.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","home.xobj"), {encoding:"utf-8"}));
+          fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel1-mate-volume-control.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel1-mate-volume-control.xobj"), {encoding:"utf-8"}));
+          fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel2-mate-display-properties.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel2-mate-display-properties.xobj"), {encoding:"utf-8"}));
+        }
+
+        if(calc != "")
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","calc.xobj"), `{"title":"","x":0,"y":0,"w":0,"h":0,"code":"xWndExec('id_calc','${calc}')","id":"id_calc","hidden":"true"}`/*fs.readFileSync(path.join(__dirname, "apps","mate","calc.xobj"), {encoding:"utf-8"})*/);
         
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","aplicaciones.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","aplicaciones.xobj"), {encoding:"utf-8"}));
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","home.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","home.xobj"), {encoding:"utf-8"}));
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","firefox.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","firefox.xobj"), {encoding:"utf-8"}));
+        let which = (isLive)?1:require("child_process").execSync("which " + 'firefox' + ' | wc -l').toString();
+        if(parseInt(which) != 0)
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","firefox.xobj"), fs.readFileSync(path.join(__dirname, "apps","firefox.xobj"), {encoding:"utf-8"}));
         //fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel0-blueman-manager.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel0-blueman-manager.xobj"), {encoding:"utf-8"}));
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel1-mate-volume-control.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel1-mate-volume-control.xobj"), {encoding:"utf-8"}));
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel2-mate-display-properties.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel2-mate-display-properties.xobj"), {encoding:"utf-8"}));
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel-network.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","inpanel-network.xobj"), {encoding:"utf-8"}));
+        which = (isLive)?1:require("child_process").execSync("which " + 'nmtui' + ' | wc -l').toString();
+        if(parseInt(which) != 0)
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","inpanel-network.xobj"), fs.readFileSync(path.join(__dirname, "apps","inpanel-network.xobj"), {encoding:"utf-8"}));
         
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","calc.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","calc.xobj"), {encoding:"utf-8"}));
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","gimp.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","gimp.xobj"), {encoding:"utf-8"}));
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","atril.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","atril.xobj"), {encoding:"utf-8"}));
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","libreoffice-startcenter.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","libreoffice.xobj"), {encoding:"utf-8"}));
-        fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","eom.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","eom.xobj"), {encoding:"utf-8"}));
+        which = (isLive)?1:require("child_process").execSync("which " + 'gimp' + ' | wc -l').toString();
+        if(parseInt(which) != 0)
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","gimp.xobj"), fs.readFileSync(path.join(__dirname, "apps","gimp.xobj"), {encoding:"utf-8"}));
         
-        let which = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
-        if(parseInt(which) != 0)//{
+        which = (isLive)?1:require("child_process").execSync("which " + 'atril' + ' | wc -l').toString();
+        if(parseInt(which) != 0)
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","atril.xobj"), fs.readFileSync(path.join(__dirname, "apps","atril.xobj"), {encoding:"utf-8"}));
+        
+        if(isLive){
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","libreoffice-startcenter.xobj"), fs.readFileSync(path.join(__dirname, "apps","libreoffice.xobj"), {encoding:"utf-8"}));
+        }else{
+            if(fs.existsSync(`${path.join("/usr/share/applications", 'libreoffice-startcenter.desktop')}`))
+                fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","libreoffice-startcenter.xobj"), fs.readFileSync(path.join(__dirname, "apps","libreoffice.xobj"), {encoding:"utf-8"}));
+        }
+        
+        which = (isLive)?1:require("child_process").execSync("which " + 'eom' + ' | wc -l').toString();
+        if(parseInt(which) != 0)
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","eom.xobj"), fs.readFileSync(path.join(__dirname, "apps","eom.xobj"), {encoding:"utf-8"}));
+        
+        //let which = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
+        if(/*parseInt(which)*/isLive != 0)//{
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","install-debian.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","install-debian.xobj"), {encoding:"utf-8"}));
             //require("child_process").execSync('echo -e "live\nlive" | sudo passwd user');
         //}
-    }
+   // }
 } catch(e) {
     signale.info(`Base modulos dir is ${path.join(electron.app.getPath("home"), "modulos")}`);     
     //fs.writeFileSync(path.join(electron.app.getPath("userData"), "user.json"), JSON.stringify({dconf:'', init: false}, 4));
