@@ -39,7 +39,7 @@ Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es
 <table>
   <tr>
     <td>
-      Pantalla con el tema por default (<b>espacial</b>)
+      Panel Principal (Tema por default <b>espacial</b>)
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/desktop.png" />
     </td>
     <td>
