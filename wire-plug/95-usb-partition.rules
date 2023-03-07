@@ -1,0 +1,2 @@
+ACTION=="add", SUBSYSTEMS=="usb", SUBSYSTEM=="block",ENV{DEVTYPE}=="partition", ENV{ID_FS_USAGE}=="filesystem", RUN+="/bin/systemctl start wire-dusb@partition:add:%k:%E{ID_FS_UUID}:%E{ID_FS_LABEL}"
+ACTION=="remove", SUBSYSTEMS=="usb", SUBSYSTEM=="block",ENV{DEVTYPE}=="partition", ENV{ID_FS_USAGE}=="filesystem", RUN+="/bin/systemctl start wire-dusb@partition:remove:%k:%E{ID_FS_UUID}:%E{ID_FS_LABEL}"

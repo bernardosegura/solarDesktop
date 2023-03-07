@@ -102,6 +102,7 @@ const innerKblayoutsDir = path.join(__dirname, "assets/kb_layouts");
 const fontsDir = path.join(electron.app.getPath("userData"), "fonts");
 const innerFontsDir = path.join(__dirname, "assets/fonts");
 
+const monitors = path.join(electron.app.getPath("userData"), "monitors.json");
 ///////////////////////////////////keysRegister Solar//////////////////////////////
 const registerKeys = path.join(electron.app.getPath("userData"), "kinit.json");
 const startUp = path.join(electron.app.getPath("userData"), "startUp.json");
@@ -132,13 +133,13 @@ try {
 // Create default settings file
 if (!fs.existsSync(settingsFile)) {
     let gtk3 = (isLive)?"gtk3":((fs.existsSync("/etc/gtk-3.0"))?"gtk3":"");
-    let calc = (isLive)?"qalculate":((fs.existsSync("/bin/mate-calc"))?"mate-calc":"");
+    let calc = (isLive)?"qalculate":((fs.existsSync("/bin/qalculate"))?"qalculate":((fs.existsSync("/bin/mate-calc"))?"mate-calc":""));
     let sysmon = (isLive)?"system-monitor":((fs.existsSync("/bin/mate-system-monitor"))?"mate-system-monitor":"");
     if(!isLive){
-        calc = (fs.existsSync("/bin/qalculate"))?"qalculate":calc;
+        //calc = (fs.existsSync("/bin/qalculate"))?"qalculate":calc;
         sysmon = (fs.existsSync("/bin/system-monitor"))?"system-monitor":sysmon;
     }
-    
+    fs.writeFileSync("/tmp/cnfgport.json", JSON.stringify({port: 3000}, "", 4));
     fs.writeFileSync(settingsFile, JSON.stringify({
         shell: /*(process.platform === "win32") ? "powershell.exe" :*/ "bash",
         cwd: /*path.join(*/electron.app.getPath("home")/*,"modulos")*/,
@@ -193,8 +194,18 @@ if (!fs.existsSync(settingsFile)) {
                 fs.writeFileSync(path.join(electron.app.getPath("appData"), "gtk-3.0/settings.ini"), ini.stringify(config));
             }
         }
+}else{
+    let settings = require(settingsFile);
+    fs.writeFileSync("/tmp/cnfgport.json", JSON.stringify({port: settings.port}, "", 4));
 }
 
+if (!fs.existsSync(monitors)) {
+    fs.writeFileSync(monitors, JSON.stringify({
+        index: 0,
+        cmds:["xrandr --output <-destino-> --same-as <-origen->","xrandr --output <-origen-> --left-of <-destino->","xrandr --output <-origen-> --right-of <-destino->"],
+        select:""
+    }, 4));
+}
 
 // Create default register keys file
 if (!fs.existsSync(registerKeys)) {
@@ -227,8 +238,9 @@ else
 try {
     fs.mkdirSync(path.join(electron.app.getPath("home"), "modulos"));
     signale.info(`Created modulos dir at ${path.join(electron.app.getPath("home"), "modulos")}`);
-    let calc = (isLive)?"qalculate":((fs.existsSync("/bin/mate-calc"))?"mate-calc":"");
-    calc = (isLive)?isLive:((fs.existsSync("/bin/qalculate"))?"qalculate":calc);
+    let calc = (isLive)?"qalculate":((fs.existsSync("/bin/qalculate"))?"qalculate":((fs.existsSync("/bin/mate-calc"))?"mate-calc":""));
+
+
     //if(entorno == "mate"){
        /* require("username")().then(async user => {
 
@@ -656,6 +668,7 @@ function createWindow(settings) {
 //  window['idPanel'] = win.id;
 
     win.webContents.executeJavaScript('window.entorno = "' + entorno + '";');
+    win.webContents.executeJavaScript('window.snDisplays = "' + electron.screen.getAllDisplays().length + '";');
 
     return win;
 }

@@ -42,6 +42,8 @@ extern "C" {
 
 #include <X11/XF86keysym.h>
 
+#include <X11/extensions/Xrandr.h>
+
 using ::std::max;
 using ::std::mutex;
 using ::std::string;
@@ -884,7 +886,7 @@ bool WindowManager::Frame(Window w, bool was_created_before_window_manager) {
 
   // 9. Grab universal window management actions on client window.
 /*
-  Mask        | Value | Key
+  Mask      | Value | Key
 ------------+-------+------------
 ShiftMask   |     1 | Shift
 LockMask    |     2 | Caps Lock
@@ -1334,6 +1336,153 @@ Mod5Mask    |   128 | ???
   XGrabKey(
       display_,
       XKeysymToKeycode(display_, XK_S),
+      Mod1Mask | Mod2Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  //   e. Switch windows with Super_L + p (key display in new kernel) 
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_P),
+      Mod4Mask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+   XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_P),
+      Mod4Mask | Mod2Mask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+   XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_P),
+      Mod4Mask | LockMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+   XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_P),
+      Mod4Mask | Mod2Mask | LockMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+   //   e. Switch windows with CTL + Super_L + p (key display in new kernel) 
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_P),
+      ControlMask | Mod4Mask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+   XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_P),
+      ControlMask | Mod4Mask | Mod2Mask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+   XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_P),
+      ControlMask | Mod4Mask | LockMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+   XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_P),
+      ControlMask | Mod4Mask | Mod2Mask | LockMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+   //   e. Switch windows with CTL + ALT + W (No apagar display) 
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_W),
+      Mod1Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_W),
+      Mod1Mask | Mod2Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_W),
+      Mod1Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_W),
+      Mod1Mask | Mod2Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+   //   e. Switch windows with CTL + ALT + U (lanzar ventana USB) 
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_U),
+      Mod1Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_U),
+      Mod1Mask | Mod2Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_U),
+      Mod1Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_U),
       Mod1Mask | Mod2Mask | LockMask | ControlMask,
       w,
       false,
@@ -2404,7 +2553,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
   } 
 
-  if(e.keycode == XKeysymToKeycode(display_, XK_Delete)){
+  if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_Delete)){
     rcmSend("{\"message\":{\"call\":\"Ctl+Alt+Del\"}}");
   }
 
@@ -2413,8 +2562,73 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     //LOG(INFO) << "key  " << e.keycode;
   }
 
-  if(e.keycode == XKeysymToKeycode(display_, XK_S)){
+  if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_S)){ 
     rcmSend("{\"message\":{\"call\":\"Suspend\"}}");
+  }
+
+  if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_W)){ 
+    rcmSend("{\"message\":{\"call\":\"dnls\"}}");
+  }
+
+  if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_U)){ 
+    rcmSend("{\"message\":{\"call\":\"showusbdevices\"}}");
+  }
+
+  if((e.state & Mod4Mask) && !(e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_P)){ // agregar modificadors
+    int rMononitor;
+    char pMonName[10] = {"\0"};
+    char sMonName[10] = {"\0"};
+    char sCmd[150] = {"\0"};
+    XRRMonitorInfo *info = XRRGetMonitors(display_, root_, true, &rMononitor);
+
+    if(rMononitor > 1){
+      for (int i = 0; i < rMononitor; ++i)
+      {
+        if(info[i].primary){
+          sprintf(pMonName,"%s",XGetAtomName(display_,info[i].name));
+          break;
+        }
+      }
+      for (int i = 0; i < rMononitor; ++i)
+      {
+        if(!info[i].primary){
+          sprintf(sMonName,"%s",XGetAtomName(display_,info[i].name));
+          break;
+        }
+      }
+      sprintf(sCmd,"{\"message\":{\"call\":\"monitors\",\"data\":{\"direccion\":0,\"numbers\":%d,\"primary\":\"%s\",\"secondary\":\"%s\"}}}",rMononitor,pMonName,sMonName);
+      rcmSend(sCmd);
+//      LOG(INFO) << "sCmd " << (sCmd);
+    }/*else{
+      sprintf(sCmd,"{\"message\":{\"call\":\"monitors\",\"data\":{\"numbers\":%d,\"primary\":\"\",\"secondary\":\"\"}}}",rMononitor);
+    }*/
+  }
+
+  if((e.state & Mod4Mask) && (e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_P)){ // agregar modificadors
+    int rMononitor;
+    char pMonName[10] = {"\0"};
+    char sMonName[10] = {"\0"};
+    char sCmd[150] = {"\0"};
+    XRRMonitorInfo *info = XRRGetMonitors(display_, root_, true, &rMononitor);
+
+    if(rMononitor > 1){
+      for (int i = 0; i < rMononitor; ++i)
+      {
+        if(info[i].primary){
+          sprintf(pMonName,"%s",XGetAtomName(display_,info[i].name));
+          break;
+        }
+      }
+      for (int i = 0; i < rMononitor; ++i)
+      {
+        if(!info[i].primary){
+          sprintf(sMonName,"%s",XGetAtomName(display_,info[i].name));
+          break;
+        }
+      }
+      sprintf(sCmd,"{\"message\":{\"call\":\"monitors\",\"data\":{\"direccion\":1,\"numbers\":%d,\"primary\":\"%s\",\"secondary\":\"%s\"}}}",rMononitor,pMonName,sMonName);
+      rcmSend(sCmd);
+    }
   }
 
   if ((e.state & Mod1Mask) &&

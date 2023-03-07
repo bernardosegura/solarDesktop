@@ -333,3 +333,7 @@ div.appXwnd table:not(#xWnd_contenido) td:first-child {
   background: rgb(var(--color_r2), var(--color_g2), var(--color_b2)) !important;
   color: var(--color_light_black); 
 }
+/*////////////////////////////////////////extras////////////////////////////////*/
+.fndselect:hover{
+    background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.5);
+}

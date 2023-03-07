@@ -1031,6 +1031,8 @@ int main(int arc, char** arv)
     ctlBVS.ScreenShot->size_screenshot = 0;
     ctlBVS.ScreenShot->XA_image_png = /*"image/png";*/ XInternAtom(display, "image/png", false);
     ctlBVS.ScreenShot->XA_TARGETS = XInternAtom(display, "TARGETS", false);
+
+    //return 0;
     //ctlBVS.ScreenShot->clipboard = "xclip";
     //size_screenshot = getScreenShot(display,fileScreenshot);
     //XMapRaised(display, win);

@@ -24,6 +24,12 @@ rcmSend/rcmSend
 #ejecutable del ctlbvs
 ctlbvs/ctlbvs
 
+#ejecutable del sendmsgwm
+sendmsgwm/sendmsgwm
+
+#ejecutable del wire-plug
+wire-plug/wire-plug
+
 #lockscreen
 lockscreen/slock-1.5/*.o
 lockscreen/slock-1.5/slock

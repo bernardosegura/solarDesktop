@@ -1,8 +1,8 @@
 class Sysinfo {
 
     constructor(parentId) {
-        window.conectedBateryFlag = 0;
-        window.conectedBateryInit = 0;
+        //window.conectedBateryFlag = 0;
+        //window.conectedBateryInit = 0;
         window.lowBateryFlag = 0;
         let porBatAlert = 20;
         window.batAlert = porBatAlert;
@@ -75,7 +75,7 @@ class Sysinfo {
             this.updateBattery();
         }, 3000); //3000);
 
-        window.si.battery().then(bat => {
+        /*window.si.battery().then(bat => {
             if (bat.hasbattery) {
                 this.playConectBattery();
 
@@ -83,13 +83,13 @@ class Sysinfo {
                     this.playConectBattery();
                 }, 1000); 
             } 
-        });
+        });*/
         
 
     }
 
-    playConectBattery(){
-            this.isCharging().then(result => {
+    playConectBattery(isCharging){
+            /*this.isCharging().then(result => {
                 if(result){
                     if(window.conectedBateryFlag == 0 &&  window.conectedBateryInit == 1)
                      {
@@ -107,7 +107,13 @@ class Sysinfo {
                      window.conectedBateryInit = 1;
                 }
                 
-            });
+            });*/ 
+            if(isCharging){
+                document.getElementById(window.idBattery + '_plug').setAttribute("style", "");
+                window.audioManager.conectBatery.play();
+            }else{
+                document.getElementById(window.idBattery + '_plug').setAttribute("style", "display: none;");
+            }
     }
 
     updateDate() {
@@ -246,25 +252,32 @@ class Sysinfo {
                          document.getElementById(window.idBattery + '_plug').setAttribute("style", "");
                     else 
                          document.getElementById(window.idBattery + '_plug').setAttribute("style", "display: none;");   */
+
                     this.batteryFlag = true;
                     if(bat.percent >= 100)
                     {
                         //porcentCharge.setAttribute("title","Charged - 100%");
                         //indicator.innerHTML = "CHARGED";
                         //if(bat.timeremaining == this.timeremainingConected) 
-                        if(!window.upowerFlag){//evaluar si no afecta mucho el rendimiento del equipo.
-                            const { exec } = require("child_process");
+                        //* ya no es necesario con las reglas incluidas en udev
+                        //if(!window.upowerFlag){//evaluar si no afecta mucho el rendimiento del equipo.
+                        if(document.getElementById(window.idBattery + '_plug').getAttribute("style") != ""){
+                            require("fs").readFile("/sys/class/power_supply/AC/online","utf8",function(err, online){
+                                if(online == 1)
+                                    document.getElementById(window.idBattery + '_plug').setAttribute("style", "");
+                            });                                
+                            /*const { exec } = require("child_process");
                             let cmd = "upower -i $(upower -e | grep AC) | grep 'online.*yes'";
-                            window.upowerFlag = true;
+                            //window.upowerFlag = true;
                             exec(cmd, (error, stdout, stderr) => {
                                 if(stdout != ''){
                                     document.getElementById(window.idBattery + '_plug').setAttribute("style", "");
-                                }else{
+                                }*//*else{
                                     document.getElementById(window.idBattery + '_plug').setAttribute("style", "display: none;");
-                                }
-                                window.upowerFlag = false;
+                                }*/
+                                //window.upowerFlag = false;
 
-                            });
+                            //});
                         }
                         
                         /*if(document.getElementById(window.idBattery + '_energy').getAttribute("width") == 0)
@@ -284,7 +297,8 @@ class Sysinfo {
                     }
                     else
                     {
-                        document.getElementById(window.idBattery + '_plug').setAttribute("style", "display: none;");
+                        //* ya no es necesario con las reglas incluidas en udev
+                        //document.getElementById(window.idBattery + '_plug').setAttribute("style", "display: none;");
                         if(bat.percent <= window.batAlert){ //indicador de necesita cargar
 
                             //indicator.setAttribute("class","parpadea");

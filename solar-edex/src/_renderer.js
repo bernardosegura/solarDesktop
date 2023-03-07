@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-0601.23 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-0303.23 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -54,11 +54,14 @@ const keyboardsDir = path.join(settingsDir, "keyboards");
 const fontsDir = path.join(settingsDir, "fonts");
 const settingsFile = path.join(settingsDir, "settings.json");
 
+const monitorsFile = path.join(settingsDir, "monitors.json");
+
 window.ifaceNetFile = path.join(settingsDir, "ifaceNet.json");
 window.ifaceNet = require(ifaceNetFile);
 
 // Load config
 window.settings = require(settingsFile);
+window.setmonitors = require(monitorsFile);
 
 //load registerKeys
 const registerKeys = require(path.join(settingsDir, "kinit.json"));
@@ -69,6 +72,7 @@ const startUp = require(path.join(settingsDir, "startUp.json"));
 //load xobjDB
 window.xobjDB = require(path.join(settingsDir, "xobjDB.json"));
 
+window.usbDevices = [];
 // Load CLI parameters
 /*if (electron.remote.process.argv.includes("--nointro")) {
     window.settings.nointroOverride = true;
@@ -913,11 +917,11 @@ window.openSettings = async () => {
                             <option>${/*!window.settings.experimentalFeatures*/ ""}</option>
                         </select></td>
                     </tr-->
-                    <!--tr>
+                    <tr>
                         <td>fileManager</td>
                         <td>Name file manager to open the directory</td>
                         <td><input type="text" id="settingsEditor-fileManager" value="${(!window.settings.fileManager)?"":window.settings.fileManager}"></td>
-                    </tr-->
+                    </tr>
                     <!--tr>
                         <td>enabledPing</td>
                         <td>Send ping to host</td>
@@ -1078,7 +1082,7 @@ window.writeSettingsFile = () => {
         //fsListView: (document.getElementById("settingsEditor-fsListView").value === "true"),
         //experimentalGlobeFeatures: (document.getElementById("settingsEditor-experimentalGlobeFeatures").value === "true"),
         //experimentalFeatures: (document.getElementById("settingsEditor-experimentalFeatures").value === "true"),
-        //fileManager:document.getElementById("settingsEditor-fileManager").value,
+        fileManager:document.getElementById("settingsEditor-fileManager").value,
         //enablePing:(document.getElementById("settingsEditor-enablePing").value === "true"),
         //sudoGUI:document.getElementById("settingsEditor-sudoGUI").value,
         //showIP: true,//netShowIP(), *revisar con el ocultamiento
@@ -1100,6 +1104,7 @@ window.writeSettingsFile = () => {
     });
 
     fs.writeFileSync(settingsFile, JSON.stringify(window.settings, "", 4));
+    fs.writeFileSync("/tmp/cnfgport.json", JSON.stringify({port: window.settings.port}, "", 4));
     document.getElementById("settingsEditorStatus").innerText = "New values written to settings.json file at "+new Date().toTimeString();
 
     if(window.settings.nativeGUI == "gtk3"){
@@ -1201,6 +1206,14 @@ window.openShortcutsHelp = () => {
                     <tr>
                         <td>Ctrl + Alt + S</td>
                         <td>System Suspend</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl + Alt + W</td>
+                        <td>Active/Inactive (don't lock Screen)</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl + Alt + U</td>
+                        <td>Show USB Devices</td>
                     </tr>
                     <tr>
                         <td><button onClick='electron.shell.openExternal("file://${require('path').join(require('electron').remote.app.getPath("userData"), "kinit.json")}")' style='position: relative; left: 0px; top: 0px;'>Open kinit</button></td>
@@ -1513,6 +1526,7 @@ function xWindow(obj,f,audioOff)
           let noLimit = (!obj.noLimit)?'':((obj.noLimit > 0)?'noLimit':''); 
           let agExec = (!obj.noLimit)?'exe':(obj.noLimit < 1)?'exe':''; 
           let bgFnd = (!obj.noLimit)?'bgFnd':(obj.noLimit < 1)?'bgFnd':''; 
+          let overflow = (!obj.overflow)?'': " overflow: " + obj.overflow + ";"; 
            
 
           let tmp = document.createElement("div");
@@ -1531,6 +1545,9 @@ function xWindow(obj,f,audioOff)
           let wndHidden = (!obj.hidden)?'':(obj.hidden == 'true')?'display:none':'';
           iHeight = (pY + iHeight > (parseInt(recClient.height) - 35))?iHeight - pY:iHeight;
           iWidth = (pX + iWidth > (parseInt(recClient.width) - 37))?iWidth - pX:iWidth;
+          let x_XClose = parseInt(((iWidth/10)*3)/97)>0?parseFloat((((iWidth/10)*3)/97)/10).toFixed(1):parseFloat((((iWidth/10)*3)/97)).toFixed(1);
+          //x_XClose = (x_XClose == 0.1)?0.4:x_XClose;
+          x_XClose = (!obj.x_XClose)?x_XClose:obj.x_XClose;
           let sContenido = (!obj.content)?"":obj.content;
           let hBarraT = 2;
           tmp.innerHTML = `<div id="${id}" class="info custom focus appXwnd ${noLimit} ${bgFnd}" augmented-ui="tl-clip br-clip ${agExec}" style="z-index:${zIndex}; left: ${pX}px; top: ${pY}px; width: ${iWidth/10}vh; height: ${iHeight/10}vh; opacity: 0.8; ${wndHidden}">
@@ -1538,13 +1555,13 @@ function xWindow(obj,f,audioOff)
                 <table style="width: 100%;">
                     <tr style="height: ${hBarraT}vh;">
                         <td>
-                            <div style="position: relative; top: -1px; width: 97%; float: left;">${titleWnd}</div>
-                            <b style="position: relative; top: 0px; left: -5px; float: right; width: 2%; border-left: 1px solid;  cursor: pointer;" title="${titleClose}" onclick="xWindow({id:'${id}'})">&nbsp;x</b>
+                            <div style="position: relative; top: 0px; width: 97%; float: left;">${titleWnd}</div>
+                            <b style="position: relative; top: 0px; left: -${x_XClose}vh; float: right; width: 2%; border-left: 1px solid;  cursor: pointer;" title="${titleClose}" onclick="xWindow({id:'${id}'})">&nbsp;x</b>
                         </td>
                     </tr>
                 </table>        
             </div>
-            <div id="xWnd_contenido" style="border: 0px solid; position:absolute; left: 0px; top: ${hBarraT}vh; width: 100%; height: ${iHeight/10}vh;">
+            <div id="xWnd_contenido" style="border: 0px solid; position:absolute; left: 0px; top: ${hBarraT}vh; width: 100%; height: ${iHeight/10}vh; max-width: 100%;${overflow}">
                 ${sContenido}
             </div>
             <input type="button" id="code_${id}" onclick="${code}" style="display:none"/>
@@ -1601,6 +1618,7 @@ function xWindow(obj,f,audioOff)
           let noLimit = (!obj.noLimit)?'':((obj.noLimit > 0)?'noLimit':''); 
           let agExec = (!obj.noLimit)?'exe':(obj.noLimit < 1)?'exe':''; 
           let bgFnd = (!obj.noLimit)?'bgFnd':(obj.noLimit < 1)?'bgFnd':'';  
+          let overflow = (!obj.overflow)?'': " overflow: " + obj.overflow + ";";
 
           let tmp = document.createElement("div");
           recClient = document.body.getBoundingClientRect();
@@ -1617,6 +1635,9 @@ function xWindow(obj,f,audioOff)
 ////////////////////////////////////////////////////////////////////
           iHeight = (pY + iHeight > (parseInt(recClient.height) - 35))?iHeight - pY:iHeight;
           iWidth = (pX + iWidth > (parseInt(recClient.width) - 37))?iWidth - pX:iWidth;
+          let x_XClose = parseInt(((iWidth/10)*3)/97)>0?parseFloat((((iWidth/10)*3)/97)/10).toFixed(1):parseFloat((((iWidth/10)*3)/97)).toFixed(1);
+          //x_XClose = (x_XClose == 0.1)?0.4:x_XClose;
+          x_XClose = (!obj.x_XClose)?x_XClose:obj.x_XClose;
           let wndHidden = (!obj.hidden)?'':(obj.hidden == 'true')?'display:none':'';
           let sContenido = (!obj.content)?"":obj.content;
           let hBarraT = 2;
@@ -1625,13 +1646,13 @@ function xWindow(obj,f,audioOff)
                     <table style="width: 100%;">
                         <tr style="height: ${hBarraT}vh;">
                             <td>
-                                <div style="position: relative; top: -1px; width: 97%; float: left;">${titleWnd}</div>
-                                <b style="position: relative; top: -1px; left: -5px; float: right; width: 2%; border-left: 1px solid;  cursor: pointer;" title="${titleClose}" onclick="xWindow({id:'${id}'})">&nbsp;x</b>
+                                <div style="position: relative; top: 0px; width: 97%; float: left;">${titleWnd}</div>
+                                <b style="position: relative; top: -1px; left: -${x_XClose}vh; float: right; width: 2%; border-left: 1px solid;  cursor: pointer;" title="${titleClose}" onclick="xWindow({id:'${id}'})">&nbsp;x</b>
                             </td>
                         </tr>
                     </table>        
                 </div>
-                <div id="xWnd_contenido" style="border: 0px solid; position:absolute; left: 0px; top: ${hBarraT}vh; width: 100%; height: ${iHeight/10}vh;">
+                <div id="xWnd_contenido" style="border: 0px solid; position:absolute; left: 0px; top: ${hBarraT}vh; width: 100%; height: ${iHeight/10}vh; max-width: 100%;${overflow}">
                     ${sContenido}
                 </div>
                 <input type="button" id="code_${id}" onclick="${code}" style="display:none"/>
@@ -2017,6 +2038,8 @@ function loadWM(cBorder,cBack, wndPanel)
         window['wndPanel'].wndPanel = 0;
         //hWm = spawn(wm,[electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16)]);
         hWm = spawn(systemdInhibit,["--what=handle-power-key","--mode=block","--why='wm handles this event'",wm,electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16)]);
+
+        loadDevices();
     }    
     else
        hWm = spawn(systemdInhibit,["--what=handle-power-key","--mode=block","--why='wm handles this event'",wm,electron.remote.screen.getPrimaryDisplay().bounds.width,(window.settings.port - 1),parseInt(cBorder,16),parseInt(cBack,16),wndPanel]); 
@@ -2030,7 +2053,19 @@ function loadWM(cBorder,cBack, wndPanel)
 
             if(window['wndPanel'].wndPanel == 0){
 
-                let startInit = ["xsetroot -cursor_name left_ptr",`ctlbvs ${cBorder} ${cBack}`,"statuskeyslock",`setxkbmap ${window.settings.keyboard_layout}`];
+                let startInit = [];
+
+                if(window.snDisplays > 1){
+                    let selectCmd = "xrandr --auto";
+                    if(window.setmonitors.select != ""){
+                        selectCmd += " && " + window.setmonitors.select;
+                        //selectCmd = window.setmonitors.select + " --auto";
+                    }
+                    startInit = [selectCmd,"xsetroot -cursor_name left_ptr",`ctlbvs ${cBorder} ${cBack}`,"statuskeyslock",`setxkbmap ${window.settings.keyboard_layout}`,"xset s on; xset s blank; xset +dpms"];
+                }else{
+                    startInit = ["xsetroot -cursor_name left_ptr",`ctlbvs ${cBorder} ${cBack}`,"statuskeyslock",`setxkbmap ${window.settings.keyboard_layout}`,"xset s on; xset s blank; xset +dpms"];
+                }   
+
 
                 let startApp = startInit.concat(startUp.startApp);
 
@@ -2070,21 +2105,21 @@ function loadWM(cBorder,cBack, wndPanel)
         }else{
 
             if(data.includes("Detected another window manager on display")){
+                let msg = data.toString().split(']');
                 new Modal({
                     type: "info",
                     title: 'Problem of external module',
-                    message: data
+                    message: msg[msg.length-1]
                 });
                  onError = -1;
                  window.wm = false;
-                 //document.getElementById("lbl_ona").style.display = "none";
-                 
+                 //document.getElementById("lbl_ona").style.display = "none";                 
             }else{
-
+                let msg = data.toString().split(']');
                 new Modal({
                     type: "info",
                     title: 'Problem of external module',
-                    message: data
+                    message: msg[msg.length-1]
                 });
             }
             
@@ -2109,6 +2144,24 @@ function loadWM(cBorder,cBack, wndPanel)
                 });
          });*/
     //});   
+}
+
+function loadDevices(){
+    window.si.blockDevices().then(arr => {
+        arr.forEach(block => {
+            if (block.removable /*&& block.protocol === "usb"*/ && block.type === "part") {
+                    //type = "usb";
+                    window.usbDevices['id_'+block.uuid] = {
+                        label: block.label,
+                        dev : "/dev/"+block.name,
+                        uuid: block.uuid,
+                        mount: block.mount,
+                        type: "partition",
+                        root: block.name.replace(/[0123456789]/g,'')
+                    };                    
+                }
+        });
+    });
 }
 
 function completListCbx(obj)
@@ -2572,7 +2625,8 @@ function xWndExecGksu(id,app){
    </tr>
  </table>`,
   code:`document.getElementById('id_pasroot_${id}').focus();`,
-  noLimit: 0
+  noLimit: 0,
+  x_XClose: "0.4"
 };
     let code = '';
     if(!wnd.id)
@@ -2646,15 +2700,16 @@ async function showTogglePanel(show){
 }
 
 function systemPoweroff(){
+  let icons = require("./assets/icons/file-icons.json");
   recClient = document.body.getBoundingClientRect();
   mostrarPanel();
 
   let wnd = {
   title:"Power Off",
-  x: ((parseInt(recClient.width)/2) - 250),
-  y: ((parseInt(recClient.height)/2) - 109),
-  w: 450,
-  h: 100,
+  x: ((parseInt(recClient.width)/2) - 150),
+  y: ((parseInt(recClient.height)/2) - 114),
+  w: 350,
+  h: 105,
   id: "wnd_powewroff",
   content:`<table style='width: 100%; height: 100%;'>
   <tr>
@@ -2663,17 +2718,83 @@ function systemPoweroff(){
   </tr>
   <tr>
     <td>
-        <button id='btn_pwof' onClick='xWndExec("wnd_powewroff","systemctl poweroff")' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 5px; top: -15px;'>Poweroff</button>
+        <button id='btn_pwof' onClick='xWndExec("wnd_powewroff","systemctl poweroff")' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 0px; top: 0px; border: 0px;'>
+        <div style='
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-left: 0px;
+    cursor: pointer;'>
+          <svg  viewBox='0 0 ${icons['poweroff'].width} ${icons['poweroff'].height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+            ${icons['poweroff'].svg}
+          </svg>
+          <h3 style='font-size: 1.3vh;
+    max-width: 100%;
+    max-height: 30%;
+    margin: 0px;
+    padding-top: 1vh;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;'>PowerOff</h3>                                   
+            </div></button>
     </td>
     <td>
-        <button id='btn_ret' onClick='xWndExec("wnd_powewroff","systemctl reboot")' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 2.5vh; top: -15px;'>Reboot</button>
+        <button id='btn_ret' onClick='xWndExec("wnd_powewroff","systemctl reboot")' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 0vh; top: 0px; border: 0px;'>
+        <div style='
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-left: 0px;
+    cursor: pointer;'>
+          <svg  viewBox='0 0 ${icons['reboot'].width} ${icons['reboot'].height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+            ${icons['reboot'].svg}
+          </svg>
+          <h3 style='font-size: 1.3vh;
+    max-width: 100%;
+    max-height: 30%;
+    margin: 0px;
+    padding-top: 1vh;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;'>Reboot</h3>                                   
+            </div></button>
     </td>
     <td>
-        <button id='btn_cle' onClick='electron.remote.app.exit(0);' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 2vh; top: -15px;'>Exit Session</button>
+        <button id='btn_cle' onClick='electron.remote.app.exit(0);' onkeyup='poweroffKeyup(this,event)' style='position: relative; left: 0vh; top: 0px; border: 0px;'><div style='
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-left: 0px;
+    cursor: pointer;'>
+          <svg  viewBox='0 0 ${icons['exitsession'].width} ${icons['exitsession'].height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+            ${icons['exitsession'].svg}
+          </svg>
+          <h3 style='font-size: 1.3vh;
+    max-width: 100%;
+    max-height: 30%;
+    margin: 0px;
+    padding-top: 1vh;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;'>Exit Session</h3>                                   
+            </div></button>
+    </td>
+  </tr><tr>
+    <td>
     </td>
   </tr></table>`,
   code:`document.getElementById('btn_pwof').focus();`,
-  noLimit: 0
+  noLimit: 0,
+  x_XClose: "0.6"
 };
     let code = '';
     //console.log(wnd);
@@ -3037,8 +3158,124 @@ function callRCM(data){
                 execAppKeyboard("systemctl suspend");
             }
 
-            //
+            if(data.message.call.toLowerCase() == 'monitors'){
+                if(data.message.data.numbers > 1){
+                    let selectCmd = "";
+                    if(data.message.data.direccion == 0){
+                        window.setmonitors.index += 1;
+                        if(window.setmonitors.index > (window.setmonitors.cmds.length)-1){
+                            window.setmonitors.index = 0;
+                        } 
 
+                    }else{
+                        window.setmonitors.index -= 1;
+                        if(window.setmonitors.index < 0){
+                            window.setmonitors.index = (window.setmonitors.cmds.length)-1;
+                        }
+                    }
+                    selectCmd = window.setmonitors.cmds[window.setmonitors.index].replace("<-origen->",data.message.data.primary).replace("<-destino->",data.message.data.secondary);
+                    window.setmonitors.select = selectCmd;
+                    execAppKeyboard(selectCmd);
+                    fs.writeFileSync(monitorsFile, JSON.stringify(window.setmonitors, 4));
+                }
+            }
+
+            if(data.message.call.toLowerCase() == 'wire-plug'){
+                data.message.type = data.message.type.toLowerCase();
+                
+                if(data.message.type.toLowerCase() == "hdmi"){
+                    if(window.setmonitors.select != "")
+                        execAppKeyboard("xrandr --auto && " + window.setmonitors.select);
+                    else
+                        execAppKeyboard("xrandr --auto");
+                }
+
+                if(data.message.type.startsWith("ac")){
+                    let isCharging = (data.message.type == "ac0")? false: true;
+                    if(window.mods.sysinfo)
+                        window.mods.sysinfo.playConectBattery(isCharging);
+                    if(isCharging && document.getElementById("wnd_batterylow"))
+                        xWindow({ id:"wnd_batterylow"});
+                    /*window.si.battery().then(bat => {
+                        if (bat.hasbattery) {
+                            window.mods.sysinfo.playConectBattery();
+                        } 
+                    });*/
+                }
+
+                if(data.message.type.toLowerCase() == "dusb"){
+                    
+                    if(document.querySelector("#wnd_usbdevices"))
+                        xWindow({id:"wnd_usbdevices"});
+                    
+                    if(data.message.subdata.action == "add"){
+                       if(document.getElementById("USBDevices").style.display == 'none'){
+                            document.getElementById("USBDevices").style.display = 'block';
+                       }
+                       if(!window.usbDevices['id_'+data.message.subdata.uuid]){
+                            window.usbDevices['id_'+data.message.subdata.uuid] = {
+                                label: data.message.subdata.label,
+                                dev : "/dev/"+data.message.subdata.dev,
+                                uuid: data.message.subdata.uuid,
+                                mount: "",
+                                type: "partition",
+                                root: data.message.subdata.dev.replace(/[0123456789]/g,'')
+                            };  
+                       }
+                    }
+
+                    if(data.message.subdata.action == "remove"){
+                       if(document.getElementById("USBDevices").style.display != 'none'){
+                            if(window.usbDevices['id_'+data.message.subdata.uuid]){
+                                if((Object.keys(window.usbDevices).length - 1) == 0){
+                                    document.getElementById("USBDevices").style.display = 'none';
+                                } 
+                                delete window.usbDevices['id_'+data.message.subdata.uuid]; 
+                            }else{
+                                if(Object.keys(window.usbDevices).length == 0){
+                                    document.getElementById("USBDevices").style.display = 'none';
+                                }
+                            }
+                       }
+                    }
+                    /*if(window.mods.sysinfo)
+                        window.mods.sysinfo.playConectBattery(isCharging);
+                    if(isCharging && document.getElementById("wnd_batterylow"))
+                        xWindow({ id:"wnd_batterylow"});
+                    window.si.battery().then(bat => {
+                        if (bat.hasbattery) {
+                            window.mods.sysinfo.playConectBattery();
+                        } 
+                    });*/
+                }
+                
+                /*if(data.message.data.numbers > 1){
+                    if(data.message.data.direccion == 0){
+                        window.setmonitors.index += 1;
+                        if(window.setmonitors.index > (window.setmonitors.cmds.length)-1){
+                            window.setmonitors.index = 0;
+                        } 
+
+                    }else{
+                        window.setmonitors.index -= 1;
+                        if(window.setmonitors.index < 0){
+                            window.setmonitors.index = (window.setmonitors.cmds.length)-1;
+                        }
+                    }
+                    execAppKeyboard(window.setmonitors.cmds[window.setmonitors.index].replace("<-origen->",data.message.data.primary).replace("<-destino->",data.message.data.secondary));
+                    fs.writeFileSync(monitorsFile, JSON.stringify(window.setmonitors, 4));
+                }*/
+            }
+
+            if(data.message.call.toLowerCase() == 'dnls'){
+                     set_dnls();   
+                }
+
+            if(data.message.call.toLowerCase() == 'showusbdevices'){
+                if(document.getElementById("USBDevices").style.display != 'none'){
+                    wnd_usb_Devices();
+                }  
+            }
             /*if(data.message.call.toLowerCase() == 'netshowip'){
                 //if(data.message.value){
                     netShowIP(data.message.value);
@@ -3046,6 +3283,278 @@ function callRCM(data){
             }*/
         }
 
+}
+
+function set_dnls(){
+    if(document.getElementById("DNLS").style.display == 'none'){
+        execAppKeyboard("xset s off; xset s noblank; xset -dpms");
+        document.getElementById("DNLS").style.display = "block";
+    }else{
+        execAppKeyboard("xset s on; xset s blank; xset +dpms");
+        document.getElementById("DNLS").style.display = "none";
+    }
+}
+
+function wnd_usb_Devices(){
+    let icons = {};
+    let icon;
+    let strMount = "";
+    let strTRs = "";
+    let index = 0;
+    if(document.querySelector("#wnd_usbdevices")){
+        xWindow({id:"wnd_usbdevices"});
+        return false;
+    }
+    icons = require("./assets/icons/file-icons.json");
+    strMount = fs.readFileSync("/proc/mounts","utf8");
+
+    strMount = strMount.split('\n');
+    for (var key in window.usbDevices) {
+        window.usbDevices[key].mount = "";
+        strTRs += `<tr class='cs_${window.usbDevices[key].root}'><td colspan='3' style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'>
+          <label><b>${(window.usbDevices[key].label == '')?window.usbDevices[key].uuid:window.usbDevices[key].label}</b></label>
+        </td></tr>`;
+        for (var i = 0; i < strMount.length; i++) {
+            if(strMount[i].indexOf(window.usbDevices[key].dev) >= 0){
+                let mount = strMount[i].split(' ');
+                window.usbDevices[key].mount = mount[1];
+            }
+        }
+        icon = icons["usbdrive"];
+        strTRs += `<tr class='cs_${window.usbDevices[key].root}'><td>
+        <button id='dvmp_${window.usbDevices[key].uuid}' onclick='excTypeMethod("${(window.usbDevices[key].mount == '')?'mount-open':'open'}","${window.usbDevices[key].uuid}")' title='${(window.usbDevices[key].mount == '')?'Mount and Open':'Open'}' onkeyup='usbdeviceKeyup(${index++},event)' style='position: relative; left: -5px; top: 0px; border: 0px;'>
+          <div style='
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-left: 0px;
+    cursor: pointer;'>
+          <svg id='svgmp_${window.usbDevices[key].uuid}' viewBox='0 0 ${icon.width} ${icon.height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+            ${icon.svg}
+          </svg>
+          <h3 id='lblmp_${window.usbDevices[key].uuid}' style='font-size: 1.3vh;
+    max-width: 100%;
+    max-height: 30%;
+    margin: 0px;
+    padding-top: 1vh;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;'>Open</h3>                                   
+            </div></button>  
+        </td>`;
+
+    icon = (window.usbDevices[key].mount == '')?icons["mntusbdrive"]:icons["umntusbdrive"];
+
+      strTRs += `<td>
+          <button id='dvmu_${window.usbDevices[key].uuid}' class='fndselect' onclick='excTypeMethod("${(window.usbDevices[key].mount == '')?'mount':'unmount'}","${window.usbDevices[key].uuid}")' title='${(window.usbDevices[key].mount == '')?'Mount ('+window.usbDevices[key].dev+')':'Unmount ('+window.usbDevices[key].mount + ')'}' onkeyup='usbdeviceKeyup(${index++},event)' style='position: relative; left: 0px; top: 0px; border: 0px;'>
+          <div style='
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-left: 0px;
+    cursor: pointer;'>
+          <svg id='svgmu_${window.usbDevices[key].uuid}' viewBox='0 0 ${icon.width} ${icon.height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+            ${icon.svg}
+          </svg>
+          <h3 id='lblmu_${window.usbDevices[key].uuid}' style='font-size: 1.3vh;
+    max-width: 100%;
+    max-height: 30%;
+    margin: 0px;
+    padding-top: 1vh;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;'>${(window.usbDevices[key].mount == '')?'Mount':'Unmount'}</h3>                                   
+            </div></button>  
+        </td>`;  
+
+    icon = icons["rmusbdrive"];
+
+      strTRs += `<td>
+          <button id='dvrm_${window.usbDevices[key].uuid}' onclick='excTypeMethod("power-off","${window.usbDevices[key].uuid}")' title='Safely Remove (${window.usbDevices[key].root})' onkeyup='usbdeviceKeyup(${index++},event)' style='position: relative; left: -8px; top: 0px; border: 0px;'>
+          <div style='
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-left: 10px;
+    cursor: pointer;'>
+          <svg id='svgrm_${window.usbDevices[key].uuid}' viewBox='0 0 ${icon.width} ${icon.height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+            ${icon.svg}
+          </svg>
+          <h3 id='lblrm_${window.usbDevices[key].uuid}' style='font-size: 1.3vh;
+    max-width: 100%;
+    max-height: 30%;
+    margin: 0px;
+    padding-top: 1vh;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;'>Safely Remove (${window.usbDevices[key].root})</h3>                                   
+            </div>  
+        </td></tr>`; 
+    }
+    
+    recClient = document.body.getBoundingClientRect();
+    mostrarPanel();
+    let alto = Object.keys(window.usbDevices).length;
+    let yWnd = ((parseInt(recClient.height)/2) - (alto * 139));
+    yWnd = (yWnd <= 0)?1:yWnd;
+    let wnd = {
+      title:"USB Devices",
+      x: ((parseInt(recClient.width)/2) - 180),
+      y: yWnd,
+      w: 330,
+      h: (alto * 130),
+      id: "wnd_usbdevices",
+      content:`<table id='tbl_dusb' style='width: 100%; height: 100%;'>
+      <tr><td colspan='3'></td></tr>
+      ${strTRs}
+      <tr><td colspan='3'></td></tr>
+      </table>`,
+      code:`if(document.querySelectorAll('#wnd_usbdevices button').length > 0)document.querySelectorAll('#wnd_usbdevices button')[0].focus();`,
+      noLimit: 0,
+      x_XClose: "0.6",
+      overflow: "auto"
+    };
+    let code = '';
+    //console.log(wnd);
+    if(!wnd.id){
+        code = xWindow(wnd);
+        //console.log(code);
+    }
+    else
+        if(!document.getElementById(wnd.id))
+            code = xWindow(wnd);
+    code = document.getElementById(code);
+    if(!code)
+        return true;
+    code.click();
+    return true;
+}
+
+function usbdeviceKeyup(index,ev){
+    switch(ev.keyCode){
+        case 37: index = ((index-1) >= 0)? index-1:document.querySelectorAll('#wnd_usbdevices button').length-1; document.querySelectorAll('#wnd_usbdevices button')[index].focus(); break;
+        case 39: index = ((index+1) < document.querySelectorAll('#wnd_usbdevices button').length)? index+1:0; document.querySelectorAll('#wnd_usbdevices button')[index].focus(); break;
+        case 40: index += 3; index = (index < document.querySelectorAll('#wnd_usbdevices button').length)? index: index-document.querySelectorAll('#wnd_usbdevices button').length; document.querySelectorAll('#wnd_usbdevices button')[index].focus(); break;
+        case 38: index -= 3; index = (index >= 0)? index: document.querySelectorAll('#wnd_usbdevices button').length + index; document.querySelectorAll('#wnd_usbdevices button')[index].focus(); break;
+        case 27: xWindow({id:'wnd_usbdevices'}); break;
+    }
+}
+
+function excTypeMethod(type,parametro){
+    let udisksctl = "udisksctl";
+  try{
+    
+    if(type == "mount-open"){ 
+        let mnt = require("child_process").execSync(udisksctl + " mount -b " + window.usbDevices["id_" + parametro].dev).toString().split(' ');
+        let icons = require("./assets/icons/file-icons.json");
+        window.usbDevices["id_" + parametro].mount = mnt[mnt.length - 1].split('\n').join('');
+        document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Open");
+        document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("open","${window.usbDevices["id_" + parametro].uuid}")`);
+        document.querySelector("#svgmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = icons["umntusbdrive"].svg;
+        document.querySelector("#lblmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = "Unmount";
+        document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Unmount");
+        document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("unmount","${window.usbDevices["id_" + parametro].uuid}")`);
+        
+        openFM(parametro);
+    }
+    if(type == "open"){ 
+        openFM(parametro);
+    }
+
+    if(type == "mount"){ 
+        let mnt = require("child_process").execSync(udisksctl + " " + type + " -b " + window.usbDevices["id_" + parametro].dev).toString().split(' ');
+        let icons = require("./assets/icons/file-icons.json");
+        window.usbDevices["id_" + parametro].mount = mnt[mnt.length - 1].split('\n').join('');
+        document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Open");
+        document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("open","${window.usbDevices["id_" + parametro].uuid}")`);
+        document.querySelector("#svgmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = icons["umntusbdrive"].svg;
+        document.querySelector("#lblmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = "Unmount";
+        document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Unmount (" + window.usbDevices["id_" + parametro].mount + ")");
+        document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("unmount","${window.usbDevices["id_" + parametro].uuid}")`);
+        /*new Modal({
+            type: "info",
+            title: "Mount ("+window.usbDevices["id_" + parametro].dev+")",
+            message: "Device mounted on "+window.usbDevices["id_" + parametro].mount
+        });*/
+    }
+
+    if(type == "unmount"){ 
+        let mnt = require("child_process").execSync(udisksctl + " " + type + " -b " + window.usbDevices["id_" + parametro].dev).toString().split(' ');
+        let icons = require("./assets/icons/file-icons.json");
+        window.usbDevices["id_" + parametro].mount = mnt[mnt.length - 1].split('\n').join('');
+        document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Mount and Open");
+        document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("mount-open","${window.usbDevices["id_" + parametro].uuid}")`);
+        document.querySelector("#svgmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = icons["mntusbdrive"].svg;
+        document.querySelector("#lblmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = "Mount";
+        document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Mount (" + window.usbDevices["id_" + parametro].dev + ')');
+        document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("mount","${window.usbDevices["id_" + parametro].uuid}")`);
+    }
+
+    if(type == "power-off"){
+        let root = window.usbDevices["id_" + parametro].root;   
+        document.querySelectorAll(".cs_"+window.usbDevices["id_" + parametro].root).forEach(obj => {obj.remove();});
+        if((document.querySelectorAll("#tbl_dusb tr").length - 2) <= 0)
+            xWindow({id:"wnd_usbdevices"});
+        if(window.usbDevices["id_" + parametro].mount != '')
+            require("child_process").execSync(udisksctl + " unmount -b " + window.usbDevices["id_" + parametro].dev); 
+        require("child_process").execSync(udisksctl + " " + type + " -b " + window.usbDevices["id_" + parametro].dev).toString().split(' ');
+        new Modal({
+            type: "info",
+            title: "Remove Safely ("+root+")",
+            message: "Device removed successfull"
+        });
+        for (var key in window.usbDevices) { 
+            if( root == window.usbDevices[key].root){
+                delete window.usbDevices[key];
+                if(Object.keys(window.usbDevices).length == 0){
+                    document.getElementById("USBDevices").style.display = 'none';
+                    xWindow({id:"wnd_usbdevices"});
+                }
+            } 
+        }
+    }
+  }catch(err){
+    console.log(err);
+    let error = err.stderr.toString().split(':');
+    new Modal({
+        type: "info",
+        title: error[0],
+        message: error[error.length-1]
+    });
+  }
+}
+
+function openFM(parametro){
+    let cmdFM = (window.settings.fileManager == '')?"cd::":window.settings.fileManager;
+    if(cmdFM.endsWith('::')){
+        cmdFM = cmdFM.replace("::",'') + ' ' + window.usbDevices["id_" + parametro].mount;
+        console.log(cmdFM);
+        xExecInTrm(cmdFM);
+    }else{
+       const { exec } = require("child_process");
+       exec(cmdFM + ' ' + window.usbDevices["id_" + parametro].mount + ' >/dev/null', (error, stdout, stderr) => {
+            if (error) {
+                if(error.message.length > 100 || error.message.includes('stderr'))
+                    errorLog(cmdFM,error.message);
+                else
+                    new Modal({
+                        type: "warning",
+                        title: `Error ${cmdFM}`,
+                        message: error.message
+                    });
+            }
+        });
+    }
+    xWindow({id:"wnd_usbdevices"});
 }
 
 if(window.enableLocalRCM){
@@ -3463,7 +3972,8 @@ function desinstalarModulo(id,app){
    </tr>
  </table>`,
   code:`document.getElementById('yes_wnd_ani_${id}').focus();`,
-  noLimit: 0
+  noLimit: 0,
+  x_XClose: "0.6"
 };
     let code = '';
     if(!wnd.id)

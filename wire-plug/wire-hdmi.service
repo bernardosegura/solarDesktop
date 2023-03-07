@@ -1,0 +1,9 @@
+[Unit]
+Description=Wire Plug HDMI
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/wire-plug hdmi
+
+[Install]
+WantedBy=wire-hdmi.target

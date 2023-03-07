@@ -13,7 +13,7 @@
     },
     "terminal": {
         "fontFamily": "Fira Mono",
-        "cursorStyle": "bar",
+        "cursorStyle": "block",
         "foreground": "#03A9F4",
         "background": "#05080d",
         "cursor": "#03A9F4",

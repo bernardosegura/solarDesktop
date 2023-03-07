@@ -1,0 +1,10 @@
+[Unit]
+Description=Wire Plug DUSB
+
+[Service]
+Type=oneshot
+#Environment=RUTA=%i
+ExecStart=/usr/bin/wire-plug dusb %i
+
+[Install]
+WantedBy=serv.target

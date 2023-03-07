@@ -1,0 +1,9 @@
+[Unit]
+Description=Wire Plug AC
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/wire-plug ac0
+
+[Install]
+WantedBy=wire-ac.target

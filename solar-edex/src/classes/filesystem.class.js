@@ -409,6 +409,15 @@ this.cmdPath = async e =>{
                 type: "caps-lock"
             }); 
 
+            this.cwd.splice(5, 0, {
+                name: "USB Devices",
+                type: "USBDevices"
+            }); 
+
+            this.cwd.splice(6, 0, {
+                name: "Don't lock Screen",
+                type: "DNLS"
+            });
              /*this.cwd.splice(4, 0, {
                     name: "Go up",
                     type: "up"
@@ -442,6 +451,29 @@ this.cmdPath = async e =>{
             this.render(devices, true);
         };
 
+        this.existUSBDevices = async () => {
+            let retorno = false;
+            if (this.failed === true) return retorno;
+
+            let device = await window.si.blockDevices();
+            //let usbDevices = [];
+            device.every(block => {
+                    //fstype: "exfat" fstype: "vfat"
+                    if (block.removable && block.protocol === "usb") {
+                        //type = "usb";
+                        /*window.usbDevices.push({
+                            label: device.label,
+                            dev : device.name,
+                            uuid: device.uuid
+                        });*/
+                        retorno = true;
+                        return false;
+                    }
+                    return true;
+            });
+            return retorno;
+        };
+
         this.render = async (blockList, isDiskView) => {
             if (this.failed === true) return false;
 
@@ -473,6 +505,9 @@ this.cmdPath = async e =>{
                 window.cApps.xobjFile = [];
                 window.cApps.xobjTitle = [];
             }
+
+            let existUsbDev = await this.existUSBDevices();
+
             blockList.forEach(e => {
                 let hidden = e.hidden ? " hidden" : "";
 
@@ -588,7 +623,23 @@ this.cmdPath = async e =>{
                         e.category = "Indicator";
                         inpanel = true;
                         idInpanel = 'caps-lock';
-                        break;       
+                        break; 
+                    case "USBDevices":
+                        icon = this.icons["usb"];
+                        type = "usb";
+                        cmd = "wnd_usb_Devices()";
+                        e.category = "Device";
+                        inpanel = true;
+                        idInpanel = 'USBDevices';
+                        break; 
+                    case "DNLS":
+                        icon = this.icons["cndoopen"];
+                        type = "dnls";
+                        cmd = "set_dnls()";
+                        e.category = "Screen";
+                        inpanel = true;
+                        idInpanel = 'DNLS';
+                        break;              
                     case "showDisks":
                         icon = this.icons.showDisks;
                         type = "--";
@@ -790,6 +841,27 @@ this.cmdPath = async e =>{
                         let active = require("child_process").execSync("statuskeyslock caps" ).toString().startsWith('true');
                         if(!active)
                             modKeys += 'opacity: 0.5;'; 
+                   }
+
+                   if(idInpanel == 'USBDevices'){ 
+                        none = 'style="<-keys->"';
+
+                        //console.log(path.join(electron.remote.app.getPath("userData"), "susb"));
+
+                        if(!existUsbDev)
+                            modKeys += 'display: none; ';
+
+                        //console.log(existUsbDev);
+
+                        //let active = require("child_process").execSync("statuskeyslock caps" ).toString().startsWith('true');
+                        //if(!active)
+                            //modKeys += 'opacity: 0.5;'; 
+                   }
+
+                   if(idInpanel == 'DNLS'){ 
+                        none = 'style="<-keys->"';
+
+                        modKeys += 'display: none; ';
                    }
 
                     none = none.replace('<-keys->',modKeys);
