@@ -69,18 +69,18 @@ Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es
   </tr>
   <tr>
     <td>
-      Pantalla personalizada <b>Terminal sin Fondo</b>
-      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewinsinfnd.png" />
+      Dispositivos USB (<b>USB Devices</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/usbdev.png" />
     </td>
     <td>
-      Pantalla con fondo personalizado <b>Anime Windows</b>
-      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin2.png" />
+      Configuraciones (<b>Settings</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/settings.png" />
     </td>
   </tr>
   <tr>
     <td>
-      Pantalla de Administrador de Archivos <b>X Windows</b>
-      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanager.png" />
+      Apagar sistema (<b>Power Off</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/poweroff.png" />
     </td>
     <td>
       Pantalla de Administrador de Archivos <b>Terminal</b>
