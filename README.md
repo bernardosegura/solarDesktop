@@ -83,26 +83,68 @@ Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/poweroff.png" />
     </td>
     <td>
-      Pantalla de Administrador de Archivos <b>Terminal</b>
+      Colocar imagen de fondo (<b>cbgimage</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/bgdesktop.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Colocar imagen de fondo con trasparencia (<b>cbgimage path true</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/bgdesktoptransp.png" />
+    </td>
+    <td>
+    </td>
+  </tr>
+</table>
+
+# 
+## Variadas
+<table>
+  <tr>
+    <td>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/games.png" />
+    </td>
+    <td>
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanagerconsol.png" />
     </td>
   </tr>
   <tr>
     <td>
-      Pantalla de Editor de Imagenes <b>Gimp</b>
-      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/gimp.png" />
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/fmanager.png" />
     </td>
     <td>
-      Pantalla de Interacción con Juegos <b>Emulación</b>
-      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/games.png" />
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/gimp.png" />
     </td>
   </tr>
   <tr>
     <td>
-     <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/mario.png" />
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondo.png" />
     </td>
     <td>
-      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/mslug2.png" />
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime2.png" />
+    </td>
+    <td>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime3.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin.png" />
+    </td>
+    <td>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewinsinfnd.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin2.png" />
+    </td>
+    <td>
     </td>
   </tr>
 </table>
