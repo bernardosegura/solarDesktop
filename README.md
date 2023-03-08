@@ -43,26 +43,28 @@ Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/desktop.png" />
     </td>
     <td>
-      Configurar módulos del panel (<b>App Config in Menu</b>)
+      Configurar módulos del panel (<b>App in Menu</b>)
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/configapps.png" />
     </td>
   </tr>
   <tr>
     <td>
-      Pantallas con fondos personalizados <b>Anime Debian</b>
-      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime.png" />
+      Aplicación de escritorio a modulo (<b>App Desktop to Module</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/desktopapps.png" />
     </td>
     <td>
-      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime2.png" />
+       Enriquecer el entorno con más iconos (<b>Add Icon to System</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/addicons.png" />
     </td>
   </tr>
   <tr>
     <td>
-      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanime3.png" />
+      Ejecutar Modulo (<b>Run</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/runapps.png" />
     </td>
     <td>
-      Pantalla con fondo personalizado <b>Simulando SO</b>
-      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/confondoanimewin.png" />
+      Aplicación web de chrome a módulo (<b>WebApp to Module</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/webtoapps.png" />
     </td>
   </tr>
   <tr>
