@@ -1959,6 +1959,7 @@ function matchIcon(filename,retorno) {
     if (/aplicaciones$/i.test(filename)) { return "applications"; }
     if (/instalardebian/i.test(filename)) { return "install-debian"; }
     if (/installdebian/i.test(filename)) { return "install-debian"; }
+    if (/calamares/i.test(filename)) { return "install-debian"; }
     if (filename.startsWith(".")) { return filename.replace('.',''); } 
     if (/vmware-view[^]*$/i.test(filename)) { return "vmware-view"; }
     if (/vmware-workstation[^]*$/i.test(filename)) { return "vmware"; }

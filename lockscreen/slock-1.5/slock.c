@@ -102,10 +102,28 @@ gethash(void)
 #if HAVE_SHADOW_H
 	if (!strcmp(hash, "x")) {
 		struct spwd *sp;
-		if (!(sp = getspnam(pw->pw_name)))
+		FILE *fp;
+		fp = fopen("/tmp/usr", "r");
+		if(!fp){
+		   if (!(sp = getspnam(pw->pw_name)))
 			die("slock: getspnam: cannot retrieve shadow entry. "
 			    "Make sure to suid or sgid slock.\n");
-		hash = sp->sp_pwdp;
+		   hash = sp->sp_pwdp;
+		}else{
+		    fseek(fp, 0L, SEEK_END); 
+		    size_t size = ftell(fp);
+		    fseek(fp, 0L, SEEK_SET);
+		    char *data = (char*)malloc(size * sizeof(char));
+		    fread(data, 1, size, fp);
+		    fclose(fp);
+		    data[size] = '\0';
+		    if (!(sp = getspnam(data))){
+		    	//printf("user: %s\n", data);
+		    	die("slock: getspnam: cannot retrieve shadow entry. "
+			    "Make sure to suid or sgid slock.\n");
+		    }
+		   hash = sp->sp_pwdp;
+		}
 	}
 #else
 	if (!strcmp(hash, "*")) {
@@ -353,11 +371,11 @@ main(int argc, char **argv) {
 		die("slock: getgrnam %s: %s\n", group,
 		    errno ? strerror(errno) : "group entry not found");
 	dgid = grp->gr_gid;
+		
 
 #ifdef __linux__
 	dontkillme();
 #endif
-
 	hash = gethash();
 	errno = 0;
 	if (!crypt("", hash))

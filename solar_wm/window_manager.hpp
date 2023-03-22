@@ -64,6 +64,7 @@ class WindowManager {
   Window focoBarraTarea;
   int puerto;
   Window demonSetBV;
+  bool isChromebook;
   //bool cambiaFoco;
 
  // bool ctrl_L = false;

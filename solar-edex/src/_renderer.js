@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-0303.23 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-2103.23 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -1192,6 +1192,14 @@ window.openShortcutsHelp = () => {
                         <td>Close XWindow</td>
                     </tr>
                     <tr>
+                        <td>Alt + Esc</td>
+                        <td>Close XWindow in Chromebook</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl + Esc or Esc</td>
+                        <td>Close Window in Panel</td>
+                    </tr>
+                    <tr>
                         <td>Alt + Tab</td>
                         <td>Toggle Rigth XWindow</td>
                     </tr>
@@ -2147,6 +2155,7 @@ function loadWM(cBorder,cBack, wndPanel)
 }
 
 function loadDevices(){
+    let listDev = false;
     window.si.blockDevices().then(arr => {
         arr.forEach(block => {
             if (block.removable /*&& block.protocol === "usb"*/ && block.type === "part") {
@@ -2158,7 +2167,20 @@ function loadDevices(){
                         mount: block.mount,
                         type: "partition",
                         root: block.name.replace(/[0123456789]/g,'')
-                    };                    
+                    };                  
+                }else
+                    if (block.name.startsWith("mmc")  && block.type === "part") {
+                        if(!listDev){
+                            listDev = fs.readdirSync("/dev");
+                        }
+                        window.usbDevices['id_'+block.uuid] = {
+                            label: block.label,
+                            dev : "/dev/"+block.name,
+                            uuid: block.uuid,
+                            mount: block.mount,
+                            type: "partition",
+                            root: listDev.filter(elem => block.name.startsWith(elem) && elem != block.name).toString() //block.name.replace(/[0123456789]/g,'')
+                        };                    
                 }
         });
     });
@@ -3192,8 +3214,10 @@ function callRCM(data){
 
                 if(data.message.type.startsWith("ac")){
                     let isCharging = (data.message.type == "ac0")? false: true;
-                    if(window.mods.sysinfo)
-                        window.mods.sysinfo.playConectBattery(isCharging);
+                    if(window.mods.sysinfo){
+                        if(window.mods.sysinfo.playConectBattery)
+                            window.mods.sysinfo.playConectBattery(isCharging);
+                    }
                     if(isCharging && document.getElementById("wnd_batterylow"))
                         xWindow({ id:"wnd_batterylow"});
                     /*window.si.battery().then(bat => {
@@ -3209,34 +3233,51 @@ function callRCM(data){
                         xWindow({id:"wnd_usbdevices"});
                     
                     if(data.message.subdata.action == "add"){
-                       if(document.getElementById("USBDevices").style.display == 'none'){
-                            document.getElementById("USBDevices").style.display = 'block';
-                       }
+                       if(document.getElementById("USBDevices")){ 
+                        if(document.getElementById("USBDevices").style.display == 'none'){
+                                document.getElementById("USBDevices").style.display = 'block';
+                           }
+                       } 
+                       
                        if(!window.usbDevices['id_'+data.message.subdata.uuid]){
-                            window.usbDevices['id_'+data.message.subdata.uuid] = {
-                                label: data.message.subdata.label,
-                                dev : "/dev/"+data.message.subdata.dev,
-                                uuid: data.message.subdata.uuid,
-                                mount: "",
-                                type: "partition",
-                                root: data.message.subdata.dev.replace(/[0123456789]/g,'')
-                            };  
+                            if (data.message.subdata.dev.startsWith("mmc")) {
+                                    let listDev = fs.readdirSync("/dev");
+                                    window.usbDevices['id_'+data.message.subdata.uuid] = {
+                                        label: data.message.subdata.label,
+                                        dev : "/dev/"+data.message.subdata.dev,
+                                        uuid: data.message.subdata.uuid,
+                                        mount: "",
+                                        type: "partition",
+                                        root: listDev.filter(elem => data.message.subdata.dev.startsWith(elem) && elem != data.message.subdata.dev).toString() //block.name.replace(/[0123456789]/g,'')
+                                    };                    
+                            }else
+                                window.usbDevices['id_'+data.message.subdata.uuid] = {
+                                    label: data.message.subdata.label,
+                                    dev : "/dev/"+data.message.subdata.dev,
+                                    uuid: data.message.subdata.uuid,
+                                    mount: "",
+                                    type: "partition",
+                                    root: data.message.subdata.dev.replace(/[0123456789]/g,'')
+                                };  
                        }
                     }
 
                     if(data.message.subdata.action == "remove"){
-                       if(document.getElementById("USBDevices").style.display != 'none'){
-                            if(window.usbDevices['id_'+data.message.subdata.uuid]){
-                                if((Object.keys(window.usbDevices).length - 1) == 0){
-                                    document.getElementById("USBDevices").style.display = 'none';
-                                } 
-                                delete window.usbDevices['id_'+data.message.subdata.uuid]; 
-                            }else{
-                                if(Object.keys(window.usbDevices).length == 0){
-                                    document.getElementById("USBDevices").style.display = 'none';
+                       if(document.getElementById("USBDevices")){
+                            if(document.getElementById("USBDevices").style.display != 'none'){
+                                if(window.usbDevices['id_'+data.message.subdata.uuid]){
+                                    if((Object.keys(window.usbDevices).length - 1) == 0){
+                                        document.getElementById("USBDevices").style.display = 'none';
+                                    } 
+                                    delete window.usbDevices['id_'+data.message.subdata.uuid]; 
+                                }else{
+                                    if(Object.keys(window.usbDevices).length == 0){
+                                        document.getElementById("USBDevices").style.display = 'none';
+                                    }
                                 }
-                            }
-                       }
+                           }
+                            
+                        } 
                     }
                     /*if(window.mods.sysinfo)
                         window.mods.sysinfo.playConectBattery(isCharging);
@@ -3272,9 +3313,16 @@ function callRCM(data){
                 }
 
             if(data.message.call.toLowerCase() == 'showusbdevices'){
-                if(document.getElementById("USBDevices").style.display != 'none'){
-                    wnd_usb_Devices();
+                if(document.getElementById("USBDevices")){
+                    if(document.getElementById("USBDevices").style.display != 'none'){
+                        wnd_usb_Devices();
+                    }
                 }  
+            }
+
+            if(data.message.call.toLowerCase() == 'runxobj'){
+                appXwnd("run");
+                mostrarPanel();
             }
             /*if(data.message.call.toLowerCase() == 'netshowip'){
                 //if(data.message.value){
@@ -3310,6 +3358,7 @@ function wnd_usb_Devices(){
 
     strMount = strMount.split('\n');
     for (var key in window.usbDevices) {
+        let isUSBMMC = (window.usbDevices[key].root.startsWith("mmc"))?"mmc":"usb";
         window.usbDevices[key].mount = "";
         strTRs += `<tr class='cs_${window.usbDevices[key].root}'><td colspan='3' style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'>
           <label><b>${(window.usbDevices[key].label == '')?window.usbDevices[key].uuid:window.usbDevices[key].label}</b></label>
@@ -3317,10 +3366,10 @@ function wnd_usb_Devices(){
         for (var i = 0; i < strMount.length; i++) {
             if(strMount[i].indexOf(window.usbDevices[key].dev) >= 0){
                 let mount = strMount[i].split(' ');
-                window.usbDevices[key].mount = mount[1];
+                window.usbDevices[key].mount = mount[1].replace("\\040",' ');
             }
         }
-        icon = icons["usbdrive"];
+        icon = icons[isUSBMMC + "drive"];
         strTRs += `<tr class='cs_${window.usbDevices[key].root}'><td>
         <button id='dvmp_${window.usbDevices[key].uuid}' onclick='excTypeMethod("${(window.usbDevices[key].mount == '')?'mount-open':'open'}","${window.usbDevices[key].uuid}")' title='${(window.usbDevices[key].mount == '')?'Mount and Open':'Open'}' onkeyup='usbdeviceKeyup(${index++},event)' style='position: relative; left: -5px; top: 0px; border: 0px;'>
           <div style='
@@ -3346,7 +3395,7 @@ function wnd_usb_Devices(){
             </div></button>  
         </td>`;
 
-    icon = (window.usbDevices[key].mount == '')?icons["mntusbdrive"]:icons["umntusbdrive"];
+    icon = (window.usbDevices[key].mount == '')?icons["mnt"+isUSBMMC+"drive"]:icons["umnt"+isUSBMMC+"drive"];
 
       strTRs += `<td>
           <button id='dvmu_${window.usbDevices[key].uuid}' class='fndselect' onclick='excTypeMethod("${(window.usbDevices[key].mount == '')?'mount':'unmount'}","${window.usbDevices[key].uuid}")' title='${(window.usbDevices[key].mount == '')?'Mount ('+window.usbDevices[key].dev+')':'Unmount ('+window.usbDevices[key].mount + ')'}' onkeyup='usbdeviceKeyup(${index++},event)' style='position: relative; left: 0px; top: 0px; border: 0px;'>
@@ -3373,7 +3422,7 @@ function wnd_usb_Devices(){
             </div></button>  
         </td>`;  
 
-    icon = icons["rmusbdrive"];
+    icon = icons["rm"+isUSBMMC+"drive"];
 
       strTRs += `<td>
           <button id='dvrm_${window.usbDevices[key].uuid}' onclick='excTypeMethod("power-off","${window.usbDevices[key].uuid}")' title='Safely Remove (${window.usbDevices[key].root})' onkeyup='usbdeviceKeyup(${index++},event)' style='position: relative; left: -8px; top: 0px; border: 0px;'>
@@ -3410,7 +3459,7 @@ function wnd_usb_Devices(){
       title:"USB Devices",
       x: ((parseInt(recClient.width)/2) - 180),
       y: yWnd,
-      w: 330,
+      w: 360,
       h: (alto * 130),
       id: "wnd_usbdevices",
       content:`<table id='tbl_dusb' style='width: 100%; height: 100%;'>
@@ -3451,15 +3500,25 @@ function usbdeviceKeyup(index,ev){
 
 function excTypeMethod(type,parametro){
     let udisksctl = "udisksctl";
+    let isUSBMMC = (window.usbDevices["id_" + parametro].root.startsWith("mmc"))?"mmc":"usb";
   try{
     
     if(type == "mount-open"){ 
         let mnt = require("child_process").execSync(udisksctl + " mount -b " + window.usbDevices["id_" + parametro].dev).toString().split(' ');
         let icons = require("./assets/icons/file-icons.json");
-        window.usbDevices["id_" + parametro].mount = mnt[mnt.length - 1].split('\n').join('');
+        let mountDir = ""
+        for (var i = 0; i < mnt.length; i++) {
+            if(mnt[i-1] == "at"){
+                mountDir = mnt[i];
+            }else
+                if(mountDir != ""){
+                   mountDir = mountDir + " " + mnt[i]; 
+                }
+        }
+        window.usbDevices["id_" + parametro].mount = /*mnt[mnt.length - 1]*/mountDir.split('\n').join('');
         document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Open");
         document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("open","${window.usbDevices["id_" + parametro].uuid}")`);
-        document.querySelector("#svgmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = icons["umntusbdrive"].svg;
+        document.querySelector("#svgmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = icons["umnt"+isUSBMMC+"drive"].svg;
         document.querySelector("#lblmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = "Unmount";
         document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Unmount");
         document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("unmount","${window.usbDevices["id_" + parametro].uuid}")`);
@@ -3473,10 +3532,19 @@ function excTypeMethod(type,parametro){
     if(type == "mount"){ 
         let mnt = require("child_process").execSync(udisksctl + " " + type + " -b " + window.usbDevices["id_" + parametro].dev).toString().split(' ');
         let icons = require("./assets/icons/file-icons.json");
-        window.usbDevices["id_" + parametro].mount = mnt[mnt.length - 1].split('\n').join('');
+        let mountDir = ""
+        for (var i = 0; i < mnt.length; i++) {
+            if(mnt[i-1] == "at"){
+                mountDir = mnt[i];
+            }else
+                if(mountDir != ""){
+                   mountDir = mountDir + " " + mnt[i]; 
+                }
+        }
+        window.usbDevices["id_" + parametro].mount = /*mnt[mnt.length - 1]*/mountDir.split('\n').join('');
         document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Open");
         document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("open","${window.usbDevices["id_" + parametro].uuid}")`);
-        document.querySelector("#svgmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = icons["umntusbdrive"].svg;
+        document.querySelector("#svgmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = icons["umnt"+isUSBMMC+"drive"].svg;
         document.querySelector("#lblmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = "Unmount";
         document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Unmount (" + window.usbDevices["id_" + parametro].mount + ")");
         document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("unmount","${window.usbDevices["id_" + parametro].uuid}")`);
@@ -3490,10 +3558,10 @@ function excTypeMethod(type,parametro){
     if(type == "unmount"){ 
         let mnt = require("child_process").execSync(udisksctl + " " + type + " -b " + window.usbDevices["id_" + parametro].dev).toString().split(' ');
         let icons = require("./assets/icons/file-icons.json");
-        window.usbDevices["id_" + parametro].mount = mnt[mnt.length - 1].split('\n').join('');
+        window.usbDevices["id_" + parametro].mount = "";//mnt[mnt.length - 1].split('\n').join('');
         document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Mount and Open");
         document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("mount-open","${window.usbDevices["id_" + parametro].uuid}")`);
-        document.querySelector("#svgmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = icons["mntusbdrive"].svg;
+        document.querySelector("#svgmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = icons["mnt"+isUSBMMC+"drive"].svg;
         document.querySelector("#lblmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = "Mount";
         document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Mount (" + window.usbDevices["id_" + parametro].dev + ')');
         document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("mount","${window.usbDevices["id_" + parametro].uuid}")`);
@@ -3537,11 +3605,11 @@ function openFM(parametro){
     let cmdFM = (window.settings.fileManager == '')?"cd::":window.settings.fileManager;
     if(cmdFM.endsWith('::')){
         cmdFM = cmdFM.replace("::",'') + ' ' + window.usbDevices["id_" + parametro].mount;
-        console.log(cmdFM);
+        //console.log(cmdFM);
         xExecInTrm(cmdFM);
     }else{
        const { exec } = require("child_process");
-       exec(cmdFM + ' ' + window.usbDevices["id_" + parametro].mount + ' >/dev/null', (error, stdout, stderr) => {
+       exec(cmdFM + ' "' + window.usbDevices["id_" + parametro].mount + '" >/dev/null', (error, stdout, stderr) => {
             if (error) {
                 if(error.message.length > 100 || error.message.includes('stderr'))
                     errorLog(cmdFM,error.message);

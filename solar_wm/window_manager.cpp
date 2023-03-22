@@ -1016,41 +1016,81 @@ Mod5Mask    |   128 | ???
 ////////////////////////////////////////////////////////////////////////////////////////////////////////    
 ///////////////////////////////////Cerrar ventana y combinaciones posibles////////////////////////////// 
     //   c. Kill windows with alt + f4.
-    XGrabKey(
-        display_,
-        XKeysymToKeycode(display_, XK_F4),
-        Mod1Mask,
-        w,
-        false,
-        GrabModeAsync,
-        GrabModeAsync);
+    if(isChromebook){
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_Escape),
+          Mod1Mask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
 
-    XGrabKey(
-        display_,
-        XKeysymToKeycode(display_, XK_F4),
-        Mod1Mask | Mod2Mask,
-        w,
-        false,
-        GrabModeAsync,
-        GrabModeAsync);
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_Escape),
+          Mod1Mask | Mod2Mask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
 
-    XGrabKey(
-        display_,
-        XKeysymToKeycode(display_, XK_F4),
-        Mod1Mask | LockMask,
-        w,
-        false,
-        GrabModeAsync,
-        GrabModeAsync);
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_Escape),
+          Mod1Mask | LockMask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
 
-    XGrabKey(
-        display_,
-        XKeysymToKeycode(display_, XK_F4),
-        Mod1Mask | Mod2Mask | LockMask,
-        w,
-        false,
-        GrabModeAsync,
-        GrabModeAsync);
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_Escape),
+          Mod1Mask | Mod2Mask | LockMask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+
+    }else{
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_F4),
+          Mod1Mask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_F4),
+          Mod1Mask | Mod2Mask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_F4),
+          Mod1Mask | LockMask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_F4),
+          Mod1Mask | Mod2Mask | LockMask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+    }
+    
 /////////////////////////////////////////////////////////////////////////////////////////////////////
     // e. tecla windows
     /* XGrabKey(
@@ -1073,51 +1113,75 @@ Mod5Mask    |   128 | ???
 
 //////////////////////////////////Mostrar Panel y combinaciones posibles////////////////////////////// 
  // e. tecla windows + tab
-   XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod4Mask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+    if(isChromebook){
+      XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F3),
+        AnyModifier,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+      
+    }else{
+      XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod4Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-   XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod4Mask | Mod2Mask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod4Mask | Mod2Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-   XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod4Mask | LockMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod4Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-   XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod4Mask | Mod2Mask | LockMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod4Mask | Mod2Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    }
+   
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    if(isChromebook){
+      XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F4),
+        AnyModifier,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-    XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_F11),
-      AnyModifier,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+    }else{
+      XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F11),
+        AnyModifier,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    }
 
 //Se trata separar el contrar y click del mouse
     /*XGrabKey(
@@ -1133,79 +1197,101 @@ Mod5Mask    |   128 | ???
 
 ///////////////////////////////////Cambiar ventana y combinaciones posibles//////////////////////////////   
   //   d. Switch windows with alt + tab.
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod1Mask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+  if(isChromebook){
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F2),
+        AnyModifier,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod1Mask | Mod2Mask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+      //   d. Switch windows with alt + tab + Ctrl
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F1),
+        AnyModifier,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod1Mask | LockMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+  }else{
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod1Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod1Mask | Mod2Mask | LockMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod1Mask | Mod2Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-    //   d. Switch windows with alt + tab + Ctrl
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod1Mask | ControlMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod1Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod1Mask | Mod2Mask | ControlMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod1Mask | Mod2Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod1Mask | LockMask | ControlMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+      //   d. Switch windows with alt + tab + Ctrl
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod1Mask | ControlMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_Tab),
-      Mod1Mask | Mod2Mask | LockMask | ControlMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod1Mask | Mod2Mask | ControlMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod1Mask | LockMask | ControlMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Tab),
+        Mod1Mask | Mod2Mask | LockMask | ControlMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+  }
+  
   XGrabKey(
       display_,
       XKeysymToKeycode(display_, XF86XK_PowerOff),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
@@ -1214,46 +1300,91 @@ Mod5Mask    |   128 | ???
       false,
       GrabModeAsync,
       GrabModeAsync);
+
+  if(isChromebook){
     XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XF86XK_MonBrightnessUp),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
-      AnyModifier,//none
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XF86XK_MonBrightnessDown),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
-      AnyModifier,//none
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XF86XK_AudioRaiseVolume),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
-      AnyModifier,//none
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XF86XK_AudioLowerVolume),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
-      AnyModifier,//none
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XF86XK_AudioMute),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
-      AnyModifier,//none
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+        display_,
+        XKeysymToKeycode(display_, XK_F7),
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F6),
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F10),
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F9),
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F8),
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+  }else{
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XF86XK_MonBrightnessUp),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XF86XK_MonBrightnessDown),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XF86XK_AudioRaiseVolume),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XF86XK_AudioLowerVolume),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XF86XK_AudioMute),//KEY_PowerOff,//XKeysymToKeycode(display_, 124)//116 = 28 --> 124 ya no es necesaria la converción a XKey ya que la tomamos directamente.
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync); 
+  }
+  
 
   XGrabKey(
       display_,
@@ -1288,7 +1419,45 @@ Mod5Mask    |   128 | ???
       GrabModeAsync,
       GrabModeAsync);
 
-  XGrabKey(
+  if(isChromebook){
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F3),
+        Mod1Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F3),
+        Mod1Mask | Mod2Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F3),
+        Mod1Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F3),
+        Mod1Mask | Mod2Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+
+  }else{
+    XGrabKey(
       display_,
       XKeysymToKeycode(display_, XK_Print),
       AnyModifier,//none
@@ -1296,6 +1465,7 @@ Mod5Mask    |   128 | ???
       false,
       GrabModeAsync,
       GrabModeAsync);
+  }
    XGrabKey(
       display_,
       XKeysymToKeycode(display_, XF86XK_Calculator),
@@ -1343,77 +1513,127 @@ Mod5Mask    |   128 | ???
       GrabModeAsync);
 
   //   e. Switch windows with Super_L + p (key display in new kernel) 
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_P),
-      Mod4Mask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+  if(isChromebook){
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F5),
+        AnyModifier,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-   XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_P),
-      Mod4Mask | Mod2Mask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+     //   e. Switch windows with CTL + Super_L + p (key display in new kernel) 
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F5),
+        ControlMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-   XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_P),
-      Mod4Mask | LockMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F5),
+        ControlMask | Mod2Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-   XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_P),
-      Mod4Mask | Mod2Mask | LockMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
-   //   e. Switch windows with CTL + Super_L + p (key display in new kernel) 
-  XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_P),
-      ControlMask | Mod4Mask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F5),
+        ControlMask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-   XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_P),
-      ControlMask | Mod4Mask | Mod2Mask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_F5),
+        ControlMask | Mod2Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-   XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_P),
-      ControlMask | Mod4Mask | LockMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+  }else{
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_P),
+        Mod4Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
 
-   XGrabKey(
-      display_,
-      XKeysymToKeycode(display_, XK_P),
-      ControlMask | Mod4Mask | Mod2Mask | LockMask,
-      w,
-      false,
-      GrabModeAsync,
-      GrabModeAsync);
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_P),
+        Mod4Mask | Mod2Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_P),
+        Mod4Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_P),
+        Mod4Mask | Mod2Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+     //   e. Switch windows with CTL + Super_L + p (key display in new kernel) 
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_P),
+        ControlMask | Mod4Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_P),
+        ControlMask | Mod4Mask | Mod2Mask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_P),
+        ControlMask | Mod4Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+
+     XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_P),
+        ControlMask | Mod4Mask | Mod2Mask | LockMask,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+  }
+  
 
    //   e. Switch windows with CTL + ALT + W (No apagar display) 
   XGrabKey(
@@ -1488,6 +1708,17 @@ Mod5Mask    |   128 | ???
       false,
       GrabModeAsync,
       GrabModeAsync);
+
+  if(isChromebook){      
+      XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XK_Super_L),
+        AnyModifier,
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2444,7 +2675,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     //LOG(INFO) << "key  " << e.keycode;
     /*LOG(INFO) << "setBV  " << demonSetBV;
   }*/
-  if(e.keycode == XKeysymToKeycode(display_, XF86XK_MonBrightnessUp)){
+  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XF86XK_MonBrightnessUp)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F7))){
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2459,7 +2690,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     return;
   }
 
-  if(e.keycode == XKeysymToKeycode(display_, XF86XK_MonBrightnessDown)){ 
+  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XF86XK_MonBrightnessDown)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F6))){ 
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2474,7 +2705,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     return;
   }
 
-  if(e.keycode == XKeysymToKeycode(display_, XF86XK_AudioRaiseVolume)){ 
+  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XF86XK_AudioRaiseVolume)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F10))){ 
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2489,7 +2720,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     return;
   }
 
-  if(e.keycode == XKeysymToKeycode(display_, XF86XK_AudioLowerVolume)){ 
+  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XF86XK_AudioLowerVolume)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F9))){ 
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2504,7 +2735,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     return;
   }
 
-  if(e.keycode == XKeysymToKeycode(display_, XF86XK_AudioMute)){ 
+  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XF86XK_AudioMute)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F8))){ 
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2518,7 +2749,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     XFlush(display_);
     return;
   }
-  if(e.keycode == XKeysymToKeycode(display_, XK_Print)){ 
+  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XK_Print)) || (isChromebook && (e.state & Mod1Mask) && e.keycode == XKeysymToKeycode(display_, XK_F3))){ 
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2574,7 +2805,11 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     rcmSend("{\"message\":{\"call\":\"showusbdevices\"}}");
   }
 
-  if((e.state & Mod4Mask) && !(e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_P)){ // agregar modificadors
+  if(isChromebook && e.keycode == XKeysymToKeycode(display_, XK_Super_L)){ 
+    rcmSend("{\"message\":{\"call\":\"runxobj\"}}");
+  }
+
+  if((!isChromebook && (e.state & Mod4Mask) && !(e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_P)) || (isChromebook && !(e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_F5))){ // agregar modificadors
     int rMononitor;
     char pMonName[10] = {"\0"};
     char sMonName[10] = {"\0"};
@@ -2604,7 +2839,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     }*/
   }
 
-  if((e.state & Mod4Mask) && (e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_P)){ // agregar modificadors
+  if((!isChromebook && (e.state & Mod4Mask) && (e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_P)) || (isChromebook && (e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_F5))){ // agregar modificadors
     int rMononitor;
     char pMonName[10] = {"\0"};
     char sMonName[10] = {"\0"};
@@ -2631,8 +2866,9 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     }
   }
 
-  if ((e.state & Mod1Mask) &&
-      (e.keycode == XKeysymToKeycode(display_, XK_F4))) {
+  if ((!isChromebook && (e.state & Mod1Mask) &&
+      (e.keycode == XKeysymToKeycode(display_, XK_F4))) || (isChromebook && (e.state & Mod1Mask) &&
+      (e.keycode == XKeysymToKeycode(display_, XK_Escape)))) {
     // alt + f4: Close window.
     //
     // There are two ways to tell an X window to close. The first is to send it
@@ -2665,8 +2901,9 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
       //LOG(INFO) << "Killing window " << e.window;
       XKillClient(display_, e.window);
     }
-  } else if ((e.state & Mod1Mask) &&
-             (e.keycode == XKeysymToKeycode(display_, XK_Tab))) {
+  } else if ((!isChromebook && (e.state & Mod1Mask) &&
+             (e.keycode == XKeysymToKeycode(display_, XK_Tab))) || (isChromebook && ((e.keycode == XKeysymToKeycode(display_, XK_F1)) || (e.keycode == XKeysymToKeycode(display_, XK_F2)))
+             )) {
     // alt + tab: Switch window.
       // 1. Find next window.
 
@@ -2689,7 +2926,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     auto i = clients_.find(e.window);
     if(i != clients_.end())
     {  
-      if((e.state & ControlMask)){
+      if((!isChromebook && (e.state & ControlMask)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F1))){
         /////////////////////Invertir seleccion de ventana
             auto wAnd = clients_.begin();
             auto wAndBuff = wAnd;
@@ -2872,7 +3109,8 @@ auto nextW = clients_.find(w);
   }
 
   if(/*e.keycode == XKeysymToKeycode(display_, XK_Super_L) || e.keycode == XKeysymToKeycode(display_, XK_Super_R)*/ //cambiamos a win+tab
-  (e.state & Mod4Mask) && (e.keycode == XKeysymToKeycode(display_, XK_Tab))
+  (!isChromebook && (e.state & Mod4Mask) && (e.keycode == XKeysymToKeycode(display_, XK_Tab))) || 
+  (isChromebook && (e.keycode == XKeysymToKeycode(display_, XK_F3)))
   ){
     //LOG(INFO) << "Teclaaaaaa: [" << e.keycode  << "]";
     //const Window frame = clients_[panel];
@@ -2898,7 +3136,7 @@ auto nextW = clients_.find(w);
     
   }
 
-  if(e.keycode == XKeysymToKeycode(display_, XK_F11)){
+  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F11)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F4))){
     
     /*CHECK(clients_.count(e.window));
     const Window frame = clients_[e.window];

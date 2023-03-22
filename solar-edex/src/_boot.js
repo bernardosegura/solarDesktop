@@ -116,6 +116,10 @@ entornosDisponibles.forEach((val, index) => {
    }
 });
 
+require("username")().then(user => {
+    fs.writeFileSync("/tmp/usr", user);    
+});
+
 ///////////////////////////////////////////////////////////////////////////////////
 
 // Unset proxy env variables to avoid connection problems on the internal websockets

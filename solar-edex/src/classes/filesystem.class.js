@@ -459,7 +459,7 @@ this.cmdPath = async e =>{
             //let usbDevices = [];
             device.every(block => {
                     //fstype: "exfat" fstype: "vfat"
-                    if (block.removable && block.protocol === "usb") {
+                    if ((block.removable || block.name.startsWith("mmc")) && block.type === "part"/*block.removable && block.protocol === "usb"*/) {
                         //type = "usb";
                         /*window.usbDevices.push({
                             label: device.label,
@@ -874,7 +874,7 @@ this.cmdPath = async e =>{
                                       </div>`;
 
                     if(e.type == 'Battery'){
-                        fileMainPanel += `<div id="txt_porcentajeBat" class="icono_panel" onclick="${cmd}" style="top: 0vh; right: 0.6vh; margin: 0.2vh; ${(window.settings.porcentajeBat)?"display:block;":"display:none;"}"></div>`;
+                        fileMainPanel += `<div id="txt_porcentajeBat" class="icono_panel" onclick="${cmd}" style="top: 0vh; right: 0.3vh; font-size:1.3vh; margin: 0.2vh; ${(window.settings.porcentajeBat)?"display:block;":"display:none;"}"></div>`;
                     }
 
                     appsinPanel++;  

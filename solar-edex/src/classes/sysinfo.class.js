@@ -212,7 +212,8 @@ class Sysinfo {
                         //indicator.innerHTML = "CHARGED";
                         document.getElementById(window.idBattery).setAttribute("title", "Battery: Charged - " + bat.percent+"%");
                         document.getElementById(window.idBattery + '_energy').setAttribute("width", ((window.maxBattery*bat.percent)/100));
-                        document.getElementById("txt_porcentajeBat").style.right = '0.6vh';
+                        document.getElementById("txt_porcentajeBat").style.right = '0.7vh';
+                        document.getElementById("txt_porcentajeBat").style.fontSize = '1.3vh';
                         document.getElementById("txt_porcentajeBat").style.display = (window.settings.porcentajeBat)?'block':'none';
                         document.getElementById("txt_porcentajeBat").innerHTML = "<b>" + bat.percent+"%</b>";
                         document.getElementById("txt_porcentajeBat").setAttribute("title", "Battery: Charged - " + bat.percent+"%");
@@ -228,7 +229,8 @@ class Sysinfo {
                              
                         document.getElementById(window.idBattery).setAttribute("title", "Battery: Charging - " + bat.percent+"%");
                         document.getElementById(window.idBattery + '_energy').setAttribute("width", ((window.maxBattery*bat.percent)/100));
-                        document.getElementById("txt_porcentajeBat").style.right = '0.6vh';
+                        document.getElementById("txt_porcentajeBat").style.right = '0.3vh';
+                        document.getElementById("txt_porcentajeBat").style.fontSize = '1.3vh';
                         document.getElementById("txt_porcentajeBat").style.display = (window.settings.porcentajeBat)?'block':'none';
                         document.getElementById("txt_porcentajeBat").innerHTML = "<b>" + bat.percent+"%</b>";
                         document.getElementById("txt_porcentajeBat").setAttribute("title", "Battery: Charging - " + bat.percent+"%");
@@ -236,7 +238,7 @@ class Sysinfo {
                     //this.timeremainingConected = bat.timeremaining;
                     this.batteryFlag = true;
                     //indicator.setAttribute("class","");
-                } else if ((bat.acconnected || bat.timeremaining === -1) && !this.batteryFlag) {
+                } else if ((bat.acconnected || bat.timeremaining === -1) && (!this.batteryFlag && !bat.hasbattery)) {
                     //porcentCharge.setAttribute("title","");
                     //indicator.innerHTML = "WIRED"; //pendiente proba quitando la bateria
                     document.getElementById(window.idBattery).setAttribute("style", "opacity: 0.5;");
@@ -245,6 +247,7 @@ class Sysinfo {
                     document.getElementById("txt_porcentajeBat").setAttribute("title", "");
                     document.getElementById("txt_porcentajeBat").innerHTML = "";
                     document.getElementById("txt_porcentajeBat").style.display = 'none';
+                    document.getElementById(window.idBattery).style.display = 'none';
 
 
                 } else {
@@ -290,7 +293,8 @@ class Sysinfo {
                         
                         document.getElementById(window.idBattery).setAttribute("title", "Battery: Charged - 100%");
                         document.getElementById(window.idBattery + '_energy').setAttribute("width", window.maxBattery);
-                        document.getElementById("txt_porcentajeBat").style.right = '1vh';
+                        document.getElementById("txt_porcentajeBat").style.right = '0.7vh';
+                        document.getElementById("txt_porcentajeBat").style.fontSize = '1.3vh';
                         document.getElementById("txt_porcentajeBat").style.display = (window.settings.porcentajeBat)?'block':'none';
                         document.getElementById("txt_porcentajeBat").innerHTML = "<b>100%</b>";
                         document.getElementById("txt_porcentajeBat").setAttribute("title", "Battery: Charged - 100%");
@@ -333,7 +337,8 @@ class Sysinfo {
                         //indicator.innerHTML = bat.percent+"%";
                         document.getElementById(window.idBattery).setAttribute("title", "Battery: " + bat.percent+"%");
                         document.getElementById(window.idBattery + '_energy').setAttribute("width", ((window.maxBattery*bat.percent)/100));
-                        document.getElementById("txt_porcentajeBat").style.right = '0.6vh';
+                        document.getElementById("txt_porcentajeBat").style.right = '0.3vh';
+                        document.getElementById("txt_porcentajeBat").style.fontSize = '1.3vh';
                         document.getElementById("txt_porcentajeBat").style.display = (window.settings.porcentajeBat)?'block':'none';
                         document.getElementById("txt_porcentajeBat").innerHTML = "<b>" + bat.percent + "%</b>";
                         document.getElementById("txt_porcentajeBat").setAttribute("title", "Battery: " + bat.percent+"%");
