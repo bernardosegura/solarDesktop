@@ -27,6 +27,7 @@ extern "C" {
 
 #include <cstring>
 #include <X11/extensions/XTest.h>
+#include <X11/XF86keysym.h>
 
 bool isDigit(char c){
   char digit[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','a','b','c','d','e','f'};
@@ -70,6 +71,15 @@ int main(int argc, char** argv) {
 
     if(strcmp(argv[2],"1") == 0)
       keyCode = XKeysymToKeycode(display,XK_Num_Lock);
+      
+    if(strcmp(argv[2],"XF86XK_AudioPlay") == 0)
+      keyCode = XKeysymToKeycode(display,XF86XK_AudioPlay);
+      
+    if(strcmp(argv[2],"XK_Menu") == 0)
+      keyCode = XKeysymToKeycode(display,XK_Menu);
+      
+    if(strcmp(argv[2],"XK_Delete") == 0)
+      keyCode = XKeysymToKeycode(display,XK_Delete);      
     
     if(keyCode != 0){
       XTestFakeKeyEvent(display,keyCode,true,CurrentTime);

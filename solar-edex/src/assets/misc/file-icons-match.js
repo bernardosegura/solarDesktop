@@ -1979,6 +1979,7 @@ function matchIcon(filename,retorno) {
     if (/chromium-browser[^]*$/i.test(filename)){ return "chromium"; }
     if (/qalculate/i.test(filename)) { return "calc"; }
     if (/time-admin[^]*$/i.test(filename)){ return "timeadmin"; }
+    if (/midnight-commander[^]*$/i.test(filename)){ return "mc"; } 
 
     if(retorno){ return ""; }
 }

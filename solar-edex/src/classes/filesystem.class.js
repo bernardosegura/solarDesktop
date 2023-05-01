@@ -884,12 +884,44 @@ this.cmdPath = async e =>{
 
                     let ocultarSymlnk = '';
                     // se utilizaran los ln (enlaces) en panel principal para colocar icono,titulo a las apps de los grupos
-                    if(e.category === "symlink" || e.type === "dir")
-                        ocultarSymlnk = 'style="display: none"';
+                    if(e.category === "symlink" || e.type === "dir"){
+                        //if(e.category === "symlink"){
+                            ocultarSymlnk = 'style="display: none"';
+                            filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk}>
+                                        </div>`;   
+                        if(e.type === "dir"){
 
-                    if(path.join(require("electron").remote.app.getPath("home"),"modulos") == this.dirpath){
-                        if(e.category != "up")
-                            filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="${cmd}" title="${e.name}${/*tamanio*/""}">
+                            if(!window.xobjDB[e.name]){
+                               fs.writeFileSync(path.join(this.dirpath,e.name+".xobj"), JSON.stringify({"title":"","x":0,"y":0,"w":0,"h":0,"code":"openGroup('"+e.name+"','id_"+e.name.replace(" ","_")+"')","id":"id_"+e.name.replace(" ","_")+"","hidden":"true"}, 4));
+                                
+                            }
+                           
+                            /*filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="openGroup('${e.name}')" title="${e.name}${""}">
+                                            <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
+                                                ${icon.svg}
+                                            </svg>
+                                            <h3>${e.name}</h3>
+                                            <h4>${type}</h4>
+                                            <h4>${e.size}</h4>
+                                            <h4>${e.lastAccessed}</h4>
+                                        </div>`; */
+                        }
+                        
+                    }
+                    else
+                        if(path.join(require("electron").remote.app.getPath("home"),"modulos") == this.dirpath){
+                            if(e.category != "up")
+                                filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="${cmd}" title="${e.name}${/*tamanio*/""}">
+                                            <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
+                                                ${icon.svg}
+                                            </svg>
+                                            <h3>${e.name}</h3>
+                                            <h4>${type}</h4>
+                                            <h4>${e.size}</h4>
+                                            <h4>${e.lastAccessed}</h4>
+                                        </div>`;            
+                         }else
+                             filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="${cmd}" title="${e.name}${/*tamanio*/""}">
                                         <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
                                             ${icon.svg}
                                         </svg>
@@ -897,17 +929,7 @@ this.cmdPath = async e =>{
                                         <h4>${type}</h4>
                                         <h4>${e.size}</h4>
                                         <h4>${e.lastAccessed}</h4>
-                                    </div>`;            
-                     }else
-                         filesDOM += `<div class="fs_disp_${e.type}${hidden} animationWait" ${ocultarSymlnk} onclick="${cmd}" title="${e.name}${/*tamanio*/""}">
-                                    <svg viewBox="0 0 ${icon.width} ${icon.height}" fill="${this.iconcolor}">
-                                        ${icon.svg}
-                                    </svg>
-                                    <h3>${e.name}</h3>
-                                    <h4>${type}</h4>
-                                    <h4>${e.size}</h4>
-                                    <h4>${e.lastAccessed}</h4>
-                                </div>`;           
+                                    </div>`;           
                 }
             }
 //+++++++++++++++++++++++++++++++++++++++++++++++++++

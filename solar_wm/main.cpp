@@ -58,6 +58,9 @@ char *data;
  "beetley","blipper","bookem","boten", "botenflex","bugzzy","cret","cret360", "drawcia","drawlat","drawman","drawper", "galith","galith360","gallop","galnat", "galnat360","galtic","galtic360","kracko","kracko360","landia","landrid", "lantis","madoo","magister","maglet", "maglia","maglith","magma","magneto", "magolor","magpie","metaknight","pasara", "pirette", "pirika","sasuke","storo","storo360",
  "anahera","banshee","crota","crota360", "felwinter","kano","mithrax","osiris", "primus","redrix","taniks","taeko", "volmar","zavala"};
 
+const char* product_kbrn[] = {"atlas","eve","nocturne"};
+
+
 if(argc == 1)
 {
 	argv[1] = cDef;
@@ -100,6 +103,7 @@ window_manager->BG_COLOR = std::stol(argv[4]);
 window_manager->wndPanel = std::stol(argv[5]);
 
 window_manager->isChromebook = false;
+window_manager->isChromebookKbrN = false;
 fp = fopen("/sys/devices/virtual/dmi/id/board_vendor", "r");
 if(fp){
     fseek(fp, 0L, SEEK_END); // Mover el puntero de archivo al final del archivo
@@ -162,6 +166,28 @@ if(!window_manager->isChromebook){
         }   
       }  
   }
+}
+
+fp = fopen("/sys/devices/virtual/dmi/id/product_name", "r");
+if(fp){
+    fseek(fp, 0L, SEEK_END); // Mover el puntero de archivo al final del archivo
+    size_t size = ftell(fp);
+    fseek(fp, 0L, SEEK_SET);
+    data = (char*)malloc(size * sizeof(char));
+    fread(data, 1, size, fp);
+    fclose(fp);
+    for (size_t i = 0; i < size; i++) {
+        if(data[i] == '\n')
+          data[i] = '\0';
+        data[i] = tolower(data[i]);
+    }
+
+    for (size_t i = 0; i < (sizeof(product_kbrn)/sizeof(char*)); i++) {
+      if (strcmp(data, product_kbrn[i]) == 0){
+          window_manager->isChromebookKbrN = true;
+          break;
+      }   
+    }  
 }
 
  window_manager->Run();

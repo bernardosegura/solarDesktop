@@ -15,13 +15,14 @@ import 'package:flutter_window_close/flutter_window_close.dart';
 //flutter pub add flutter_window_close
 
 Future<void> main() async {
-  final directory = await getApplicationDocumentsDirectory();// del usuario
-  final fileSetting = new File(directory.path + "/.config/Solar_eDEX/settings.json");
+  //final directory = await getApplicationDocumentsDirectory();// del usuario, dejo de funcionar ya que agrego una carpeta Documents (..usuario/Documents/.config)
+  final fileUsr = new File("/tmp/usr");
+  final fileSetting = new File(/*directory.path*/"/home/" + fileUsr.readAsStringSync() + "/.config/Solar_eDEX/settings.json");
   Map obj = {};
   Map _temaColor = {"r":0,"g":0,"b":0};
   try {
       obj = await jsonDecode(fileSetting.readAsStringSync());
-      final fileTheme = new File(directory.path + "/.config/Solar_eDEX/themes/"+obj["theme"]+".json");
+      final fileTheme = new File(/*directory.path*/"/home/" + fileUsr.readAsStringSync() + "/.config/Solar_eDEX/themes/"+obj["theme"]+".json");
       obj = await jsonDecode(fileTheme.readAsStringSync());
 
       _temaColor['r'] = obj['colors']['r'];
@@ -105,8 +106,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
 Future<String> localPath() async {
-  final directory = await getApplicationDocumentsDirectory();// del usuario
-    return (directory.path + /*"\\"*/"/.config/Solar_eDEX/");
+ // final directory = await getApplicationDocumentsDirectory();// del usuario, dejo de funcionar ya que agrego una carpeta Documents (..usuario/Documents/.config)
+  final fileUsr = new File("/tmp/usr");
+  return (/*directory.path*/"/home/" + fileUsr.readAsStringSync() + /*"\\"*/"/.config/Solar_eDEX/");
 }
 
 void abrirArchivo() async {

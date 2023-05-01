@@ -1,0 +1,17 @@
+ejecutar esta linea para tener el path incluido...
+
+export PATH=$PATH:/home/bernardosegura/flutter/bin/
+
+
+para crear directamente un aplataforma
+
+flutter config --enable-linux-desktop
+flutter doctor 
+   sudo apt install clang
+   sudo apt install cmake
+   sudo apt install ninja-build
+   sudo apt install libgtk-3-dev
+
+flutter create --platforms linux holis_mundin
+flutter run -d linux o solo flutter run ya que se genero en dicha plataforma
+flutter build linux para crear el release

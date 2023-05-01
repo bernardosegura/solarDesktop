@@ -1342,6 +1342,22 @@ Mod5Mask    |   128 | ???
         false,
         GrabModeAsync,
         GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XF86XK_AudioRaiseVolume),
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
+    XGrabKey(
+        display_,
+        XKeysymToKeycode(display_, XF86XK_AudioLowerVolume),
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync);
   }else{
     XGrabKey(
         display_,
@@ -1385,7 +1401,6 @@ Mod5Mask    |   128 | ???
         GrabModeAsync); 
   }
   
-
   XGrabKey(
       display_,
       XKeysymToKeycode(display_, XK_Delete),
@@ -1418,11 +1433,79 @@ Mod5Mask    |   128 | ???
       false,
       GrabModeAsync,
       GrabModeAsync);
+      
+  if(isChromebook){
+     XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_BackSpace),
+          ControlMask | Mod1Mask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_BackSpace),
+         ControlMask | Mod1Mask | Mod2Mask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_BackSpace),
+          ControlMask | Mod1Mask | LockMask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_BackSpace),
+          ControlMask | Mod1Mask | Mod2Mask | LockMask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+          
+          XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_BackSpace),
+          ControlMask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_BackSpace),
+          ControlMask | Mod2Mask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_BackSpace),
+          ControlMask | LockMask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+      XGrabKey(
+          display_,
+          XKeysymToKeycode(display_, XK_BackSpace),
+          ControlMask | Mod2Mask | LockMask,
+          w,
+          false,
+          GrabModeAsync,
+          GrabModeAsync);
+  }    
 
   if(isChromebook){
     XGrabKey(
         display_,
-        XKeysymToKeycode(display_, XK_F3),
+        XKeysymToKeycode(display_, XK_F4),
         Mod1Mask,
         w,
         false,
@@ -1431,7 +1514,7 @@ Mod5Mask    |   128 | ???
 
      XGrabKey(
         display_,
-        XKeysymToKeycode(display_, XK_F3),
+        XKeysymToKeycode(display_, XK_F4),
         Mod1Mask | Mod2Mask,
         w,
         false,
@@ -1440,7 +1523,7 @@ Mod5Mask    |   128 | ???
 
      XGrabKey(
         display_,
-        XKeysymToKeycode(display_, XK_F3),
+        XKeysymToKeycode(display_, XK_F4),
         Mod1Mask | LockMask,
         w,
         false,
@@ -1449,12 +1532,21 @@ Mod5Mask    |   128 | ???
 
      XGrabKey(
         display_,
-        XKeysymToKeycode(display_, XK_F3),
+        XKeysymToKeycode(display_, XK_F4),
         Mod1Mask | Mod2Mask | LockMask,
         w,
         false,
         GrabModeAsync,
         GrabModeAsync);
+        
+        /*XGrabKey( //se agrego esta funcionalidad en el core ya que no se pudo capturar la tecla.
+        display_,
+        XKeysymToKeycode(display_, XF86XK_Tools),
+        AnyModifier,//none
+        w,
+        false,
+        GrabModeAsync,
+        GrabModeAsync); */
 
   }else{
     XGrabKey(
@@ -1475,7 +1567,44 @@ Mod5Mask    |   128 | ???
       GrabModeAsync,
       GrabModeAsync);
 
-    //   d. Switch windows with Ctrl + alt + s (suspend) 
+    //   d. Switch windows with Ctrl + alt + l (suspend) 
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_L),
+      Mod1Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_L),
+      Mod1Mask | Mod2Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_L),
+      Mod1Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_L),
+      Mod1Mask | Mod2Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+      
+   //   d. Switch windows with Ctrl + alt + s (settings) 
   XGrabKey(
       display_,
       XKeysymToKeycode(display_, XK_S),
@@ -1510,8 +1639,45 @@ Mod5Mask    |   128 | ???
       w,
       false,
       GrabModeAsync,
+      GrabModeAsync);    
+
+   //   d. Switch windows with Ctrl + alt + k (shortcuts) 
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_K),
+      Mod1Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
       GrabModeAsync);
 
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_K),
+      Mod1Mask | Mod2Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_K),
+      Mod1Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_K),
+      Mod1Mask | Mod2Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+      
   //   e. Switch windows with Super_L + p (key display in new kernel) 
   if(isChromebook){
     XGrabKey(
@@ -2676,6 +2842,15 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     /*LOG(INFO) << "setBV  " << demonSetBV;
   }*/
   if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XF86XK_MonBrightnessUp)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F7))){
+    if(isChromebookKbrN){
+      /*XTestFakeKeyEvent(display_,XKeysymToKeycode(display_,XF86XK_AudioPlay),true,CurrentTime);
+      XFlush(display_);
+      XTestFakeKeyEvent(display_,XKeysymToKeycode(display_,XF86XK_AudioPlay),false,CurrentTime);
+      XFlush(display_);*/
+      rcmSend("{\"message\":{\"call\":\"keyCode\",\"key\":\"XF86XK_AudioPlay\"}}");
+      return;
+    }
+
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2691,6 +2866,21 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
   }
 
   if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XF86XK_MonBrightnessDown)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F6))){ 
+    if(isChromebookKbrN){
+      XEvent evt;
+      evt.xclient.type = ClientMessage;
+      evt.xclient.serial = 0;
+      evt.xclient.send_event = true;
+      evt.xclient.message_type = XInternAtom(display_,"DISPLAY_BRIGHTNESS_VOLUME_SCREEN",false);;
+      evt.xclient.format = 8;
+      evt.xclient.window = demonSetBV;
+      evt.xclient.data.b[0] = BrightnessUp;
+
+      XSendEvent(display_,demonSetBV,false,ExposureMask,&evt);
+      XFlush(display_);
+      return;
+    }
+
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2705,7 +2895,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     return;
   }
 
-  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XF86XK_AudioRaiseVolume)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F10))){ 
+  if((/*!isChromebook &&*/ e.keycode == XKeysymToKeycode(display_, XF86XK_AudioRaiseVolume)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F10))){ 
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2720,7 +2910,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     return;
   }
 
-  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XF86XK_AudioLowerVolume)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F9))){ 
+  if((/*!isChromebook &&*/ e.keycode == XKeysymToKeycode(display_, XF86XK_AudioLowerVolume)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F9))){ 
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2749,7 +2939,32 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     XFlush(display_);
     return;
   }
-  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XK_Print)) || (isChromebook && (e.state & Mod1Mask) && e.keycode == XKeysymToKeycode(display_, XK_F3))){ 
+  
+  /*if(isChromebook && e.keycode == XKeysymToKeycode(display_, XF86XK_Tools)){ 
+    //XTestFakeKeyEvent(display_,XKeysymToKeycode(display_,XK_Menu),true,CurrentTime);
+    //XFlush(display_);
+    //XTestFakeKeyEvent(display_,XKeysymToKeycode(display_,XK_Menu),false,CurrentTime);
+    //XFlush(display_);
+    rcmSend("{\"message\":{\"call\":\"keyCode\",\"key\":\"XK_Menu\"}}");
+    return;
+  }*/
+  
+  if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XK_Print)) || (isChromebook && !isChromebookKbrN && (e.state & Mod1Mask) && e.keycode == XKeysymToKeycode(display_, XK_F4)) /*|| (isChromebook && isChromebookKbrN && (e.state & Mod1Mask) && e.keycode == XKeysymToKeycode(display_, XK_F3))*/){ 
+    XEvent evt;
+    evt.xclient.type = ClientMessage;
+    evt.xclient.serial = 0;
+    evt.xclient.send_event = true;
+    evt.xclient.message_type = XInternAtom(display_,"DISPLAY_BRIGHTNESS_VOLUME_SCREEN",false);;
+    evt.xclient.format = 8;
+    evt.xclient.window = demonSetBV;
+    evt.xclient.data.b[0] = PrintScreen;
+
+    XSendEvent(display_,demonSetBV,false,ExposureMask,&evt);
+    XFlush(display_);
+    //LOG(INFO) << "key  " << e.keycode;
+    return;
+  }
+  if((isChromebook && isChromebookKbrN && (e.state & Mod1Mask) && e.keycode == XKeysymToKeycode(display_, XK_F3))){ 
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.serial = 0;
@@ -2784,8 +2999,24 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
   } 
 
+  if((e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_BackSpace)){
+    /*XTestFakeKeyEvent(display_,XKeysymToKeycode(display_,XK_Delete),true,CurrentTime);
+    XFlush(display_);
+    XTestFakeKeyEvent(display_,XKeysymToKeycode(display_,XK_Delete),false,CurrentTime);
+    XFlush(display_);*/
+    rcmSend("{\"message\":{\"call\":\"keyCode\",\"key\":\"XK_Delete\"}}");
+    return;
+  }
+  
+  if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_BackSpace)){
+    if((e.state & Mod1Mask))
+        rcmSend("{\"message\":{\"call\":\"Ctl+Alt+Del\"}}");
+    return;
+  }
+  
   if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_Delete)){
     rcmSend("{\"message\":{\"call\":\"Ctl+Alt+Del\"}}");
+    return;
   }
 
   if(e.keycode == XKeysymToKeycode(display_,   XF86XK_Calculator)){
@@ -2793,8 +3024,16 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     //LOG(INFO) << "key  " << e.keycode;
   }
 
-  if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_S)){ 
+  if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_L)){ 
     rcmSend("{\"message\":{\"call\":\"Suspend\"}}");
+  }
+  
+  if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_S)){ 
+    rcmSend("{\"message\":{\"call\":\"Settings\"}}");
+  }
+  
+  if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_K)){ 
+    rcmSend("{\"message\":{\"call\":\"Shortcuts\"}}");
   }
 
   if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_W)){ 
@@ -2808,8 +3047,25 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
   if(isChromebook && e.keycode == XKeysymToKeycode(display_, XK_Super_L)){ 
     rcmSend("{\"message\":{\"call\":\"runxobj\"}}");
   }
+  
+    
+  if((!isChromebook && (e.state & Mod4Mask) && !(e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_P)) || (isChromebook && !(e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_F5)) || (isChromebook && isChromebookKbrN && !(e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_F4))){ // agregar modificadors
+    
+    if(isChromebookKbrN && e.keycode == XKeysymToKeycode(display_, XK_F5)){
+      XEvent evt;
+      evt.xclient.type = ClientMessage;
+      evt.xclient.serial = 0;
+      evt.xclient.send_event = true;
+      evt.xclient.message_type = XInternAtom(display_,"DISPLAY_BRIGHTNESS_VOLUME_SCREEN",false);;
+      evt.xclient.format = 8;
+      evt.xclient.window = demonSetBV;
+      evt.xclient.data.b[0] = BrightnessDown;
 
-  if((!isChromebook && (e.state & Mod4Mask) && !(e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_P)) || (isChromebook && !(e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_F5))){ // agregar modificadors
+      XSendEvent(display_,demonSetBV,false,ExposureMask,&evt);
+      XFlush(display_);
+      return;
+    }
+
     int rMononitor;
     char pMonName[10] = {"\0"};
     char sMonName[10] = {"\0"};
@@ -2837,9 +3093,10 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     }/*else{
       sprintf(sCmd,"{\"message\":{\"call\":\"monitors\",\"data\":{\"numbers\":%d,\"primary\":\"\",\"secondary\":\"\"}}}",rMononitor);
     }*/
+    return;
   }
 
-  if((!isChromebook && (e.state & Mod4Mask) && (e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_P)) || (isChromebook && (e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_F5))){ // agregar modificadors
+  if((!isChromebook && (e.state & Mod4Mask) && (e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_P)) || (isChromebook && !isChromebookKbrN && (e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_F5)) || (isChromebook && isChromebookKbrN && (e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_F4))){ // agregar modificadors
     int rMononitor;
     char pMonName[10] = {"\0"};
     char sMonName[10] = {"\0"};
@@ -2864,6 +3121,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
       sprintf(sCmd,"{\"message\":{\"call\":\"monitors\",\"data\":{\"direccion\":1,\"numbers\":%d,\"primary\":\"%s\",\"secondary\":\"%s\"}}}",rMononitor,pMonName,sMonName);
       rcmSend(sCmd);
     }
+    return;
   }
 
   if ((!isChromebook && (e.state & Mod1Mask) &&
@@ -2902,8 +3160,29 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
       XKillClient(display_, e.window);
     }
   } else if ((!isChromebook && (e.state & Mod1Mask) &&
-             (e.keycode == XKeysymToKeycode(display_, XK_Tab))) || (isChromebook && ((e.keycode == XKeysymToKeycode(display_, XK_F1)) || (e.keycode == XKeysymToKeycode(display_, XK_F2)))
-             )) {
+             (e.keycode == XKeysymToKeycode(display_, XK_Tab))) || (isChromebook && ((e.keycode == XKeysymToKeycode(display_, XK_F1)) || (e.keycode == XKeysymToKeycode(display_, XK_F2)) || ((e.state & Mod1Mask) && (e.keycode == XKeysymToKeycode(display_, XK_F1)))))) {
+
+    if(isChromebookKbrN && (e.keycode == XKeysymToKeycode(display_, XK_F2))){
+      if(e.window == panel[1])
+        return;
+      /*******************Este es el origen del back***************************/ 
+      clientBack[0] = clients_[e.window];
+      clientBack[1] = e.window;
+      focoBarraTarea = 0;
+
+      sendCountWindow(true); // actualizamos primero los titulos para que se cierre el panel...
+      wSobrePanel = false;
+  /////////////////////////////////////////////
+        clientFocus[0] = clientFocus[2];
+        clientFocus[1] = clientFocus[3];
+        clientFocus[2] = panel[0];
+        clientFocus[3] = panel[1];
+
+      XRaiseWindow(display_, panel[0]);
+      XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);  
+  ///////////////////////////////////////////// 
+      return;  
+    }
     // alt + tab: Switch window.
       // 1. Find next window.
 
@@ -2926,7 +3205,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
     auto i = clients_.find(e.window);
     if(i != clients_.end())
     {  
-      if((!isChromebook && (e.state & ControlMask)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F1))){
+      if((!isChromebook && (e.state & ControlMask)) || (isChromebook && ((!isChromebookKbrN && e.keycode == XKeysymToKeycode(display_, XK_F1)) || (isChromebookKbrN && !(e.state & Mod1Mask) && e.keycode == XKeysymToKeycode(display_, XK_F1))))){
         /////////////////////Invertir seleccion de ventana
             auto wAnd = clients_.begin();
             auto wAndBuff = wAnd;
@@ -3112,6 +3391,11 @@ auto nextW = clients_.find(w);
   (!isChromebook && (e.state & Mod4Mask) && (e.keycode == XKeysymToKeycode(display_, XK_Tab))) || 
   (isChromebook && (e.keycode == XKeysymToKeycode(display_, XK_F3)))
   ){
+    if(isChromebookKbrN){
+      wndFull = !wndFull;
+      normalizarWindows(/*e.window*/); 
+      return;  
+    }
     //LOG(INFO) << "Teclaaaaaa: [" << e.keycode  << "]";
     //const Window frame = clients_[panel];
     /*******************Este es el origen del back***************************/ 
@@ -3137,7 +3421,6 @@ auto nextW = clients_.find(w);
   }
 
   if((!isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F11)) || (isChromebook && e.keycode == XKeysymToKeycode(display_, XK_F4))){
-    
     /*CHECK(clients_.count(e.window));
     const Window frame = clients_[e.window];
 

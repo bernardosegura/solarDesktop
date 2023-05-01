@@ -33,3 +33,7 @@ wire-plug/wire-plug
 #lockscreen
 lockscreen/slock-1.5/*.o
 lockscreen/slock-1.5/slock
+
+#cgapps
+cgapps/target/
+cgapps/Cargo.lock

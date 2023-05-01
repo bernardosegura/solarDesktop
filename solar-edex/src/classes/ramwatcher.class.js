@@ -60,8 +60,14 @@ class RAMwatcher {
             });
 
             // Update info text
-            let totalGiB = Math.round((data.total/1073742000)*10)/10; // 1073742000 bytes = 1 Gibibyte (GiB), the *10 is to round to .1 decimal
-            let usedGiB = Math.round((data.active/1073742000)*10)/10;
+            let totalGiB = (Math.round((data.total/1073742000)*10)/10); // 1073742000 bytes = 1 Gibibyte (GiB), the *10 is to round to .1 decimal
+            /*let usosSOinterno = 0;
+            if(totalGiB >= 0.5){
+               usosSOinterno = parseInt(totalGiB+1); 
+               usosSOinterno = (usosSOinterno - totalGiB).toFixed(1); 
+            }
+            let usedGiB = ((Math.round((data.active/1073742000)*10)/10)-usosSOinterno).toFixed(1);*/
+            let usedGiB = (Math.round((data.active/1073742000)*10)/10);
             document.getElementById("mod_ramwatcher_info").innerText = `USING ${usedGiB} OUT OF ${totalGiB} GiB`;
 
             // Update swap indicator

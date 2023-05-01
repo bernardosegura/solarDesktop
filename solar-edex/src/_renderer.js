@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-2103.23 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-3004.23 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -12,6 +12,7 @@ window.alertLowBattery = false;
 window.backWnd = '0';
 window.enableLocalRCM = false;
 window.wCtlBVS = 0;
+window.isChromeOS = null;
 //window.settings.port
 //window.tTimeMsg = 0;
 
@@ -734,7 +735,7 @@ window.openSettings = async () => {
                     <tr>
                         <td>keyboard shortcuts</td>
                         <td>List available keyboard shortcuts</td>
-                        <td>Ctrl + Shift + K</td>
+                        <td>Ctrl + Alt + K</td>
                     </tr>
                     <!--tr>
                         <td>shell</td>
@@ -1129,107 +1130,228 @@ window.writeSettingsFile = () => {
 };
 
 // Display available keyboard shortcuts
+//revisar los atajos y cambiar por chromeOS
 window.openShortcutsHelp = () => {
-    new Modal({
-        type: "custom",
-        title: `Available Keyboard Shortcuts <i>(v${window.solar.versions}</i>`,
-        html: `<h5>Using either the on-screen or a physical keyboard, you can use the following shortcuts:</h5>
-                <table id="shortcutsHelp" style="width: 100%;">
-                    <tr>
-                        <th>Trigger</th>
-                        <th>Action</th>
-                    </tr>
-                    <tr>
-                        <td>${process.platform === "darwin" ? "Command" : "Ctrl + Shift"} + C</td>
-                        <td>Copy selected buffer from the terminal.</td>
-                    </tr>
-                    <tr>
-                        <td>${process.platform === "darwin" ? "Command" : "Ctrl + Shift"} + V</td>
-                        <td>Paste system clipboard to the terminal.</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Tab</td>
-                        <td>Switch to the next opened terminal tab (left to right order).</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Shift + Tab</td>
-                        <td>Switch to the previous opened terminal tab (right to left order).</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + [1-5]</td>
-                        <td>Switch to a specific terminal tab, or create it if it hasn't been opened yet.</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Shift + S</td>
-                        <td>Open the settings editor.</td>
-                    </tr>
-                    <!--tr>
-                        <td>Ctrl + Shift + K</td>
-                        <td>List available keyboard shortcuts.</td>
-                    </tr-->
-                    <tr>
-                        <td>Ctrl + Shift + H</td>
-                        <td>Toggle show hidden module.</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Shift + P</td>
-                        <td>Toggle the on-screen keyboard's "Password Mode", that allows you to safely type<br> sensitive information even if your screen might be recorded (disables visual input feedback).</td>
-                    </tr>
-                    <!--tr>
-                        <td>Ctrl + Shift + I</td>
-                        <td>Open Chromium Dev Tools (for debugging purposes).</td>
-                    </tr-->
-                    <tr>
-                        <td>F5</td>
-                        <td>Update Panel Applications.</td>
-                    </tr>
-                    <!--tr>
-                        <td>Alt + W</td>
-                        <td>Toggle Show Right Panel</td>
-                    </tr-->
-                    <tr>
-                        <td>Alt + F4</td>
-                        <td>Close XWindow</td>
-                    </tr>
-                    <tr>
-                        <td>Alt + Esc</td>
-                        <td>Close XWindow in Chromebook</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Esc or Esc</td>
-                        <td>Close Window in Panel</td>
-                    </tr>
-                    <tr>
-                        <td>Alt + Tab</td>
-                        <td>Toggle Rigth XWindow</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Alt + Tab</td>
-                        <td>Toggle Left XWindow</td>
-                    </tr>
-                    <tr>
-                        <td>Win + Tab</td>
-                        <td>Toggle Main Panel</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Alt + S</td>
-                        <td>System Suspend</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Alt + W</td>
-                        <td>Active/Inactive (don't lock Screen)</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Alt + U</td>
-                        <td>Show USB Devices</td>
-                    </tr>
-                    <tr>
-                        <td><button onClick='electron.shell.openExternal("file://${require('path').join(require('electron').remote.app.getPath("userData"), "kinit.json")}")' style='position: relative; left: 0px; top: 0px;'>Open kinit</button></td>
-                        <td>Open the config file to register the keys that trigger the application, ({register:['combination keys','path and file name xobj']}).</td>
-                    </tr>
-                </table>
-                <br>`
-    });
+    if(!window.isChromeOS){
+            new Modal({
+                type: "custom",
+                title: `Available Keyboard Shortcuts <i>(v${window.solar.versions}</i>`,
+                html: `<h5>Using either the on-screen or a physical keyboard, you can use the following shortcuts:</h5>
+                        <table id="shortcutsHelp" style="width: 100%;">
+                            <tr>
+                                <th>Trigger</th>
+                                <th>Action</th>
+                            </tr>
+                            <tr>
+                                <td>${process.platform === "darwin" ? "Command" : "Ctrl + Shift"} + C</td>
+                                <td>Copy selected buffer from the terminal.</td>
+                            </tr>
+                            <tr>
+                                <td>${process.platform === "darwin" ? "Command" : "Ctrl + Shift"} + V</td>
+                                <td>Paste system clipboard to the terminal.</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Tab</td>
+                                <td>Switch to the next opened terminal tab (left to right order).</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Shift + Tab</td>
+                                <td>Switch to the previous opened terminal tab (right to left order).</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + [1-5]</td>
+                                <td>Switch to a specific terminal tab, or create it if it hasn't been opened yet.</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Alt + S</td>
+                                <td>Open the settings editor.</td>
+                            </tr>
+                            <!--tr>
+                                <td>Ctrl + Shift + K</td>
+                                <td>List available keyboard shortcuts.</td>
+                            </tr-->
+                            <tr>
+                                <td>Ctrl + Shift + H</td>
+                                <td>Toggle show hidden module.</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Shift + P</td>
+                                <td>Toggle the on-screen keyboard's "Password Mode", that allows you to safely type<br> sensitive information even if your screen might be recorded (disables visual input feedback).</td>
+                            </tr>
+                            <!--tr>
+                                <td>Ctrl + Shift + I</td>
+                                <td>Open Chromium Dev Tools (for debugging purposes).</td>
+                            </tr-->
+                            <tr>
+                                <td>F5</td>
+                                <td>Update Panel Applications.</td>
+                            </tr>
+                            <!--tr>
+                                <td>Alt + W</td>
+                                <td>Toggle Show Right Panel</td>
+                            </tr-->
+                            <tr>
+                                <td>Alt + F4</td>
+                                <td>Close XWindow</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Esc or Esc</td>
+                                <td>Close Window in Panel</td>
+                            </tr>
+                            <tr>
+                                <td>Alt + Tab</td>
+                                <td>Toggle Rigth XWindow</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Alt + Tab</td>
+                                <td>Toggle Left XWindow</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Alt + Click</td>
+                                <td>Move XWindow</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Alt + Right Click</td>
+                                <td>Resize XWindow</td>
+                            </tr>
+                            <tr>
+                                <td>Win + Tab</td>
+                                <td>Toggle Main Panel</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Alt + L</td>
+                                <td>System Suspend</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Alt + W</td>
+                                <td>Active/Inactive (don't lock Screen)</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl + Alt + U</td>
+                                <td>Show USB Devices</td>
+                            </tr>
+                            <tr>
+                                <td><button onClick='electron.shell.openExternal("file://${require('path').join(require('electron').remote.app.getPath("userData"), "kinit.json")}")' style='position: relative; left: 0px; top: 0px;'>Open kinit</button></td>
+                                <td>Open the config file to register the keys that trigger the application, ({register:['combination keys','path and file name xobj']}).</td>
+                            </tr>
+                        </table>
+                        <br>`
+            });
+    }else{
+             new Modal({
+            type: "custom",
+            title: `Available Keyboard Shortcuts <i>(v${window.solar.versions}</i>`,
+            html: `<h5>Using either the on-screen or a physical keyboard, you can use the following shortcuts:</h5>
+                    <table id="shortcutsHelp" style="width: 100%;">
+                        <tr>
+                            <th>Trigger</th>
+                            <th>Action</th>
+                        </tr>
+                        <tr>
+                            <td>${process.platform === "darwin" ? "Command" : "Ctrl + Shift"} + C</td>
+                            <td>Copy selected buffer from the terminal.</td>
+                        </tr>
+                        <tr>
+                            <td>${process.platform === "darwin" ? "Command" : "Ctrl + Shift"} + V</td>
+                            <td>Paste system clipboard to the terminal.</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Tab</td>
+                            <td>Switch to the next opened terminal tab (left to right order).</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Shift + Tab</td>
+                            <td>Switch to the previous opened terminal tab (right to left order).</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + [1-5]</td>
+                            <td>Switch to a specific terminal tab, or create it if it hasn't been opened yet.</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Alt + S</td>
+                            <td>Open the settings editor.</td>
+                        </tr>
+                        <!--tr>
+                            <td>Ctrl + Shift + K</td>
+                            <td>List available keyboard shortcuts.</td>
+                        </tr-->
+                        <tr>
+                            <td>Ctrl + Shift + H</td>
+                            <td>Toggle show hidden module.</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Shift + P</td>
+                            <td>Toggle the on-screen keyboard's "Password Mode", that allows you to safely type<br> sensitive information even if your screen might be recorded (disables visual input feedback).</td>
+                        </tr>
+                        <!--tr>
+                            <td>Ctrl + Shift + I</td>
+                            <td>Open Chromium Dev Tools (for debugging purposes).</td>
+                        </tr-->
+                        <tr>
+                            <td>Alt + F</td>
+                            <td>Update Panel Applications.</td>
+                        </tr>
+                        <tr>
+                            <td>Alt + FullScreen</td>
+                            <td>Print Screen.</td>
+                        </tr>
+                        <!--tr>
+                            <td>Alt + W</td>
+                            <td>Toggle Show Right Panel</td>
+                        </tr-->
+                        <tr>
+                            <td>Alt + Esc</td>
+                            <td>Close XWindow</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Esc or Esc</td>
+                            <td>Close Window in Panel</td>
+                        </tr>
+                        <tr>
+                            <td>-> or alt + <-</td>
+                            <td>Toggle Rigth XWindow</td>
+                        </tr>
+                        <tr>
+                            <td><-</td>
+                            <td>Toggle Left XWindow</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Alt + Click</td>
+                            <td>Move XWindow</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Alt + Right Click</td>
+                            <td>Resize XWindow</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Backspace</td>
+                            <td>Delete Key</td>
+                        </tr>
+                        <tr>
+                            <td>Refresh</td>
+                            <td>Toggle Main Panel</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Alt + L</td>
+                            <td>System Suspend</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Alt + W</td>
+                            <td>Active/Inactive (don't lock Screen)</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Alt + U</td>
+                            <td>Show USB Devices</td>
+                        </tr>
+                        <tr>
+                            <td><button onClick='electron.shell.openExternal("file://${require('path').join(require('electron').remote.app.getPath("userData"), "kinit.json")}")' style='position: relative; left: 0px; top: 0px;'>Open kinit</button></td>
+                            <td>Open the config file to register the keys that trigger the application, ({register:['combination keys','path and file name xobj']}).</td>
+                        </tr>
+                    </table>
+                    <br>`
+        });
+    }
+    mostrarPanel();
 };
 
 // Global keyboard shortcuts
@@ -1238,7 +1360,7 @@ globalShortcut.unregisterAll();
 
 function registerKeyboardShortcuts() {
     // Open settings
-    globalShortcut.register("Control+Shift+S", () => {
+    /*globalShortcut.register("Control+Shift+S", () => {
         if (!document.getElementById("settingsEditor")) {
             window.openSettings();
         }
@@ -1249,7 +1371,7 @@ function registerKeyboardShortcuts() {
         if (!document.getElementById("shortcutsHelp")) {
             window.openShortcutsHelp();
         }
-    });
+    });*/
 
     // Copy and paste shortcuts
 
@@ -1350,10 +1472,16 @@ function registerKeyboardShortcuts() {
          //se comenta para deshabilitar el filemanager y que solo funcione en la carpeta de modulos.
         //window.fsDisp.watchFS(document.getElementById("fs_disp_title_dir").innerHTML);
     });*/
-    globalShortcut.register("F5", () => {
-        if(require("path").join(require("electron").remote.app.getPath("home"),"modulos") != document.getElementById('fs_disp_title_dir').innerText)
-            window.fsDisp.readFS(document.getElementById('fs_disp_title_dir').innerText);
-    });
+    if(window.isChromeOS === false)
+        globalShortcut.register("F5", () => {
+            if(require("path").join(require("electron").remote.app.getPath("home"),"modulos") != document.getElementById('fs_disp_title_dir').innerText)
+                window.fsDisp.readFS(document.getElementById('fs_disp_title_dir').innerText);
+        });
+    if(window.isChromeOS === true)
+        globalShortcut.register("Alt+F", () => {
+            if(require("path").join(require("electron").remote.app.getPath("home"),"modulos") != document.getElementById('fs_disp_title_dir').innerText)
+                window.fsDisp.readFS(document.getElementById('fs_disp_title_dir').innerText);
+        });
     
 
 //se cambia por que no se propaga el ESC y eso afecto el funcionamiento del admon archivos mc
@@ -1408,7 +1536,8 @@ registerKeyboardShortcuts();
 //////////////////////////Solar registerKeys////////////////////////////
 function fnRegisterKeys()
 {
-    let registerExist = [,"Alt+W","Control+Shift+S","Control+Shift+K","Command+C","Command+V","Ctrl+Shift+C","Ctrl+Shift+V","Control+Tab","Control+Shift+Tab","Control+1","Control+2","Control+3","Control+4","Control+5","Control+Shift+H","Control+Shift+L","Control+Shift+P","Control+Escape","F5"];
+    //let registerExist = [,"Alt+W","Control+Shift+S","Control+Shift+K","Command+C","Command+V","Ctrl+Shift+C","Ctrl+Shift+V","Control+Tab","Control+Shift+Tab","Control+1","Control+2","Control+3","Control+4","Control+5","Control+Shift+H","Control+Shift+L","Control+Shift+P","Control+Escape","F5"];
+    let registerExist = [,"Alt+W","Command+C","Command+V","Ctrl+Shift+C","Ctrl+Shift+V","Control+Tab","Control+Shift+Tab","Control+1","Control+2","Control+3","Control+4","Control+5","Control+Shift+H","Control+Shift+P","Control+Escape","F5","Alt+F"];
     
     for(let i=0; i < registerKeys.register.length; i++)
     { 
@@ -1764,14 +1893,19 @@ function xWndExec(id,app)
                    const { exec } = require("child_process");
                    exec(app + ' >/dev/null', (error, stdout, stderr) => {
                         if (error) {
-                        	if(error.message.length > 100 || error.message.includes('stderr'))
-                        		errorLog(app,error.message);
-                        	else
-    	                        new Modal({
-    	                            type: "warning",
-    	                            title: `Error ${app}`,
-    	                            message: error.message
-    	                        });
+                        	if(error.message.length > 100 || error.message.includes('stderr')){
+                                if(!error.message.toLowerCase().includes('warning'))
+                        		  errorLog(app,error.message);
+                            }
+                        	else{
+                                console.log(error.message.trim(),`Command failed: ${app} >/dev/null`);
+                                if(error.message.trim() != `Command failed: ${app} >/dev/null`)
+                                    new Modal({
+                                        type: "warning",
+                                        title: `Error ${app}`,
+                                        message: error.message
+                                    });
+                            }
                         }
                     });
                    xWindow({"id":id});
@@ -3180,6 +3314,22 @@ function callRCM(data){
                 execAppKeyboard("systemctl suspend");
             }
 
+            if(data.message.call.toLowerCase() == 'settings'){
+                if (!document.getElementById("settingsEditor")) {
+                    window.openSettings();
+                }
+            }
+
+            if(data.message.call.toLowerCase() == 'shortcuts'){
+                if (!document.getElementById("shortcutsHelp")) {
+                    window.openShortcutsHelp();
+                }
+            }
+
+            if(data.message.call.toLowerCase() == 'keycode'){
+                execKeyLock(data.message.key);
+            }
+
             if(data.message.call.toLowerCase() == 'monitors'){
                 if(data.message.data.numbers > 1){
                     let selectCmd = "";
@@ -3234,9 +3384,10 @@ function callRCM(data){
                     
                     if(data.message.subdata.action == "add"){
                        if(document.getElementById("USBDevices")){ 
-                        if(document.getElementById("USBDevices").style.display == 'none'){
-                                document.getElementById("USBDevices").style.display = 'block';
-                           }
+                        if(document.getElementById("USBDevices").style)
+                            if(document.getElementById("USBDevices").style.display == 'none'){
+                                    document.getElementById("USBDevices").style.display = 'block';
+                               }
                        } 
                        
                        if(!window.usbDevices['id_'+data.message.subdata.uuid]){
@@ -3264,18 +3415,19 @@ function callRCM(data){
 
                     if(data.message.subdata.action == "remove"){
                        if(document.getElementById("USBDevices")){
-                            if(document.getElementById("USBDevices").style.display != 'none'){
-                                if(window.usbDevices['id_'+data.message.subdata.uuid]){
-                                    if((Object.keys(window.usbDevices).length - 1) == 0){
-                                        document.getElementById("USBDevices").style.display = 'none';
-                                    } 
-                                    delete window.usbDevices['id_'+data.message.subdata.uuid]; 
-                                }else{
-                                    if(Object.keys(window.usbDevices).length == 0){
-                                        document.getElementById("USBDevices").style.display = 'none';
+                            if(document.getElementById("USBDevices").style)
+                                if(document.getElementById("USBDevices").style.display != 'none'){
+                                    if(window.usbDevices['id_'+data.message.subdata.uuid]){
+                                        if((Object.keys(window.usbDevices).length - 1) == 0){
+                                            document.getElementById("USBDevices").style.display = 'none';
+                                        } 
+                                        delete window.usbDevices['id_'+data.message.subdata.uuid]; 
+                                    }else{
+                                        if(Object.keys(window.usbDevices).length == 0){
+                                            document.getElementById("USBDevices").style.display = 'none';
+                                        }
                                     }
-                                }
-                           }
+                               }
                             
                         } 
                     }
@@ -3314,9 +3466,10 @@ function callRCM(data){
 
             if(data.message.call.toLowerCase() == 'showusbdevices'){
                 if(document.getElementById("USBDevices")){
-                    if(document.getElementById("USBDevices").style.display != 'none'){
-                        wnd_usb_Devices();
-                    }
+                    if(document.getElementById("USBDevices").style)
+                        if(document.getElementById("USBDevices").style.display != 'none'){
+                            wnd_usb_Devices();
+                        }
                 }  
             }
 
@@ -4083,6 +4236,8 @@ function execKeyLock(keyLock){
                     break;
         case 'caps': cmd += 'A';//"Caps_Lock";
                     break;
+        default:
+            cmd = "sleep 0.2; " + cmd + keyLock;            
     }
     exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {});
 /*/---------------------------------------------------------------------    
@@ -4091,7 +4246,7 @@ function execKeyLock(keyLock){
     }else{
         document.getElementById(keyLock + '-lock').style.opacity = 0.5;
     }   
-*/
+*/    
 }
 
 function mostrarPanel(opcion){ //Win+Tab
@@ -4207,7 +4362,8 @@ async function createWmodule(key,icon){
 
 function openGroup(dir, id_app){
     const path = require("path");
-    xWindow({ id:id_app});
+    if(id_app)
+        xWindow({ id:id_app});
     
     dir = dir.replace("[~]",electron.remote.app.getPath("userData"));
     dir = dir.replace("~",electron.remote.app.getPath("home"));
@@ -4225,11 +4381,12 @@ function openGroup(dir, id_app){
                 directory = path.join(electron.remote.app.getPath("home"), "modulos", dir); 
                 if(!fs.existsSync(directory)) 
                 {
-                    new Modal({
+                    desinstalarModulo(id_app,document.getElementById("file_" + id_app).value);
+                    /*new Modal({
                                 type: "error",
                                 title: `Error ${dir}`,
                                 message: "Group not Found"
-                            });
+                            });*/
                     return false;
                 }
             }

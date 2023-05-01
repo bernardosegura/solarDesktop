@@ -65,6 +65,7 @@ class WindowManager {
   int puerto;
   Window demonSetBV;
   bool isChromebook;
+  bool isChromebookKbrN;
   //bool cambiaFoco;
 
  // bool ctrl_L = false;
