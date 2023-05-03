@@ -1,7 +1,7 @@
 #
 # <img src="https://github.com/bernardosegura/solarDesktop/blob/master/solar.svg" height="50px" width="50px" /> Solar Desktop
 Es un entorno de escritorio para Linux, con temática geek, el cual es un __Fork__ del proyecto [eDEX-UI](https://github.com/GitSquared/edex-ui).
-<br>[v4.0.0-2103.23-beta](https://github.com/bernardosegura/solarDesktop/releases/tag/4.0.0-2103.23-beta)
+<br>[v4.0.0-3004.23-beta](https://github.com/bernardosegura/solarDesktop/releases/tag/4.0.0-3004.23-beta)
 #
 <p align="justify">Actualmente este entorno reutiliza componentes del entorno de escritorio mate, así que para tener una experiencia más automática es necesario tener instalado este escritorio como un tema alternativo, sin embargo no es obligatorio para su funcionamiento. La reutilización de elementos de otro sistema de escritorio se tendría que realizar de manera manual. Posiblemente en un futuro se integren estas aplicaciones directamente en este entorno.</p>
 
