@@ -93,6 +93,8 @@ Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/bgdesktoptransp.png" />
     </td>
     <td>
+      Configuración de Aplicaciones de Grupos (<b>cgapps list</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/cgapps.png" />
     </td>
   </tr>
 </table>
