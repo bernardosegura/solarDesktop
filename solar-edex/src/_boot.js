@@ -315,8 +315,8 @@ try {
             fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","eom.xobj"), fs.readFileSync(path.join(__dirname, "apps","eom.xobj"), {encoding:"utf-8"}));
         
         //let which = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
-        if(/*parseInt(which)*/isLive != 0)//{
-            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","install-debian.xobj"), fs.readFileSync(path.join(__dirname, "apps","mate","install-debian.xobj"), {encoding:"utf-8"}));
+        if(/*parseInt(which)*/isLive /*!= 0*/)//{
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","install-debian.xobj"), `{"title":"","x":0,"y":0,"w":0,"h":0,"code":"xWndExec('id_install-debian','install-debian')","id":"id_install-debian","hidden":"true"}`/*fs.readFileSync(path.join(__dirname, "apps","mate","install-debian.xobj"), {encoding:"utf-8"})*/);
             //require("child_process").execSync('echo -e "live\nlive" | sudo passwd user');
         //}
    // }
