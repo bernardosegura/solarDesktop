@@ -4,7 +4,7 @@ var appExpress = require('express')();
 var serverApp = require('http').Server(appExpress);
 const WebSocketServer = require("websocket").server;
 
-var isLive = require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString();
+var isLive = (require("child_process").execSync("which " + 'install-debian' + ' | wc -l').toString() == 1)?true:false;
 
 const wsServer = new WebSocketServer({
     httpServer: serverApp,
