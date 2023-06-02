@@ -69,32 +69,40 @@ Los binarios que no utilizan interfaz gráfica (X Window) o que su ejecución es
   </tr>
   <tr>
     <td>
+      Discos del Sistema (<b>System Disks</b>)
+      <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/sysdisks.png" />
+    </td>
+    <td>
       Dispositivos USB (<b>USB Devices</b>)
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/usbdev.png" />
     </td>
+  </tr>
+  <tr>
     <td>
       Configuraciones (<b>Settings</b>)
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/settings.png" />
     </td>
-  </tr>
-  <tr>
     <td>
       Apagar sistema (<b>Power Off</b>)
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/poweroff.png" />
     </td>
+  </tr>
+  <tr>
     <td>
       Colocar imagen de fondo (<b>cbgimage</b>)
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/bgdesktop.png" />
     </td>
-  </tr>
-  <tr>
     <td>
       Colocar imagen de fondo con trasparencia (<b>cbgimage path true</b>)
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/bgdesktoptransp.png" />
     </td>
+  </tr>
+  <tr>
     <td>
       Configuración de Aplicaciones de Grupos (<b>cgapps list</b>)
       <img src="https://github.com/bernardosegura/solarDesktop/blob/master/img/cgapps.png" />
+    </td>
+    <td>
     </td>
   </tr>
 </table>
