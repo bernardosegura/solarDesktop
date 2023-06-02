@@ -1885,6 +1885,43 @@ Mod5Mask    |   128 | ???
         GrabModeAsync,
         GrabModeAsync);
     }
+
+    //   e. Switch windows with CTL + ALT + D (lanzar ventana Discos) 
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_D),
+      Mod1Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_D),
+      Mod1Mask | Mod2Mask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_D),
+      Mod1Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+  XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_D),
+      Mod1Mask | Mod2Mask | LockMask | ControlMask,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3046,6 +3083,10 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
 
   if(isChromebook && e.keycode == XKeysymToKeycode(display_, XK_Super_L)){ 
     rcmSend("{\"message\":{\"call\":\"runxobj\"}}");
+  }
+
+  if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_D)){ 
+    rcmSend("{\"message\":{\"call\":\"showsystemdisks\"}}");
   }
   
     

@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-3004.23 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + "-3105.23 Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -74,6 +74,7 @@ const startUp = require(path.join(settingsDir, "startUp.json"));
 window.xobjDB = require(path.join(settingsDir, "xobjDB.json"));
 
 window.usbDevices = [];
+window.disksDevices = [];
 // Load CLI parameters
 /*if (electron.remote.process.argv.includes("--nointro")) {
     window.settings.nointroOverride = true;
@@ -1231,6 +1232,10 @@ window.openShortcutsHelp = () => {
                                 <td>Show USB Devices</td>
                             </tr>
                             <tr>
+                                <td>Ctrl + Alt + D</td>
+                                <td>Show System Disks</td>
+                            </tr>
+                            <tr>
                                 <td><button onClick='electron.shell.openExternal("file://${require('path').join(require('electron').remote.app.getPath("userData"), "kinit.json")}")' style='position: relative; left: 0px; top: 0px;'>Open kinit</button></td>
                                 <td>Open the config file to register the keys that trigger the application, ({register:['combination keys','path and file name xobj']}).</td>
                             </tr>
@@ -1342,6 +1347,10 @@ window.openShortcutsHelp = () => {
                         <tr>
                             <td>Ctrl + Alt + U</td>
                             <td>Show USB Devices</td>
+                        </tr>
+                        <tr>
+                            <td>Ctrl + Alt + D</td>
+                            <td>Show System Disks</td>
                         </tr>
                         <tr>
                             <td><button onClick='electron.shell.openExternal("file://${require('path').join(require('electron').remote.app.getPath("userData"), "kinit.json")}")' style='position: relative; left: 0px; top: 0px;'>Open kinit</button></td>
@@ -3473,6 +3482,10 @@ function callRCM(data){
                 }  
             }
 
+            if(data.message.call.toLowerCase() == 'showsystemdisks'){
+                wnd_disks_Devices();  
+            }
+
             if(data.message.call.toLowerCase() == 'runxobj'){
                 appXwnd("run");
                 mostrarPanel();
@@ -3494,6 +3507,376 @@ function set_dnls(){
         execAppKeyboard("xset s on; xset s blank; xset +dpms");
         document.getElementById("DNLS").style.display = "none";
     }
+}
+
+async function wnd_disks_Devices() {
+    let disksDevices = [];
+    let mountPart = [];
+    let mountDisk = [];
+    let icons = {};
+    let icon;
+    let strTRs = "";
+    let strTRsSistem = "";
+    let index = 3;
+    let dfs = "Not Autorized to Perform "; //Disabled for Security
+    if(document.querySelector("#wnd_disks")){
+        xWindow({id:"wnd_disks"});
+        return false;
+    }
+    icons = require("./assets/icons/file-icons.json");
+    let blocks = await window.si.blockDevices();
+    blocks.forEach(block => { 
+            if (block.type === "part" && (block.mount != '[SWAP]' && block.mount != '/boot/efi'))
+                mountPart.push(block.name);
+            else
+                if (block.type === "disk")
+                    mountDisk.push(block.name);
+        });
+
+    blocks.forEach(block => {     
+            if (!block.removable && block.type === "part" && (block.mount != '[SWAP]' && block.mount != '/boot/efi')) {
+                    disksDevices['id_'+block.uuid] = {
+                        label: block.label,
+                        dev : "/dev/"+block.name,
+                        uuid: block.uuid,
+                        mount: block.mount,
+                        type: "partition",
+                        removable: false,
+                        root: mountDisk.find(elemento => block.name.startsWith(elemento)) //block.name.replace(/[0123456789]/g,'')
+                    }; 
+                                   
+                }else
+                    if (block.type === "disk" && !mountPart.some(elemento => elemento.startsWith(block.name))) {
+                        disksDevices['id_'+block.uuid] = {
+                        label: (block.label == '')?block.model:block.label,
+                        dev : "/dev/"+block.name,
+                        uuid: block.uuid,
+                        mount: block.mount,
+                        type: "disk",
+                        removable: block.removable,
+                        root: block.name
+                    };                    
+                }
+        });
+    window.disksDevices = disksDevices;
+
+    for (var key in disksDevices) {
+
+        if(disksDevices[key].mount === '/'){
+            strTRsSistem += `<tr class='cs_${disksDevices[key].root}'><td colspan='3' style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'>
+              <label><b>System Root</b></label>
+            </td></tr>`;
+            
+            icon = icons["disklnx"];
+            strTRsSistem += `<tr class='cs_${disksDevices[key].root}'><td>
+            <button id='dvmp_${disksDevices[key].uuid}' onclick='excTypeMethodDisks("${(disksDevices[key].mount == '')?'mount-open':'open'}","${disksDevices[key].uuid}")' title='${(disksDevices[key].mount == '')?'Mount and Open':'Open'}' onkeyup='diskdeviceKeyup(0,event)' style='position: relative; left: -5px; top: 0px; border: 0px;'>
+              <div style='
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin-left: 0px;
+            cursor: pointer;'>
+                  <svg id='svgmp_${disksDevices[key].uuid}' viewBox='0 0 ${icon.width} ${icon.height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+                    ${icon.svg}
+                  </svg>
+                  <h3 id='lblmp_${disksDevices[key].uuid}' style='font-size: 1.3vh;
+            max-width: 100%;
+            max-height: 30%;
+            margin: 0px;
+            padding-top: 1vh;
+            box-sizing: border-box;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;'>Open</h3>                                   
+                    </div></button>  
+                </td>`;
+
+            icon = (disksDevices[key].mount == '')?icons["mntdisk"]:icons["umntdisk"];
+
+            strTRsSistem += `<td>
+                  <button id='dvmu_${disksDevices[key].uuid}' class='fndselect' onclick='excTypeMethodDisks("${(disksDevices[key].mount == '')?'mount':'unmount'}","${disksDevices[key].uuid}")' title='${dfs}${(disksDevices[key].mount == '')?'Mount ('+disksDevices[key].dev+')':'Unmount ('+disksDevices[key].mount + ')'}' onkeyup='diskdeviceKeyup(1,event)' style='position: relative; left: 0px; top: 0px; border: 0px; opacity: 0.6;'>
+                  <div style='
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin-left: 0px;
+            cursor: pointer;'>
+                  <svg id='svgmu_${disksDevices[key].uuid}' viewBox='0 0 ${icon.width} ${icon.height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+                    ${icon.svg}
+                  </svg>
+                  <h3 id='lblmu_${disksDevices[key].uuid}' style='font-size: 1.3vh;
+            max-width: 100%;
+            max-height: 30%;
+            margin: 0px;
+            padding-top: 1vh;
+            box-sizing: border-box;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;'>${(disksDevices[key].mount == '')?'Mount':'Unmount'}</h3>                                   
+                    </div></button>  
+                </td>`;  
+
+            icon = icons["rmdisk"];
+
+            strTRsSistem += `<td>
+                  <button id='dvrm_${disksDevices[key].uuid}' onclick='excTypeMethodDisks("power-off","${disksDevices[key].uuid}")' title='${dfs}Safely Remove (${disksDevices[key].root})' onkeyup='diskdeviceKeyup(2,event)' style='position: relative; left: -8px; top: 0px; border: 0px;  opacity: 0.6'>
+                  <div style='
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin-left: 10px;
+            cursor: pointer;'>
+                  <svg id='svgrm_${disksDevices[key].uuid}' viewBox='0 0 ${icon.width} ${icon.height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+                    ${icon.svg}
+                  </svg>
+                  <h3 id='lblrm_${disksDevices[key].uuid}' style='font-size: 1.3vh;
+            max-width: 100%;
+            max-height: 30%;
+            margin: 0px;
+            padding-top: 1vh;
+            box-sizing: border-box;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;'>Safely Remove (${disksDevices[key].root})</h3>                                   
+                    </div>  
+            </td></tr>`;         
+
+        }else{
+            strTRs += `<tr class='cs_${disksDevices[key].root}'><td colspan='3' style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'>
+              <label><b>${(disksDevices[key].label == '')?disksDevices[key].uuid:disksDevices[key].label}</b></label>
+            </td></tr>`;
+            
+            icon = icons["disks"];
+            strTRs += `<tr class='cs_${disksDevices[key].root}'><td>
+                <button id='dvmp_${disksDevices[key].uuid}' onclick='excTypeMethodDisks("${(disksDevices[key].mount == '')?'mount-open':'open'}","${disksDevices[key].uuid}")' title='${(disksDevices[key].mount == '')?'Mount and Open':'Open'}' onkeyup='diskdeviceKeyup(${index++},event)' style='position: relative; left: -5px; top: 0px; border: 0px;'>
+                  <div style='
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin-left: 0px;
+            cursor: pointer;'>
+                  <svg id='svgmp_${disksDevices[key].uuid}' viewBox='0 0 ${icon.width} ${icon.height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+                    ${icon.svg}
+                  </svg>
+                  <h3 id='lblmp_${disksDevices[key].uuid}' style='font-size: 1.3vh;
+            max-width: 100%;
+            max-height: 30%;
+            margin: 0px;
+            padding-top: 1vh;
+            box-sizing: border-box;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;'>Open</h3>                                   
+                    </div></button>  
+                </td>`;
+            icon = (disksDevices[key].mount == '')?icons["mntdisk"]:icons["umntdisk"];
+
+            strTRs += `<td>
+                  <button id='dvmu_${disksDevices[key].uuid}' class='fndselect' onclick='excTypeMethodDisks("${(disksDevices[key].mount == '')?'mount':'unmount'}","${disksDevices[key].uuid}")' title='${(disksDevices[key].removable)?"":dfs}${(disksDevices[key].mount == '')?'Mount ('+disksDevices[key].dev+')':'Unmount ('+disksDevices[key].mount + ')'}' onkeyup='diskdeviceKeyup(${index++},event)' style='position: relative; left: 0px; top: 0px; border: 0px; ${(disksDevices[key].removable)?"":"opacity: 0.6;"}'>
+                  <div style='
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin-left: 0px;
+            cursor: pointer;'>
+                  <svg id='svgmu_${disksDevices[key].uuid}' viewBox='0 0 ${icon.width} ${icon.height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+                    ${icon.svg}
+                  </svg>
+                  <h3 id='lblmu_${disksDevices[key].uuid}' style='font-size: 1.3vh;
+            max-width: 100%;
+            max-height: 30%;
+            margin: 0px;
+            padding-top: 1vh;
+            box-sizing: border-box;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;'>${(disksDevices[key].mount == '')?'Mount':'Unmount'}</h3>                                   
+                    </div></button>  
+                </td>`;  
+
+            icon = icons["rmdisk"];
+
+              strTRs += `<td>
+                  <button id='dvrm_${disksDevices[key].uuid}' onclick='excTypeMethodDisks("power-off","${disksDevices[key].uuid}")' title='${(disksDevices[key].removable)?"":dfs}Safely Remove (${disksDevices[key].root})' onkeyup='diskdeviceKeyup(${index++},event)' style='position: relative; left: -8px; top: 0px; border: 0px; ${(disksDevices[key].removable)?"":"opacity: 0.6;"}'>
+                  <div style='
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin-left: 10px;
+            cursor: pointer;'>
+                  <svg id='svgrm_${disksDevices[key].uuid}' viewBox='0 0 ${icon.width} ${icon.height}' fill='rgb(${window.theme.r}, ${window.theme.g}, ${window.theme.b})' style='width: 5vh;'>
+                    ${icon.svg}
+                  </svg>
+                  <h3 id='lblrm_${disksDevices[key].uuid}' style='font-size: 1.3vh;
+            max-width: 100%;
+            max-height: 30%;
+            margin: 0px;
+            padding-top: 1vh;
+            box-sizing: border-box;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;'>Safely Remove (${disksDevices[key].root})</h3>                                   
+                    </div>  
+                </td></tr>`; 
+        }
+    }
+    strTRs = strTRsSistem + strTRs;
+    recClient = document.body.getBoundingClientRect();
+    mostrarPanel();
+    let alto = Object.keys(disksDevices).length;
+    let yWnd = ((parseInt(recClient.height)/2) - (alto * 139));
+    yWnd = (yWnd <= 0)?1:yWnd;
+    let wnd = {
+      title:"System Disks",
+      x: ((parseInt(recClient.width)/2) - 180),
+      y: yWnd,
+      w: 360,
+      h: (alto * 130),
+      id: "wnd_disks",
+      content:`<table id='tbl_ddisk' style='width: 100%; height: 100%;'>
+      <tr><td colspan='3'></td></tr>
+      ${strTRs}
+      <tr><td colspan='3'></td></tr>
+      </table>`,
+      code:`if(document.querySelectorAll('#wnd_disks button').length > 0)document.querySelectorAll('#wnd_disks button')[0].focus();`,
+      noLimit: 0,
+      x_XClose: "0.6",
+      overflow: "auto"
+    };
+    let code = '';
+    //console.log(wnd);
+    if(!wnd.id){
+        code = xWindow(wnd);
+        //console.log(code);
+    }
+    else
+        if(!document.getElementById(wnd.id))
+            code = xWindow(wnd);
+    code = document.getElementById(code);
+    if(!code)
+        return true;
+    code.click();
+    return true;
+}
+
+function diskdeviceKeyup(index,ev){
+    switch(ev.keyCode){
+        case 37: index = ((index-1) >= 0)? index-1:document.querySelectorAll('#wnd_disks button').length-1; document.querySelectorAll('#wnd_disks button')[index].focus(); break;
+        case 39: index = ((index+1) < document.querySelectorAll('#wnd_disks button').length)? index+1:0; document.querySelectorAll('#wnd_disks button')[index].focus(); break;
+        case 40: index += 3; index = (index < document.querySelectorAll('#wnd_disks button').length)? index: index-document.querySelectorAll('#wnd_disks button').length; document.querySelectorAll('#wnd_disks button')[index].focus(); break;
+        case 38: index -= 3; index = (index >= 0)? index: document.querySelectorAll('#wnd_disks button').length + index; document.querySelectorAll('#wnd_disks button')[index].focus(); break;
+        case 27: xWindow({id:'wnd_disks'}); break;
+    }
+}
+
+function excTypeMethodDisks(type,parametro){
+    let udisksctl = "udisksctl";
+  try{
+    if(type == "mount-open"){ 
+        let mnt = require("child_process").execSync(udisksctl + " mount -b " + window.usbDevices["id_" + parametro].dev).toString().split(' ');
+        let icons = require("./assets/icons/file-icons.json");
+        let mountDir = ""
+        for (var i = 0; i < mnt.length; i++) {
+            if(mnt[i-1] == "at"){
+                mountDir = mnt[i];
+            }else
+                if(mountDir != ""){
+                   mountDir = mountDir + " " + mnt[i]; 
+                }
+        }
+        window.disksDevices["id_" + parametro].mount = mountDir.split('\n').join('');
+        document.querySelector("#dvmp_"+window.disksDevices["id_" + parametro].uuid).setAttribute('title',"Open");
+        document.querySelector("#dvmp_"+window.disksDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethodDisks("open","${window.disksDevices["id_" + parametro].uuid}")`);
+        document.querySelector("#svgmu_"+window.disksDevices["id_" + parametro].uuid).innerHTML = icons["umntdisk"].svg;
+        document.querySelector("#lblmu_"+window.disksDevices["id_" + parametro].uuid).innerHTML = "Unmount";
+        document.querySelector("#dvmu_"+window.disksDevices["id_" + parametro].uuid).setAttribute('title',"Unmount (" + window.disksDevices["id_" + parametro].mount + ")");
+        document.querySelector("#dvmu_"+window.disksDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethodDisks("unmount","${window.disksDevices["id_" + parametro].uuid}")`);
+        
+        openFM(parametro,"disksDevices");
+    }
+    if(type == "open"){ 
+        openFM(parametro,"disksDevices");
+    }
+
+    if(type == "mount"){ 
+        if(document.querySelector("#dvmu_"+window.disksDevices["id_" + parametro].uuid).style.opacity == '0.6')
+            return false
+        let mnt = require("child_process").execSync(udisksctl + " " + type + " -b " + window.disksDevices["id_" + parametro].dev).toString().split(' ');
+        let icons = require("./assets/icons/file-icons.json");
+        let mountDir = ""
+        for (var i = 0; i < mnt.length; i++) {
+            if(mnt[i-1] == "at"){
+                mountDir = mnt[i];
+            }else
+                if(mountDir != ""){
+                   mountDir = mountDir + " " + mnt[i]; 
+                }
+        }
+        window.disksDevices["id_" + parametro].mount = mountDir.split('\n').join('');
+        document.querySelector("#dvmp_"+window.disksDevices["id_" + parametro].uuid).setAttribute('title',"Open");
+        document.querySelector("#dvmp_"+window.disksDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethodDisks("open","${window.disksDevices["id_" + parametro].uuid}")`);
+        document.querySelector("#svgmu_"+window.disksDevices["id_" + parametro].uuid).innerHTML = icons["umntdisk"].svg;
+        document.querySelector("#lblmu_"+window.disksDevices["id_" + parametro].uuid).innerHTML = "Unmount";
+        document.querySelector("#dvmu_"+window.disksDevices["id_" + parametro].uuid).setAttribute('title',"Unmount (" + window.disksDevices["id_" + parametro].mount + ")");
+        document.querySelector("#dvmu_"+window.disksDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethodDisks("unmount","${window.disksDevices["id_" + parametro].uuid}")`);
+    }
+
+    if(type == "unmount"){ 
+        if(document.querySelector("#dvmu_"+window.disksDevices["id_" + parametro].uuid).style.opacity == '0.6')
+            return false
+        let mnt = require("child_process").execSync(udisksctl + " " + type + " -b " + window.disksDevices["id_" + parametro].dev).toString().split(' ');
+        let icons = require("./assets/icons/file-icons.json");
+        window.disksDevices["id_" + parametro].mount = "";
+        document.querySelector("#dvmp_"+window.disksDevices["id_" + parametro].uuid).setAttribute('title',"Mount and Open");
+        document.querySelector("#dvmp_"+window.disksDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethodDisks("mount-open","${window.disksDevices["id_" + parametro].uuid}")`);
+        document.querySelector("#svgmu_"+window.disksDevices["id_" + parametro].uuid).innerHTML = icons["mntdisk"].svg;
+        document.querySelector("#lblmu_"+window.disksDevices["id_" + parametro].uuid).innerHTML = "Mount";
+        document.querySelector("#dvmu_"+window.disksDevices["id_" + parametro].uuid).setAttribute('title',"Mount (" + window.disksDevices["id_" + parametro].dev + ')');
+        document.querySelector("#dvmu_"+window.disksDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethodDisks("mount","${window.disksDevices["id_" + parametro].uuid}")`);
+    }
+
+    if(type == "power-off"){
+        if(document.querySelector("#dvrm_"+window.disksDevices["id_" + parametro].uuid).style.opacity == '0.6')
+            return false
+        let root = window.disksDevices["id_" + parametro].root;   
+        document.querySelectorAll(".cs_"+window.disksDevices["id_" + parametro].root).forEach(obj => {obj.remove();});
+        if((document.querySelectorAll("#tbl_ddisk tr").length - 2) <= 0)
+            xWindow({id:"wnd_disksDevices"});
+        if(window.disksDevices["id_" + parametro].mount != '')
+            require("child_process").execSync(udisksctl + " unmount -b " + window.disksDevices["id_" + parametro].dev); 
+        require("child_process").execSync(udisksctl + " " + type + " -b " + window.disksDevices["id_" + parametro].dev).toString().split(' ');
+        new Modal({
+            type: "info",
+            title: "Remove Safely ("+root+")",
+            message: "Device removed successfull"
+        });
+        for (var key in window.disksDevices) { 
+            if( root == window.disksDevices[key].root){
+                delete window.disksDevices[key];
+            } 
+        }
+    }
+  }catch(err){
+    console.log(err);
+    let error = err.stderr.toString().split(':');
+    new Modal({
+        type: "info",
+        title: error[0],
+        message: error[error.length-1]
+    });
+  }
 }
 
 function wnd_usb_Devices(){
@@ -3673,13 +4056,13 @@ function excTypeMethod(type,parametro){
         document.querySelector("#dvmp_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("open","${window.usbDevices["id_" + parametro].uuid}")`);
         document.querySelector("#svgmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = icons["umnt"+isUSBMMC+"drive"].svg;
         document.querySelector("#lblmu_"+window.usbDevices["id_" + parametro].uuid).innerHTML = "Unmount";
-        document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Unmount");
+        document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('title',"Unmount (" + window.usbDevices["id_" + parametro].mount + ")");
         document.querySelector("#dvmu_"+window.usbDevices["id_" + parametro].uuid).setAttribute('onclick',`excTypeMethod("unmount","${window.usbDevices["id_" + parametro].uuid}")`);
         
-        openFM(parametro);
+        openFM(parametro,"usbDevices");
     }
     if(type == "open"){ 
-        openFM(parametro);
+        openFM(parametro,"usbDevices");
     }
 
     if(type == "mount"){ 
@@ -3754,15 +4137,15 @@ function excTypeMethod(type,parametro){
   }
 }
 
-function openFM(parametro){
+function openFM(parametro,list){
     let cmdFM = (window.settings.fileManager == '')?"cd::":window.settings.fileManager;
     if(cmdFM.endsWith('::')){
-        cmdFM = cmdFM.replace("::",'') + ' ' + window.usbDevices["id_" + parametro].mount;
+        cmdFM = cmdFM.replace("::",'') + ' ' + window[list]["id_" + parametro].mount;
         //console.log(cmdFM);
         xExecInTrm(cmdFM);
     }else{
        const { exec } = require("child_process");
-       exec(cmdFM + ' "' + window.usbDevices["id_" + parametro].mount + '" >/dev/null', (error, stdout, stderr) => {
+       exec(cmdFM + ' "' + window[list]["id_" + parametro].mount + '" >/dev/null', (error, stdout, stderr) => {
             if (error) {
                 if(error.message.length > 100 || error.message.includes('stderr'))
                     errorLog(cmdFM,error.message);
@@ -3775,7 +4158,10 @@ function openFM(parametro){
             }
         });
     }
-    xWindow({id:"wnd_usbdevices"});
+    if(list == "usbDevices")
+        xWindow({id:"wnd_usbdevices"});
+    if(list == "disksDevices")
+        xWindow({id:"wnd_disks"});
 }
 
 if(window.enableLocalRCM){

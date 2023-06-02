@@ -400,21 +400,26 @@ this.cmdPath = async e =>{
             });
 
             this.cwd.splice(3, 0, {
+                name: "System Disks",
+                type: "Disks"
+            }); 
+
+            this.cwd.splice(4, 0, {
+                name: "USB Devices",
+                type: "USBDevices"
+            });
+
+            this.cwd.splice(5, 0, {
                 name: "Num Lock",
                 type: "num-lock"
             }); 
 
-            this.cwd.splice(4, 0, {
+            this.cwd.splice(6, 0, {
                 name: "Caps Lock",
                 type: "caps-lock"
-            }); 
+            });  
 
-            this.cwd.splice(5, 0, {
-                name: "USB Devices",
-                type: "USBDevices"
-            }); 
-
-            this.cwd.splice(6, 0, {
+            this.cwd.splice(7, 0, {
                 name: "Don't lock Screen",
                 type: "DNLS"
             });
@@ -624,6 +629,14 @@ this.cmdPath = async e =>{
                         inpanel = true;
                         idInpanel = 'caps-lock';
                         break; 
+                    case "Disks":
+                        icon = this.icons["disks"];
+                        type = "disks";
+                        cmd = "wnd_disks_Devices()";
+                        e.category = "Device";
+                        inpanel = true;
+                        idInpanel = 'Disks';
+                        break;     
                     case "USBDevices":
                         icon = this.icons["usb"];
                         type = "usb";
