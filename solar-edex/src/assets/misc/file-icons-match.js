@@ -1980,6 +1980,9 @@ function matchIcon(filename,retorno) {
     if (/qalculate/i.test(filename)) { return "calc"; }
     if (/time-admin[^]*$/i.test(filename)){ return "timeadmin"; }
     if (/midnight-commander[^]*$/i.test(filename)){ return "mc"; } 
+    if (/install4j-burp-startburp/i.test(filename)){ return "burp-startburp"; }
+    if (/xterm[^]*$/i.test(filename)){ return "terminal"; } 
+    if (/mkusb[^]*$/i.test(filename)){ return "zenity"; } 
 
     if(retorno){ return ""; }
 }

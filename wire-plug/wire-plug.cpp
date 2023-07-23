@@ -69,6 +69,7 @@ fclose(archivo);*/
                     char *label = strtok(NULL,":");
                     std::string dev(devBuff);
                     std::string mensaje("{\"message\":{\"call\":\"wire-plug\",\"type\":\""+ (std::string)arv[1] + "\",");
+
                     //FILE *stdOut;
                     for (int i = dev.find("-"); i >= 0; i = dev.find("-")){
                         dev.replace(dev.find("-"),1,"/");
@@ -76,16 +77,26 @@ fclose(archivo);*/
                     //sprintf(jsonPath,"%s/.config/Solar_eDEX/%s/%s.json",home,arv[1],uuid); 
 
                     if(label != NULL){
-                        mensaje += "\"subdata\":{\"subtype\":\"partition\",\"action\":\"" + (std::string)action + "\",\"dev\":\"" + dev + "\",\"uuid\":\"" + (std::string)uuid + "\",\"label\":\"" + (std::string)label + "\"}}}";
+                    	if(uuid != NULL){
+                            mensaje += "\"subdata\":{\"subtype\":\"partition\",\"action\":\"" + (std::string)action + "\",\"dev\":\"" + dev + "\",\"uuid\":\"" + (std::string)uuid + "\",\"label\":\"" + (std::string)label + "\"}}}";
+	                    }
+	                    else{
+	                        mensaje += "\"subdata\":{\"subtype\":\"partition\",\"action\":\"" + (std::string)action + "\",\"dev\":\"" + dev + "\",\"uuid\":\"\",\"label\":\"" + (std::string)label + "\"}}}";
+	                    }
                     }
                     else{
-                        mensaje += "\"subdata\":{\"subtype\":\"partition\",\"action\":\"" + (std::string)action + "\",\"dev\":\"" + dev + "\",\"uuid\":\"" + (std::string)uuid + "\",\"label\":\"\"}}}";
+                        if(uuid != NULL){
+                            mensaje += "\"subdata\":{\"subtype\":\"partition\",\"action\":\"" + (std::string)action + "\",\"dev\":\"" + dev + "\",\"uuid\":\"" + (std::string)uuid + "\",\"label\":\"\"}}}";
+	                    }
+	                    else{
+	                        mensaje += "\"subdata\":{\"subtype\":\"partition\",\"action\":\"" + (std::string)action + "\",\"dev\":\"" + dev + "\",\"uuid\":\"\",\"label\":\"\"}}}";
+	                    }
                     }
 
                     /*stdOut = fopen(jsonPath, "w"); 
                     fprintf(stdOut, "%s",mensaje.c_str());
                     fclose(stdOut);*/
-                    
+
                     std::unique_ptr<WebSocket> ws(WebSocket::from_url("ws://localhost:" + std::to_string(port),".wire-plug.rcmSolar"));
                     assert(ws);
                     ws->send(mensaje);

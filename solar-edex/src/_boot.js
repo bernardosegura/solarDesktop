@@ -320,6 +320,10 @@ try {
             //require("child_process").execSync('echo -e "live\nlive" | sudo passwd user');
         //}
    // }
+        which = (isLive)?1:require("child_process").execSync("which " + 'xterm' + ' | wc -l').toString();
+        if(parseInt(which) != 0)
+            fs.writeFileSync(path.join(electron.app.getPath("home"), "modulos","xterm.xobj"), fs.readFileSync(path.join(__dirname, "apps","xterm.xobj"), {encoding:"utf-8"}));
+
 } catch(e) {
     signale.info(`Base modulos dir is ${path.join(electron.app.getPath("home"), "modulos")}`);     
     //fs.writeFileSync(path.join(electron.app.getPath("userData"), "user.json"), JSON.stringify({dconf:'', init: false}, 4));

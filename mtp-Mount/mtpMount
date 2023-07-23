@@ -1,0 +1,13 @@
+#! /bin/bash
+mtpUrl=$(gio mount -li | grep -i activation_root | cut -d '=' -f2)
+
+if [ -n "${mtpUrl}" ]; then
+	gio mount $mtpUrl
+	echo "Se monto telefono por MTP: $mtpUrl"
+	echo ""
+	#Run with . or source for the next line to take effect.
+	cd "/run/user/$UID/gvfs/"
+else
+	echo "No se detecto telefono conectado por MTP"
+	echo ""
+fi
