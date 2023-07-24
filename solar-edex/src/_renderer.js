@@ -3569,7 +3569,7 @@ async function wnd_disks_Devices() {
     let icon;
     let strTRs = "";
     let strTRsSistem = "";
-    let index = 3;
+    let index = 0;
     let dfs = "Not Autorized to Perform "; //Disabled for Security
     if(document.querySelector("#wnd_disks")){
         xWindow({id:"wnd_disks"});
@@ -3624,7 +3624,7 @@ async function wnd_disks_Devices() {
             
             icon = icons["disklnx"];
             strTRsSistem += `<tr class='cs_${disksDevices[key].root}'><td>
-            <button id='dvmp_${disksDevices[key].uuid}' onclick='excTypeMethodDisks("${(disksDevices[key].mount == '')?'mount-open':'open'}","${disksDevices[key].uuid}")' title='${(disksDevices[key].mount == '')?'Mount and Open':'Open'}' onkeyup='diskdeviceKeyup(0,event)' style='position: relative; left: -5px; top: 0px; border: 0px;'>
+            <button id='dvmp_${disksDevices[key].uuid}' onclick='excTypeMethodDisks("${(disksDevices[key].mount == '')?'mount-open':'open'}","${disksDevices[key].uuid}")' title='${(disksDevices[key].mount == '')?'Mount and Open':'Open'}' onkeyup='diskdeviceKeyup(${index++},event)' style='position: relative; left: -5px; top: 0px; border: 0px;'>
               <div style='
             text-align: center;
             display: flex;
@@ -3651,7 +3651,7 @@ async function wnd_disks_Devices() {
             icon = (disksDevices[key].mount == '')?icons["mntdisk"]:icons["umntdisk"];
 
             strTRsSistem += `<td>
-                  <button id='dvmu_${disksDevices[key].uuid}' class='fndselect' onclick='excTypeMethodDisks("${(disksDevices[key].mount == '')?'mount':'unmount'}","${disksDevices[key].uuid}")' title='${dfs}${(disksDevices[key].mount == '')?'Mount ('+disksDevices[key].dev+')':'Unmount ('+disksDevices[key].mount + ')'}' onkeyup='diskdeviceKeyup(1,event)' style='position: relative; left: 0px; top: 0px; border: 0px; opacity: 0.6;'>
+                  <button id='dvmu_${disksDevices[key].uuid}' class='fndselect' onclick='excTypeMethodDisks("${(disksDevices[key].mount == '')?'mount':'unmount'}","${disksDevices[key].uuid}")' title='${dfs}${(disksDevices[key].mount == '')?'Mount ('+disksDevices[key].dev+')':'Unmount ('+disksDevices[key].mount + ')'}' onkeyup='diskdeviceKeyup(${index++},event)' style='position: relative; left: 0px; top: 0px; border: 0px; opacity: 0.6;'>
                   <div style='
             text-align: center;
             display: flex;
@@ -3678,7 +3678,7 @@ async function wnd_disks_Devices() {
             icon = icons["rmdisk"];
 
             strTRsSistem += `<td>
-                  <button id='dvrm_${disksDevices[key].uuid}' onclick='excTypeMethodDisks("power-off","${disksDevices[key].uuid}")' title='${dfs}Safely Remove (${disksDevices[key].root})' onkeyup='diskdeviceKeyup(2,event)' style='position: relative; left: -8px; top: 0px; border: 0px;  opacity: 0.6'>
+                  <button id='dvrm_${disksDevices[key].uuid}' onclick='excTypeMethodDisks("power-off","${disksDevices[key].uuid}")' title='${dfs}Safely Remove (${disksDevices[key].root})' onkeyup='diskdeviceKeyup(${index++},event)' style='position: relative; left: -8px; top: 0px; border: 0px;  opacity: 0.6'>
                   <div style='
             text-align: center;
             display: flex;
