@@ -3709,12 +3709,12 @@ async function wnd_disks_Devices() {
                             <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.0);'></td>
                         </tr>
                     </table>
-                    <table width="100%" style="position: relative; top: -0.6vh;">
+                    <table width="100%" style="position: relative; top: -0.35em;">
                         <tr>
                             <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'></td>
                         </tr>
                     </table>
-                    <div id="tl_${disksDevices[key].dev}" style="position: relative; top: -6px; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
+                    <div id="tl_${disksDevices[key].dev}" style="position: relative; top: -0.35em; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
                 </td>
             </tr>`;         
 
@@ -3810,16 +3810,16 @@ async function wnd_disks_Devices() {
                                 <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.0);'></td>
                             </tr>
                         </table>
-                        <table width="100%" style="position: relative; top: -0.6vh;">
+                        <table width="100%" style="position: relative; top: -0.35em;">
                             <tr>
                                 <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'></td>
                             </tr>
                         </table>
-                        <div id="tl_${disksDevices[key].dev}" style="position: relative; top: -6px; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
+                        <div id="tl_${disksDevices[key].dev}" style="position: relative; top: -0.35em; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
                     </td>
                 </tr>`; 
         }
-        numposision -= "1";
+        numposision -= "1.2";
         posision = numposision + "vh";
     }
     strTRs = strTRsSistem + strTRs;
@@ -4122,16 +4122,16 @@ async function wnd_usb_Devices(){
                     <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.0);'></td>
                 </tr>
             </table>
-            <table width="100%" style="position: relative; top: -0.6vh;">
+            <table width="100%" style="position: relative; top: -0.35em;">
                 <tr>
                     <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'></td>
                 </tr>
             </table>
-            <div id="tl_${window.usbDevices[key].dev}" style="position: relative; top: -6px; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
+            <div id="tl_${window.usbDevices[key].dev}" style="position: relative; top: -0.35em; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
         </td>
     </tr>`;
 
-     numposision -= "1";
+     numposision -= "1.2";
      posision = numposision + "vh"; 
     }
     
@@ -5035,10 +5035,17 @@ function getSpaceDriverAll(drive){
                     source = source[1].split(" ").filter((item) => item !== '');
                     if(document.getElementById('infbar_' + source[0])){
                         document.getElementById('infbar_' + source[0]).setAttribute("title",source[3] + "B Available");
-                        document.getElementById('us_' + source[0]).innerHTML = "<b>" + source[2] + "B </b>";
-                        document.getElementById('tl_' + source[0]).innerHTML = "<b>" + source[1] + "B </b>";
-                        document.getElementById('st_' + source[0]).setAttribute("width",source[4].replace("\n",""));
-                        document.getElementById('st_' + source[0]).innerHTML = `<tr><td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 1);'></td></tr>`;
+                        if(document.getElementById('us_' + source[0]))
+                            document.getElementById('us_' + source[0]).innerHTML = "<b>" + source[2] + "B </b>";
+                        if(document.getElementById('tl_' + source[0]))    
+                            document.getElementById('tl_' + source[0]).innerHTML = "<b>" + source[1] + "B </b>";
+                        if(document.getElementById('st_' + source[0])){
+                           document.getElementById('st_' + source[0]).setAttribute("width",source[4].replace("\n",""));
+                           if(parseInt(source[4].replace("\n","")) < 85)
+                              document.getElementById('st_' + source[0]).innerHTML = `<tr><td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 1);'></td></tr>`; 
+                            else
+                              document.getElementById('st_' + source[0]).innerHTML = `<tr><td style='align-items: center; background: rgba(calc(255 - var(--color_r)), calc(255 - var(--color_g)), calc(255 - var(--color_b)),1);'></td></tr>`; 
+                        }    
                     }
                 }
             });
@@ -5053,10 +5060,17 @@ function getSpaceDriver(drive){
             source = source[1].split(" ").filter((item) => item !== '');
             if(document.getElementById('infbar_' + source[0])){    
                 document.getElementById('infbar_' + source[0]).setAttribute("title",source[3] + "B Available");
-                document.getElementById('us_' + source[0]).innerHTML = "<b>" + source[2] + "B </b>";
-                document.getElementById('tl_' + source[0]).innerHTML = "<b>" + source[1] + "B </b>";
-                document.getElementById('st_' + source[0]).setAttribute("width",source[4].replace("\n",""));
-                document.getElementById('st_' + source[0]).innerHTML = `<tr><td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 1);'></td></tr>`;
+                if(document.getElementById('us_' + source[0])) 
+                    document.getElementById('us_' + source[0]).innerHTML = "<b>" + source[2] + "B </b>";
+                if(document.getElementById('tl_' + source[0])) 
+                    document.getElementById('tl_' + source[0]).innerHTML = "<b>" + source[1] + "B </b>";
+                if(document.getElementById('st_' + source[0])){  
+                    document.getElementById('st_' + source[0]).setAttribute("width",source[4].replace("\n",""));
+                    if(parseInt(source[4].replace("\n","")) < 85)
+                      document.getElementById('st_' + source[0]).innerHTML = `<tr><td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 1);'></td></tr>`; 
+                    else
+                      document.getElementById('st_' + source[0]).innerHTML = `<tr><td style='align-items: center; background: rgba(calc(255 - var(--color_r)), calc(255 - var(--color_g)), calc(255 - var(--color_b)),1);'></td></tr>`;
+                }
             }
         }
   });
