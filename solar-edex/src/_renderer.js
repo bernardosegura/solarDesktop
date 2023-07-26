@@ -3702,19 +3702,21 @@ async function wnd_disks_Devices() {
                     </div>  
             </td></tr>
             <tr id="infbar_${disksDevices[key].dev}" class='cs_${disksDevices[key].root}'>
-                <td colspan="3" style="position: relative; top: -0.3vh;">
+                <td colspan="3" style="position: relative; top: -0.5vh;">
                     <div id="us_${disksDevices[key].dev}" style="font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: left;">Not Mounted</div>
-                    <table id="st_${disksDevices[key].dev}" width="0%">
-                        <tr>
-                            <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.0);'></td>
-                        </tr>
-                    </table>
-                    <table width="100%" style="position: relative; top: -0.35em;">
-                        <tr>
-                            <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'></td>
-                        </tr>
-                    </table>
-                    <div id="tl_${disksDevices[key].dev}" style="position: relative; top: -0.35em; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
+                    <div style="position: relative; width: 100%; height: 0.35em;">
+                        <table id="st_${disksDevices[key].dev}" width="0%" style="position: absolute; top: 0em; height: 0.35em;">
+                            <tr>
+                                <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.0);'></td>
+                            </tr>
+                        </table>
+                        <table width="100%" style="position: absolute; top: 0em; height: 0.35em;">
+                            <tr>
+                                <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'></td>
+                            </tr>
+                        </table>
+                    </div>    
+                    <div id="tl_${disksDevices[key].dev}" style="position: relative; top: 0.1em; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
                 </td>
             </tr>`;         
 
@@ -3803,23 +3805,25 @@ async function wnd_disks_Devices() {
                     </div>  
                 </td></tr>
                 <tr id="infbar_${disksDevices[key].dev}" class='cs_${disksDevices[key].root}'>
-                    <td colspan="3" style="position: relative; top: ${numposision - 0.3}vh;">
+                    <td colspan="3" style="position: relative; top: ${numposision - 0.5}vh;">
                         <div id="us_${disksDevices[key].dev}" style="font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: left;">Not Mounted</div>
-                        <table id="st_${disksDevices[key].dev}" width="0%">
-                            <tr>
-                                <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.0);'></td>
-                            </tr>
-                        </table>
-                        <table width="100%" style="position: relative; top: -0.35em;">
-                            <tr>
-                                <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'></td>
-                            </tr>
-                        </table>
-                        <div id="tl_${disksDevices[key].dev}" style="position: relative; top: -0.35em; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
+                        <div style="position: relative; width: 100%; height: 0.35em;">
+                            <table id="st_${disksDevices[key].dev}" width="0%" style="position: absolute; top: 0em; height: 0.35em;">
+                                <tr>
+                                    <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.0);'></td>
+                                </tr>
+                            </table>
+                            <table width="100%" style="position: absolute; top: 0em; height: 0.35em;">
+                                <tr>
+                                    <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div id="tl_${disksDevices[key].dev}" style="position: relative; top: 0.1em; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
                     </td>
                 </tr>`; 
         }
-        numposision -= "1.2";
+        numposision -= "1";
         posision = numposision + "vh";
     }
     strTRs = strTRsSistem + strTRs;
@@ -4115,23 +4119,25 @@ async function wnd_usb_Devices(){
         </td>
     </tr>
     <tr id="infbar_${window.usbDevices[key].dev}" class='cs_${window.usbDevices[key].root}'>
-        <td colspan="3" style="position: relative; top: ${numposision - 0.3}vh;">
+        <td colspan="3" style="position: relative; top: ${numposision - 0.5}vh;">
             <div id="us_${window.usbDevices[key].dev}" style="font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: left;">Not Mounted</div>
-            <table id="st_${window.usbDevices[key].dev}" width="0%">
-                <tr>
-                    <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.0);'></td>
-                </tr>
-            </table>
-            <table width="100%" style="position: relative; top: -0.35em;">
-                <tr>
-                    <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'></td>
-                </tr>
-            </table>
-            <div id="tl_${window.usbDevices[key].dev}" style="position: relative; top: -0.35em; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
+            <div style="position: relative; width: 100%; height: 0.35em;">
+                <table id="st_${window.usbDevices[key].dev}" width="0%" style="position: absolute; top: 0em; height: 0.35em;">
+                    <tr>
+                        <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.0);'></td>
+                    </tr>
+                </table>
+                <table width="100%" style="position: absolute; top: 0em; height: 0.35em;">
+                    <tr>
+                        <td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.3);'></td>
+                    </tr>
+                </table>
+            </div>    
+            <div id="tl_${window.usbDevices[key].dev}" style="position: relative; top: 0.1em; font-style: normal; font-size: 1.3vh; line-height: 1.5vh; margin: 0vh; white-space: nowrap; align-self: center; text-align: right;">&nbsp;</div>
         </td>
     </tr>`;
 
-     numposision -= "1.2";
+     numposision -= "1";
      posision = numposision + "vh"; 
     }
     
@@ -5034,7 +5040,7 @@ function getSpaceDriverAll(drive){
                 if(source.length > 1){
                     source = source[1].split(" ").filter((item) => item !== '');
                     if(document.getElementById('infbar_' + source[0])){
-                        document.getElementById('infbar_' + source[0]).setAttribute("title",source[3] + "B Available");
+                        document.getElementById('infbar_' + source[0]).setAttribute("title",`(${100 - parseInt(source[4].replace("\n",""))}%) ` + source[3] + "B Available");
                         if(document.getElementById('us_' + source[0]))
                             document.getElementById('us_' + source[0]).innerHTML = "<b>" + source[2] + "B </b>";
                         if(document.getElementById('tl_' + source[0]))    
@@ -5059,7 +5065,7 @@ function getSpaceDriver(drive){
         if(source.length > 1){
             source = source[1].split(" ").filter((item) => item !== '');
             if(document.getElementById('infbar_' + source[0])){    
-                document.getElementById('infbar_' + source[0]).setAttribute("title",source[3] + "B Available");
+                document.getElementById('infbar_' + source[0]).setAttribute("title",`(${100 - parseInt(source[4].replace("\n",""))}%) ` + source[3] + "B Available");
                 if(document.getElementById('us_' + source[0])) 
                     document.getElementById('us_' + source[0]).innerHTML = "<b>" + source[2] + "B </b>";
                 if(document.getElementById('tl_' + source[0])) 
