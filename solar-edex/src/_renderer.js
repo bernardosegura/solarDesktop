@@ -1185,7 +1185,7 @@ window.openShortcutsHelp = () => {
                                 <td>Open Chromium Dev Tools (for debugging purposes).</td>
                             </tr-->
                             <tr>
-                                <td>F5</td>
+                                <td>Alt + F5</td>
                                 <td>Update Panel Applications.</td>
                             </tr>
                             <!--tr>
@@ -1491,7 +1491,7 @@ function registerKeyboardShortcuts() {
         //window.fsDisp.watchFS(document.getElementById("fs_disp_title_dir").innerHTML);
     });*/
     if(window.isChromeOS === false)
-        globalShortcut.register("F5", () => {
+        globalShortcut.register("Alt+F5", () => {
             if(require("path").join(require("electron").remote.app.getPath("home"),"modulos") != document.getElementById('fs_disp_title_dir').innerText)
                 window.fsDisp.readFS(document.getElementById('fs_disp_title_dir').innerText);
         });
@@ -1555,7 +1555,7 @@ registerKeyboardShortcuts();
 function fnRegisterKeys()
 {
     //let registerExist = [,"Alt+W","Control+Shift+S","Control+Shift+K","Command+C","Command+V","Ctrl+Shift+C","Ctrl+Shift+V","Control+Tab","Control+Shift+Tab","Control+1","Control+2","Control+3","Control+4","Control+5","Control+Shift+H","Control+Shift+L","Control+Shift+P","Control+Escape","F5"];
-    let registerExist = [,"Alt+W","Command+C","Command+V","Ctrl+Shift+C","Ctrl+Shift+V","Control+Tab","Control+Shift+Tab","Control+1","Control+2","Control+3","Control+4","Control+5","Control+Shift+H","Control+Shift+P","Control+Escape","F5","Alt+F"];
+    let registerExist = [,"Alt+W","Command+C","Command+V","Ctrl+Shift+C","Ctrl+Shift+V","Control+Tab","Control+Shift+Tab","Control+1","Control+2","Control+3","Control+4","Control+5","Control+Shift+H","Control+Shift+P","Control+Escape","Alt+F5","Alt+F"];
     
     for(let i=0; i < registerKeys.register.length; i++)
     { 
@@ -2316,12 +2316,13 @@ function loadDevices(){
     let listDev = false;
     window.si.blockDevices().then(arr => {
         arr.forEach(block => {
+            let id_uuid = (block.uuid == "")?block.name:block.uuid;
             if (block.removable /*&& block.protocol === "usb"*/ && block.type === "part") {
                     //type = "usb";
-                    window.usbDevices['id_'+block.uuid] = {
-                        label: block.label,
+                    window.usbDevices['id_'+id_uuid] = {
+                        label: (block.label == '')?id_uuid:block.label,
                         dev : "/dev/"+block.name,
-                        uuid: block.uuid,
+                        uuid: id_uuid,
                         mount: block.mount,
                         type: "partition",
                         root: block.name.replace(/[0123456789]/g,'')
@@ -2331,10 +2332,10 @@ function loadDevices(){
                         if(!listDev){
                             listDev = fs.readdirSync("/dev");
                         }
-                        window.usbDevices['id_'+block.uuid] = {
-                            label: block.label,
+                        window.usbDevices['id_'+id_uuid] = {
+                            label: (block.label == '')?id_uuid:block.label,
                             dev : "/dev/"+block.name,
-                            uuid: block.uuid,
+                            uuid: id_uuid,
                             mount: block.mount,
                             type: "partition",
                             root: listDev.filter(elem => block.name.startsWith(elem) && elem != block.name).toString() //block.name.replace(/[0123456789]/g,'')
@@ -3433,18 +3434,23 @@ function callRCM(data){
 
                 if(data.message.type.toLowerCase() == "dusb"){
                     
+                    let id_uuid = (data.message.subdata.uuid == "")?data.message.subdata.dev.replace("/dev/",""):data.message.subdata.uuid;
+
                     if(document.querySelector("#wnd_usbdevices"))
                         xWindow({id:"wnd_usbdevices"});
                     
-                    if(data.message.subdata.action == "add"){
-                       if(document.getElementById("USBDevices")){ 
-                        if(document.getElementById("USBDevices").style)
-                            if(document.getElementById("USBDevices").style.display == 'none'){
-                                    document.getElementById("USBDevices").style.display = 'block';
-                               }
-                       } 
+                    if(data.message.subdata.action == "add"){ 
                        
-                       if(!window.usbDevices['id_'+data.message.subdata.uuid]){
+                        if(document.getElementById("USBDevices")){ 
+                            if(document.getElementById("USBDevices").style)
+                                if(document.getElementById("USBDevices").style.display == 'none'){
+                                    document.getElementById("USBDevices").style.display = 'block';
+                                }
+                       }
+                       
+                       getInfoUSBDevices();
+                                              
+                       if(!window.usbDevices['id_'+id_uuid]){
                             /*if (data.message.subdata.dev.startsWith("mmc")) {
                                     let listDev = fs.readdirSync("/dev");
                                     window.usbDevices['id_'+data.message.subdata.uuid] = {
@@ -3464,14 +3470,14 @@ function callRCM(data){
                                     type: "partition",
                                     root: data.message.subdata.dev.replace(/[0123456789]/g,'')
                                 };*/
-                            window.usbDevices['id_'+data.message.subdata.uuid] = {
+                            window.usbDevices['id_'+id_uuid] = {
                                     label: data.message.subdata.label,
                                     dev : data.message.subdata.dev,
                                     uuid: data.message.subdata.uuid,
                                     mount: "",
                                     type: "",
                                     root: ""
-                                };      
+                                };    
                        }
                     }
 
@@ -3479,18 +3485,19 @@ function callRCM(data){
                        if(document.getElementById("USBDevices")){
                             if(document.getElementById("USBDevices").style)
                                 if(document.getElementById("USBDevices").style.display != 'none'){
-                                    if(window.usbDevices['id_'+data.message.subdata.uuid]){
+                                    if(window.usbDevices['id_'+id_uuid]){
                                         if((Object.keys(window.usbDevices).length - 1) == 0){
                                             document.getElementById("USBDevices").style.display = 'none';
                                         } 
-                                        delete window.usbDevices['id_'+data.message.subdata.uuid]; 
+                                        delete window.usbDevices['id_'+id_uuid]; 
                                     }else{
                                         if(Object.keys(window.usbDevices).length == 0){
                                             document.getElementById("USBDevices").style.display = 'none';
                                         }
                                     }
                                }
-                        } 
+                        }
+                        getInfoUSBDevices(); 
                     }
                     /*if(window.mods.sysinfo)
                         window.mods.sysinfo.playConectBattery(isCharging);
@@ -3565,6 +3572,7 @@ async function wnd_disks_Devices() {
     let disksDevices = [];
     let mountPart = [];
     let mountDisk = [];
+    let usbDisk = [];
     let icons = {};
     let icon;
     let strTRs = "";
@@ -3584,31 +3592,34 @@ async function wnd_disks_Devices() {
             if (block.type === "part" && (block.mount != '[SWAP]' && block.mount != '/boot/efi'))
                 mountPart.push(block.name);
             else
-                if (block.type === "disk")
+                if (block.type === "disk"){
                     mountDisk.push(block.name);
+                    usbDisk[block.name] = {removable: ((block.protocol === "usb")?true:block.removable)};
+                }
         });
 
-    blocks.forEach(block => {     
+    blocks.forEach(block => { 
+            let id_uuid = (block.uuid == "")?block.name:block.uuid;   
             if (!block.removable && block.type === "part" && (block.mount != '[SWAP]' && block.mount != '/boot/efi')) {
-                    disksDevices['id_'+block.uuid] = {
-                        label: block.label,
+                    disksDevices['id_'+id_uuid] = {
+                        label: (block.label == '')?id_uuid:block.label,
                         dev : "/dev/"+block.name,
-                        uuid: block.uuid,
+                        uuid: id_uuid,
                         mount: block.mount,
                         type: "partition",
-                        removable: false,
+                        removable: usbDisk[mountDisk.find(elemento => block.name.startsWith(elemento))].removable,
                         root: mountDisk.find(elemento => block.name.startsWith(elemento)) //block.name.replace(/[0123456789]/g,'')
                     }; 
                                    
                 }else
                     if (block.type === "disk" && !mountPart.some(elemento => elemento.startsWith(block.name))) {
-                        disksDevices['id_'+block.uuid] = {
-                        label: (block.label == '')?block.model:block.label,
+                        disksDevices['id_'+id_uuid] = {
+                        label: (block.label == '')?id_uuid:block.label,
                         dev : "/dev/"+block.name,
-                        uuid: block.uuid,
+                        uuid: id_uuid,
                         mount: block.mount,
                         type: "disk",
-                        removable: block.removable,
+                        removable: usbDisk[block.name].removable,//block.removable,
                         root: block.name
                     };                    
                 }
@@ -3829,7 +3840,7 @@ async function wnd_disks_Devices() {
     strTRs = strTRsSistem + strTRs;
     recClient = document.body.getBoundingClientRect();
     mostrarPanel();
-    let alto = Object.keys(disksDevices).length;
+    let alto = (Object.keys(disksDevices).length > 5)? 5:Object.keys(disksDevices).length;
     let yWnd = ((parseInt(recClient.height)/2) - (alto * 139));
     yWnd = (yWnd <= 0)?1:yWnd;
     let wnd = {
@@ -3958,20 +3969,31 @@ function excTypeMethodDisks(type,parametro){
             type: "info",
             title: "Remove Safely ("+root+")",
             message: "Device removed successfull"
+        }, function (){
+            for (var key in window.disksDevices) { 
+                if( root == window.disksDevices[key].root){
+                    delete window.disksDevices[key];
+                } 
+            }    
         });
-        for (var key in window.disksDevices) { 
-            if( root == window.disksDevices[key].root){
-                delete window.disksDevices[key];
-            } 
-        }
+        
     }
   }catch(err){
-    console.log(err);
+    //console.log(err);
     let error = err.stderr.toString().split(':');
     let info = new Modal({
         type: "info",
-        title: error[0],
+        title: "Error " + type,
         message: error[error.length-1]
+    },function () {
+        if(type.indexOf("open") != -1)
+            document.querySelector("#dvmp_"+window.disksDevices["id_" + parametro].uuid).focus();
+        else
+            if(type.indexOf("mount") != -1)
+                document.querySelector("#dvmu_"+window.disksDevices["id_" + parametro].uuid).focus();
+            else
+                if(type.indexOf("off") != -1)
+                    document.querySelector("#dvrm_"+window.disksDevices["id_" + parametro].uuid).focus();
     });
   }
 }
@@ -3990,13 +4012,14 @@ async function wnd_usb_Devices(){
     let blocks = await window.si.blockDevices();
     let disksUSBDevices = [];
     let listDev = false;
-    blocks.forEach(block => {     
+    blocks.forEach(block => {  
+            let id_uuid = (block.uuid == "")?block.name:block.uuid; 
             if (block.removable /*&& block.protocol === "usb"*/ && block.type === "part") {
                     //type = "usb";
-                    disksUSBDevices['id_'+block.uuid] = {
-                        label: block.label,
+                    disksUSBDevices['id_'+id_uuid] = {
+                        label: (block.label == '')?id_uuid:block.label,
                         dev : "/dev/"+block.name,
-                        uuid: block.uuid,
+                        uuid: id_uuid,
                         mount: block.mount,
                         type: "partition",
                         root: block.name.replace(/[0123456789]/g,'')
@@ -4006,10 +4029,10 @@ async function wnd_usb_Devices(){
                         if(!listDev){
                             listDev = fs.readdirSync("/dev");
                         }
-                        disksUSBDevices['id_'+block.uuid] = {
-                            label: block.label,
+                        disksUSBDevices['id_'+id_uuid] = {
+                            label: (block.label == '')?id_uuid:block.label,
                             dev : "/dev/"+block.name,
-                            uuid: block.uuid,
+                            uuid: id_uuid,
                             mount: block.mount,
                             type: "partition",
                             root: listDev.filter(elem => block.name.startsWith(elem) && elem != block.name).toString() //block.name.replace(/[0123456789]/g,'')
@@ -4017,6 +4040,11 @@ async function wnd_usb_Devices(){
                 }
         });
     window.usbDevices = disksUSBDevices;
+
+    if(Object.keys(disksUSBDevices).length == 0){
+        document.querySelector("#USBDevices svg").setAttribute("fill","rgba(var(--color_r), var(--color_g), var(--color_b), 0.6)");
+        return;
+    }
 
     icons = require("./assets/icons/file-icons.json");
     strMount = fs.readFileSync("/proc/mounts","utf8");
@@ -4143,7 +4171,7 @@ async function wnd_usb_Devices(){
     
     recClient = document.body.getBoundingClientRect();
     mostrarPanel();
-    let alto = Object.keys(window.usbDevices).length;
+    let alto = (Object.keys(usbDevices).length > 5)? 5:Object.keys(usbDevices).length;
     let yWnd = ((parseInt(recClient.height)/2) - (alto * 139));
     yWnd = (yWnd <= 0)?1:yWnd;
     let wnd = {
@@ -4284,12 +4312,20 @@ function excTypeMethod(type,parametro){
         }
     }
   }catch(err){
-    console.log(err);
     let error = err.stderr.toString().split(':');
     let info = new Modal({
         type: "info",
-        title: error[0],
+        title: "Error " + type,
         message: error[error.length-1]
+    },function () {
+        if(type.indexOf("open") != -1)
+            document.querySelector("#dvmp_"+window.disksDevices["id_" + parametro].uuid).focus();
+        else
+            if(type.indexOf("mount") != -1)
+                document.querySelector("#dvmu_"+window.disksDevices["id_" + parametro].uuid).focus();
+            else
+                if(type.indexOf("off") != -1)
+                    document.querySelector("#dvrm_"+window.disksDevices["id_" + parametro].uuid).focus();
     });
   }
 }
@@ -5090,4 +5126,45 @@ function setSpaceDriver(drive){
         //document.getElementById('st_' + drive).style.display = "none";
         document.getElementById('st_' + drive).innerHTML = `<tr><td style='align-items: center; background: rgba(var(--color_r), var(--color_g), var(--color_b), 0.0);'></td></tr>`;
     }    
+}
+
+function getInfoUSBDevices(){
+    let disksUSBDevices = [];
+    let listDev = false;
+    window.si.blockDevices().then(arr => {
+        arr.forEach((block, index) => { 
+            let id_uuid = (block.uuid == "")?block.name:block.uuid;    
+            if (block.removable /*&& block.protocol === "usb"*/ && block.type === "part") {
+                    disksUSBDevices['id_'+id_uuid] = {
+                        label: block.label,
+                        dev : "/dev/"+block.name,
+                        uuid: id_uuid,
+                        mount: "",
+                        type: "",
+                        root: ""
+                    };                  
+                }else
+                    if (block.name.startsWith("mmc")  && block.type === "part") {
+                        if(!listDev){
+                            listDev = fs.readdirSync("/dev");
+                        }
+                        disksUSBDevices['id_'+id_uuid] = {
+                            label: block.label,
+                            dev : "/dev/"+block.name,
+                            uuid: id_uuid,
+                            mount: "",
+                            type: "",
+                            root: ""
+                        };                    
+                }
+
+                if((index + 1) == arr.length){
+                   if(Object.keys(disksUSBDevices).length == 0) 
+                    document.querySelector("#USBDevices svg").setAttribute("fill","rgba(var(--color_r), var(--color_g), var(--color_b), 0.6)");
+                   else
+                    document.querySelector("#USBDevices svg").setAttribute("fill","rgba(var(--color_r), var(--color_g), var(--color_b), 1)");   
+                }
+        });
+    });
+     
 }
