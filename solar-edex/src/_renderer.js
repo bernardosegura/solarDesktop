@@ -1,5 +1,5 @@
 const electron = require("electron");
-window.solar = {versions : electron.remote.app.getVersion() + "-2207.23 Beta"};
+window.solar = {versions : electron.remote.app.getVersion() + " Beta"};
 // Disable eval()
 window["cApps"] = {id: '', xobjFile: [], xobjTitle: [], osPathApps: "/usr/share/applications"};
 window.setBGI = { change: false, transparency: false};
@@ -667,7 +667,7 @@ window.focusShellTab = (number, cmd="") => {
 // Settings editor
 window.openSettings = async () => {
     // Build lists of available keyboards, themes, monitors
-    let keyboards, themes, monitors,nativeTheme,nativeIcon,keyboard_layout,List_keyboard_layout; //, ifaces;
+    let keyboards, themes, monitors, nativeTheme,nativeIcon,keyboard_layout,List_keyboard_layout; //, ifaces;
     
     if (fs.existsSync(path.join(settingsDir, "kblayout.json"))) {
         List_keyboard_layout = JSON.parse(fs.readFileSync(path.join(settingsDir, "kblayout.json"),{encoding:"utf-8"}));
@@ -703,9 +703,9 @@ window.openSettings = async () => {
             nativeIcon += `<option>${ith}</option>`;
         });
     }
-    for (let i = 0; i < electron.remote.screen.getAllDisplays().length; i++) {
+    /*for (let i = 0; i < electron.remote.screen.getAllDisplays().length; i++) {
         if (i !== window.settings.monitor) monitors += `<option>${i}</option>`;
-    }
+    }*/
     /*let nets = await window.si.networkInterfaces();
     nets.forEach(net => {
         if (net.iface !== window.mods.netstat.iface) ifaces += `<option>${net.iface}</option>`;
@@ -840,14 +840,14 @@ window.openSettings = async () => {
                         <td>IPv4 address to test Internet connectivity</td>
                         <td><input type="text" id="settingsEditor-pingAddr" value="${/*window.settings.pingAddr ||*/ "1.1.1.1"}"></td>
                     </tr-->
-                    <tr>
+                    <!--tr>
                         <td>monitor</td>
                         <td>Which monitor to spawn the UI in (defaults to primary display)</td>
                         <td><select id="settingsEditor-monitor">
                             ${(typeof window.settings.monitor !== "undefined") ? "<option>"+window.settings.monitor+"</option>" : ""}
                             ${monitors}
                         </select></td>
-                    </tr>
+                    </tr-->
                     <!--tr style="display:none">
                         <td>nointro</td>
                         <td>Skip the intro boot log and logo${(window.settings.nointroOverride) ? " (Currently overridden by CLI flag)" : ""}</td>
@@ -1075,7 +1075,7 @@ window.writeSettingsFile = () => {
         disableFeedbackAudio: window.settings.disableFeedbackAudio,//(document.getElementById("settingsEditor-disableFeedbackAudio").value === "true"),
         //pingAddr: document.getElementById("settingsEditor-pingAddr").value,
         port: Number(document.getElementById("settingsEditor-port").value),
-        monitor: Number(document.getElementById("settingsEditor-monitor").value),
+        //monitor: Number(document.getElementById("settingsEditor-monitor").value),
         //nointro: (document.getElementById("settingsEditor-nointro").value === "true"),
         //nocursor: (document.getElementById("settingsEditor-nocursor").value === "true"),
         //iface: document.getElementById("settingsEditor-iface").value,
@@ -1222,7 +1222,7 @@ window.openShortcutsHelp = () => {
                             </tr>
                             <tr>
                                 <td>Ctrl + Alt + L</td>
-                                <td>System Suspend</td>
+                                <td>Lock Screen</td>
                             </tr>
                             <tr>
                                 <td>Ctrl + Alt + W</td>
@@ -1343,7 +1343,7 @@ window.openShortcutsHelp = () => {
                         </tr>
                         <tr>
                             <td>Ctrl + Alt + L</td>
-                            <td>System Suspend</td>
+                            <td>Lock Screen</td>
                         </tr>
                         <tr>
                             <td>Ctrl + Alt + W</td>
@@ -3359,12 +3359,17 @@ function callRCM(data){
                 execAppKeyboard(window.settings.appctlaltdel);
             }
 
+            if(data.message.call.toLowerCase() == 'xk_lock'){
+                execKeyboard(data.message.key);
+            }
+
             if(data.message.call.toLowerCase() == 'calculator'){
                 execAppKeyboard(window.settings.appcalc);
             }
 
-            if(data.message.call.toLowerCase() == 'suspend'){
-                execAppKeyboard("systemctl suspend");
+            if(data.message.call.toLowerCase() == 'lockscreen'){
+                execAppKeyboard("lockscreen");
+                //execAppKeyboard("systemctl suspend");
             }
 
             if(data.message.call.toLowerCase() == 'settings'){
@@ -4991,6 +4996,16 @@ function execAppKeyboard(app){
     const { exec } = require("child_process");
     let cmd = app;//"change for setting ";  
     exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {});
+}
+
+function execKeyboard(key){   
+    const { exec } = require("child_process");
+    let cmd = "sleep 0.2;statuskeyslock "+ key; 
+    let data = {numlock: ((document.getElementById('num-lock').style.opacity == 1)?true:false), capslock:((document.getElementById('caps-lock').style.opacity == 1)?true:false)};
+    exec(cmd + ' &>/dev/null', (error, stdout, stderr) => {
+        data[key+"lock"] = stdout.startsWith("true");
+        procKeysLock(data);
+    });
 }
 
 function getClassbyId(id){

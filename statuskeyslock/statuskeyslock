@@ -6,7 +6,7 @@ key_lock=-1
 if [[ $1 == '' ]]; then
     echo "Status Keys Lock v0.1 - Tools Solar"
 
-    while sleep 0.1; do
+#    while sleep 0.1; do
 
         value="$(xset q | grep 'LED mask' | awk '{ print $NF }')"
 
@@ -65,7 +65,7 @@ if [[ $1 == '' ]]; then
                 fi
             fi
         fi
-    done
+#    done
 else
     value="$(xset q | grep 'LED mask' | awk '{ print $NF }')"
 

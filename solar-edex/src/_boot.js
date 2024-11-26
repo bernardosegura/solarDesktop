@@ -147,7 +147,7 @@ if (!fs.existsSync(settingsFile)) {
     fs.writeFileSync(settingsFile, JSON.stringify({
         shell: /*(process.platform === "win32") ? "powershell.exe" :*/ "bash",
         cwd: /*path.join(*/electron.app.getPath("home")/*,"modulos")*/,
-        keyboard_layout: "us",
+        keyboard_layout: "us\\(altgr-intl\\)",
         keyboard: "en-US",
         enableKeyboar: false,
         theme: "espacial",
@@ -624,11 +624,11 @@ function createWindow(settings) {
     signale.info("Creating window...");
 
     let display;
-    if (!isNaN(settings.monitor)) {
+    /*if (!isNaN(settings.monitor)) {
         display = electron.screen.getAllDisplays()[settings.monitor] || electron.screen.getPrimaryDisplay();
-    } else {
+    } else {*/
         display = electron.screen.getPrimaryDisplay();
-    }
+    //}
     let {x, y, width, height} = display.bounds;
     width++; height++;
 

@@ -1567,7 +1567,7 @@ Mod5Mask    |   128 | ???
       GrabModeAsync,
       GrabModeAsync);
 
-    //   d. Switch windows with Ctrl + alt + l (suspend) 
+    //   d. Switch windows with Ctrl + alt + l (lock screen) 
   XGrabKey(
       display_,
       XKeysymToKeycode(display_, XK_L),
@@ -1923,6 +1923,23 @@ Mod5Mask    |   128 | ???
       GrabModeAsync,
       GrabModeAsync);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
+XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_Caps_Lock),
+      AnyModifier,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
+
+XGrabKey(
+      display_,
+      XKeysymToKeycode(display_, XK_Num_Lock),
+      AnyModifier,
+      w,
+      false,
+      GrabModeAsync,
+      GrabModeAsync);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Se agrega el manejador del foco en la ventana hija, para ponerla al inicio si esta obtiene el foco demanera propia 
@@ -3034,7 +3051,17 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
 
     XRaiseWindow(display_, panel[0]);
     XSetInputFocus(display_, panel[1], RevertToPointerRoot, CurrentTime);
-  } 
+  }
+
+  if(e.keycode == XKeysymToKeycode(display_, XK_Caps_Lock)){
+    rcmSend("{\"message\":{\"call\":\"XK_Lock\",\"key\":\"caps\"}}");
+    return;
+  }
+
+  if(e.keycode == XKeysymToKeycode(display_, XK_Num_Lock)){
+    rcmSend("{\"message\":{\"call\":\"XK_Lock\",\"key\":\"num\"}}");
+    return;
+  }
 
   if((e.state & ControlMask) && e.keycode == XKeysymToKeycode(display_, XK_BackSpace)){
     /*XTestFakeKeyEvent(display_,XKeysymToKeycode(display_,XK_Delete),true,CurrentTime);
@@ -3062,7 +3089,7 @@ void WindowManager::OnKeyPress(const XKeyEvent& e) {
   }
 
   if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_L)){ 
-    rcmSend("{\"message\":{\"call\":\"Suspend\"}}");
+    rcmSend("{\"message\":{\"call\":\"LockScreen\"}}");
   }
   
   if((e.state & (ControlMask | Mod1Mask)) && e.keycode == XKeysymToKeycode(display_, XK_S)){ 

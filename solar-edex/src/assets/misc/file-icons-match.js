@@ -1968,6 +1968,7 @@ function matchIcon(filename,retorno) {
     if (/install-solar[^]*$/i.test(filename)){ return "install"; }
     if (/google-chrome[^]*$/i.test(filename)){ return "chrome"; }
     if (/caja[^]*$/i.test(filename)){ return "dir-open"; }
+    if (/thunar[^]*$/i.test(filename)){ return "dir-open"; }
     if (/home[^]*$/i.test(filename)){ return "dir"; }
     if (/casa[^]*$/i.test(filename)){ return "dir"; }
     if (/disks[^]*$/i.test(filename)){ return "disk"; }
